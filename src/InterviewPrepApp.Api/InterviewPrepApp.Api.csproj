@@ -9,4 +9,8 @@
     <ProjectReference Include="..\InterviewPrepApp.Application\InterviewPrepApp.Application.csproj" />
     <ProjectReference Include="..\InterviewPrepApp.Infrastructure\InterviewPrepApp.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+  </ItemGroup>
 </Project>

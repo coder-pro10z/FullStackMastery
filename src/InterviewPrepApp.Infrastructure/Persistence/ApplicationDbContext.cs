@@ -40,6 +40,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(category => category.SubCategories)
                 .HasForeignKey(category => category.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasData(DatabaseSeeder.GetSeedCategories());
         });
 
         builder.Entity<Question>(entity =>
