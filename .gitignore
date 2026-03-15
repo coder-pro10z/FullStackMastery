@@ -3,3 +3,5 @@ Steps.md
 ./Steps.md
 others/Companies.litcoffee
 others/
+obj/
+bin/
