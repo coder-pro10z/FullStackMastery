@@ -45,17 +45,17 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| DTOs – `CategoryTreeDto` | ⏳ | Needed for tree view |
-| DTOs – `CategoryFlatDto` | ✅ | Used for admin dropdown |
-| DTOs – `QuestionDto` | ⏳ | For API responses |
-| DTOs – `ProgressSummaryDto` | ⏳ | Dashboard stats |
-| DTOs – `FileValidationResult` | ⏳ | For import feedback |
-| DTOs – `PagedResponse<T>` | ⏳ | For paginated questions |
-| Interfaces – `ICategoryService` | ⏳ | `GetTreeAsync()` |
-| Interfaces – `IQuestionService` | ⏳ | Filtering, pagination |
+| DTOs – `CategoryTreeDto` | ✅ | Added for hierarchical API responses |
+| DTOs – `CategoryFlatDto` | ✅ | Added for flat dropdown/list use cases |
+| DTOs – `QuestionDto` | ✅ | Added application contract for question APIs |
+| DTOs – `ProgressSummaryDto` | ✅ | Added dashboard/progress summary contract |
+| DTOs – `FileValidationResult` | ✅ | Added structured import validation model |
+| DTOs – `PagedResponse<T>` | ✅ | Added generic pagination wrapper |
+| Interfaces – `ICategoryService` | ✅ | Added tree + flat list contract |
+| Interfaces – `IQuestionService` | ✅ | Added filtered/paginated question query contract |
 | Interfaces – `IUserProgressService` | ⏳ | Toggle solved/revision, summary |
-| Services – `CategoryService` | ⏳ | Implement tree building |
-| Services – `QuestionService` | ⏳ | Query with filters |
+| Services – `CategoryService` | ✅ | EF-backed tree + flat category queries |
+| Services – `QuestionService` | ✅ | Added paginated question query with category subtree filters |
 | Services – `UserProgressService` | ⏳ | Update user progress |
 
 ---
@@ -68,8 +68,8 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | CORS policy (Angular) | ✅ | Allows `http://localhost:4200` |
 | Global Exception Handler (`IExceptionHandler`) | ⏳ | RFC 7807 ProblemDetails |
 | `AuthController` – Register/Login | ⏳ | Returns JWT |
-| `CategoriesController` – tree endpoint | ⏳ | `GET /api/categories/tree` |
-| `QuestionsController` – paged endpoint | ⏳ | `GET /api/questions?categoryId=...` |
+| `CategoriesController` – tree endpoint | ✅ | `GET /api/categories/tree` and `GET /api/categories/flat` |
+| `QuestionsController` – paged endpoint | ✅ | `GET /api/questions` with filters and pagination |
 | `UserProgressController` – summary & toggles | ⏳ | `[Authorize]` endpoints |
 | `AdminController` – import questions | ✅ | `POST /api/admin/import-questions` |
 | `AdminController` – category management | ⏳ | CRUD for categories (optional) |
@@ -145,9 +145,9 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Task | Priority | Notes |
 |------|----------|-------|
-| Implement `ICategoryService` + `CategoryService` | High | Needed for sidebar tree |
-| Create `CategoriesController` with `/tree` | High | API for frontend |
-| Implement `IQuestionService` + `QuestionsController` | High | Filtering & pagination |
+| Implement `ICategoryService` + `CategoryService` | ✅ | Completed with EF-backed tree + flat queries |
+| Create `CategoriesController` with `/tree` | ✅ | `tree` and `flat` endpoints added |
+| Implement `IQuestionService` + `QuestionsController` | ✅ | Completed with pagination, search, role, difficulty, and category subtree filters |
 | Add `UserProgressController` with toggles | High | Track solved/revision |
 | Build `AuthController` (register/login) | High | JWT generation |
 | Add global exception handler | Medium | Consistent error responses |
