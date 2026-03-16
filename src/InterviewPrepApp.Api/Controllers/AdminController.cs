@@ -3,6 +3,7 @@ using InterviewPrepApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace InterviewPrepApp.Api.Controllers
 {
@@ -44,7 +45,24 @@ namespace InterviewPrepApp.Api.Controllers
 
             return Ok(new { imported = result.Data!.Count });
         }
+
+        [HttpGet("debug-categories")]
+        public async Task<IActionResult> DebugCategories()
+        {
+            var categories = await _context.Categories
+                .OrderBy(c => c.Id)
+                .Select(c => new { c.Id, c.Name, ParentName = c.Parent != null ? c.Parent.Name : null })
+                .ToListAsync();
+            
+            return Ok(new {
+                message = "Available categories",
+                categories = categories,
+                suggestion = "Use one of these IDs as DefaultCategoryId"
+            });
+        }
     }
+
+    
 
     public class ImportQuestionsRequest
     {

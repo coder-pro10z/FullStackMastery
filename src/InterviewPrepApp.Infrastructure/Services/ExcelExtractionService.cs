@@ -24,11 +24,6 @@ namespace InterviewPrepApp.Infrastructure.Services
 
         public async Task<Result<List<Question>>> ExtractQuestionsAsync(Stream excelStream, int defaultCategoryId)
         {
-            // Validate default category exists
-            var defaultCategory = await _context.Categories.FindAsync(defaultCategoryId);
-            if (defaultCategory == null)
-                return Result<List<Question>>.Failure($"Default category with ID {defaultCategoryId} does not exist.");
-
             using var workbook = new XLWorkbook(excelStream);
             var worksheet = workbook.Worksheet(1);
             var firstRow = worksheet.FirstRowUsed();
@@ -49,13 +44,21 @@ namespace InterviewPrepApp.Infrastructure.Services
             var questions = new List<Question>();
             var errors = new List<string>();
 
-            // Preload categories for optional lookup
-            var categoryCache = new Dictionary<string, Category>();
+            // Preload all categories for lookups
+            var allCategories = await _context.Categories.ToListAsync();
+            var categoryByName = allCategories.ToDictionary(c => c.Name, c => c, StringComparer.OrdinalIgnoreCase);
+            
+            // Build full‑path lookup for Category column (if present)
+            Dictionary<string, Category> pathToCategory = new Dictionary<string, Category>(StringComparer.OrdinalIgnoreCase);
             if (categoryColIndex != -1)
             {
-                var allCategories = await _context.Categories.ToListAsync();
+                var categoryById = allCategories.ToDictionary(c => c.Id);
                 foreach (var cat in allCategories)
-                    categoryCache[cat.Name] = cat;
+                {
+                    string path = GetFullPath(cat, categoryById);
+                    if (!pathToCategory.ContainsKey(path))
+                        pathToCategory[path] = cat;
+                }
             }
 
             int i = 0;
@@ -89,28 +92,64 @@ namespace InterviewPrepApp.Infrastructure.Services
                     continue;
                 }
 
-                // Determine category ID
-                int categoryId;
+                // Determine category ID – priority:
+                // 1. Category column (if present)
+                // 2. Role column (if it matches a category name)
+                // 3. Default category ID (if provided and valid)
+                int categoryId = 0;
+                bool categoryFound = false;
+
                 if (categoryColIndex != -1)
                 {
-                    var categoryName = currentRow.Cell(categoryColIndex + 1).GetString().Trim();
-                    if (string.IsNullOrWhiteSpace(categoryName))
+                    // Use Category column
+                    var categoryPathInput = currentRow.Cell(categoryColIndex + 1).GetString().Trim();
+                    if (string.IsNullOrWhiteSpace(categoryPathInput))
                     {
                         errors.Add($"Row {rowNumber}: Category column present but empty.");
                         i++;
                         continue;
                     }
-                    if (!categoryCache.TryGetValue(categoryName, out var cat))
+
+                    string normalizedPath = NormalizeCategoryPath(categoryPathInput);
+
+                    if (pathToCategory.TryGetValue(normalizedPath, out var cat))
                     {
-                        errors.Add($"Row {rowNumber}: Category '{categoryName}' not found.");
+                        categoryId = cat.Id;
+                        categoryFound = true;
+                    }
+                    else
+                    {
+                        var samplePaths = pathToCategory.Keys.Take(3).Select(p => $"'{p}'");
+                        errors.Add($"Row {rowNumber}: Category path '{categoryPathInput}' not found. Examples: {string.Join(", ", samplePaths)}");
                         i++;
                         continue;
                     }
-                    categoryId = cat.Id;
+                }
+                else if (categoryByName.TryGetValue(role, out var roleCategory))
+                {
+                    // Role matches a category name – use that
+                    categoryId = roleCategory.Id;
+                    categoryFound = true;
                 }
                 else
                 {
-                    categoryId = defaultCategoryId;
+                    // Fallback to default – check if default category exists
+                    var defaultCategory = await _context.Categories.FindAsync(defaultCategoryId);
+                    if (defaultCategory == null)
+                    {
+                        errors.Add($"Row {rowNumber}: No category found and default category ID {defaultCategoryId} is invalid.");
+                        i++;
+                        continue;
+                    }
+                    categoryId = defaultCategory.Id;
+                    categoryFound = true;
+                }
+
+                if (!categoryFound)
+                {
+                    // This should not happen because we either found it or added an error and continued.
+                    i++;
+                    continue;
                 }
 
                 // Check if next row exists and looks like an answer row
@@ -122,15 +161,12 @@ namespace InterviewPrepApp.Infrastructure.Services
                     var nextRoleCell = nextRow.Cell(roleColIndex + 1);
                     var nextDifficultyCell = nextRow.Cell(difficultyColIndex + 1);
 
-                    // Get cells from current row for merge comparison
                     var aboveRoleCell = currentRow.Cell(roleColIndex + 1);
                     var aboveDifficultyCell = currentRow.Cell(difficultyColIndex + 1);
 
                     bool roleEmptyForAnswer = IsCellEmptyForAnswer(nextRoleCell, aboveRoleCell);
                     bool difficultyEmptyForAnswer = IsCellEmptyForAnswer(nextDifficultyCell, aboveDifficultyCell);
 
-                    // If next row has text in Question column and Role/Difficulty are effectively empty,
-                    // treat it as answer row.
                     if (!string.IsNullOrWhiteSpace(nextQuestionCell.GetString()) && roleEmptyForAnswer && difficultyEmptyForAnswer)
                     {
                         answerText = nextQuestionCell.GetString().Trim();
@@ -167,7 +203,6 @@ namespace InterviewPrepApp.Infrastructure.Services
             if (string.IsNullOrWhiteSpace(cell.GetString()))
                 return true;
 
-            // If cell is merged and the merged range includes the cell above, treat as empty.
             if (cell.IsMerged())
             {
                 var mergedRange = cell.MergedRange();
@@ -175,6 +210,30 @@ namespace InterviewPrepApp.Infrastructure.Services
                     return true;
             }
             return false;
+        }
+
+        private static string GetFullPath(Category category, Dictionary<int, Category> categoryById)
+        {
+            var parts = new List<string>();
+            var current = category;
+            while (current != null)
+            {
+                parts.Insert(0, current.Name);
+                current = current.ParentId.HasValue ? categoryById.GetValueOrDefault(current.ParentId.Value) : null;
+            }
+            return string.Join("/", parts);
+        }
+
+        private static string NormalizeCategoryPath(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            string normalized = input.Replace("->", "/");
+            var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                                      .Select(s => s.Trim())
+                                      .Where(s => !string.IsNullOrEmpty(s));
+            return string.Join("/", segments);
         }
     }
 }
