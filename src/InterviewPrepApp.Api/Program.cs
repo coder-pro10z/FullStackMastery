@@ -1,7 +1,9 @@
 using InterviewPrepApp.Application.Interfaces;
+using InterviewPrepApp.Api.Infrastructure;
 using InterviewPrepApp.Domain.Entities;
 using InterviewPrepApp.Infrastructure.Persistence;
 using InterviewPrepApp.Infrastructure.Services;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,8 @@ namespace InterviewPrepApp.Api
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddProblemDetails();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -120,6 +124,7 @@ namespace InterviewPrepApp.Api
                 });
             }
 
+            app.UseExceptionHandler();
             app.UseHttpsRedirection();
             app.UseCors("Angular");
             app.UseAuthentication();

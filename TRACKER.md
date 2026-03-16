@@ -66,7 +66,7 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 |-----------|--------|-------|
 | JWT Authentication | ✅ | Configured in `Program.cs` |
 | CORS policy (Angular) | ✅ | Allows `http://localhost:4200` |
-| Global Exception Handler (`IExceptionHandler`) | ⏳ | RFC 7807 ProblemDetails |
+| Global Exception Handler (`IExceptionHandler`) | ✅ | Centralized RFC 7807 `ProblemDetails` responses |
 | `AuthController` – Register/Login | ✅ | Added register/login endpoints with JWT responses |
 | `CategoriesController` – tree endpoint | ✅ | `GET /api/categories/tree` and `GET /api/categories/flat` |
 | `QuestionsController` – paged endpoint | ✅ | `GET /api/questions` with filters and pagination |
@@ -264,3 +264,13 @@ namespace InterviewPrepApp.Application.DTOs
     }
 }
 📝
+---
+Added the global exception handler in GlobalExceptionHandler.cs and wired it in Program.cs with AddProblemDetails(), AddExceptionHandler<...>(), and UseExceptionHandler(). Unhandled exceptions now return centralized RFC 7807 ProblemDetails responses, with basic status mapping for 400, 401, 404, and 500.
+
+I updated Tracker.md to mark that API item complete. Verification passed with:
+dotnet build src\InterviewPrepApp.Api\InterviewPrepApp.Api.csproj -p:OutDir=bin\VerifyBuild\
+The only remaining build issue is still the existing nullable warning in ExcelExtractionService.cs (line 43).
+
+The next real step is the Angular baseline, but the current frontend workspace is not set up enough to build yet: frontend/package.json, frontend/src/main.ts, and frontend/src/app/app.config.ts are still stubs. I can take the next pass on that and scaffold the core Angular app properly.
+
+
