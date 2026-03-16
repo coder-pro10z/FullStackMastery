@@ -53,10 +53,10 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | DTOs – `PagedResponse<T>` | ✅ | Added generic pagination wrapper |
 | Interfaces – `ICategoryService` | ✅ | Added tree + flat list contract |
 | Interfaces – `IQuestionService` | ✅ | Added filtered/paginated question query contract |
-| Interfaces – `IUserProgressService` | ⏳ | Toggle solved/revision, summary |
+| Interfaces – `IUserProgressService` | ✅ | Added progress summary and toggle contract |
 | Services – `CategoryService` | ✅ | EF-backed tree + flat category queries |
 | Services – `QuestionService` | ✅ | Added paginated question query with category subtree filters |
-| Services – `UserProgressService` | ⏳ | Update user progress |
+| Services – `UserProgressService` | ✅ | Added summary aggregation and solved/revision toggles |
 
 ---
 
@@ -67,10 +67,10 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | JWT Authentication | ✅ | Configured in `Program.cs` |
 | CORS policy (Angular) | ✅ | Allows `http://localhost:4200` |
 | Global Exception Handler (`IExceptionHandler`) | ⏳ | RFC 7807 ProblemDetails |
-| `AuthController` – Register/Login | ⏳ | Returns JWT |
+| `AuthController` – Register/Login | ✅ | Added register/login endpoints with JWT responses |
 | `CategoriesController` – tree endpoint | ✅ | `GET /api/categories/tree` and `GET /api/categories/flat` |
 | `QuestionsController` – paged endpoint | ✅ | `GET /api/questions` with filters and pagination |
-| `UserProgressController` – summary & toggles | ⏳ | `[Authorize]` endpoints |
+| `UserProgressController` – summary & toggles | ✅ | Added authorized summary and toggle endpoints |
 | `AdminController` – import questions | ✅ | `POST /api/admin/import-questions` |
 | `AdminController` – category management | ⏳ | CRUD for categories (optional) |
 | Debug endpoints (temporary) | ✅ | `/debug-categories`, `/debug-questions` |
@@ -148,6 +148,8 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | Implement `ICategoryService` + `CategoryService` | ✅ | Completed with EF-backed tree + flat queries |
 | Create `CategoriesController` with `/tree` | ✅ | `tree` and `flat` endpoints added |
 | Implement `IQuestionService` + `QuestionsController` | ✅ | Completed with pagination, search, role, difficulty, and category subtree filters |
+| Add `UserProgressController` with toggles | ✅ | Added summary, toggle-solved, and toggle-revision endpoints |
+| Build `AuthController` (register/login) | ✅ | Added JWT-based register/login flow |
 | Add `UserProgressController` with toggles | High | Track solved/revision |
 | Build `AuthController` (register/login) | High | JWT generation |
 | Add global exception handler | Medium | Consistent error responses |

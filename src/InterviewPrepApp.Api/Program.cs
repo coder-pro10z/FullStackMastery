@@ -105,6 +105,7 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<IExcelExtractor, ExcelExtractionService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IQuestionService, QuestionService>();
+            builder.Services.AddScoped<IUserProgressService, UserProgressService>();
             // Register other services here (ICategoryService, IQuestionService, etc.)
 
             var app = builder.Build();
