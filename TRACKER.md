@@ -83,14 +83,14 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `auth.guard.ts` | ⏳ | Protect routes, check JWT |
-| `auth.interceptor.ts` | ⏳ | Attach Bearer token |
-| Models (interfaces) | ⏳ | `CategoryTreeDto`, `QuestionDto`, etc. |
-| Services – `AuthService` | ⏳ | Login, register |
-| Services – `CategoryService` | ⏳ | Fetch tree, flat list |
-| Services – `QuestionService` | ⏳ | Get questions (paged, filtered) |
-| Services – `ProgressService` | ⏳ | Summary, toggles |
-| Services – `AdminService` | ✅ | Import questions, category management |
+| `auth.guard.ts` | ✅ | Added route protection for authenticated areas |
+| `auth.interceptor.ts` | ✅ | Adds Bearer token from local auth session |
+| Models (interfaces) | ✅ | Added auth, category, question, progress, and admin models |
+| Services – `AuthService` | ✅ | Login, register, local session persistence |
+| Services – `CategoryService` | ✅ | Fetch tree and flat category lists |
+| Services – `QuestionService` | ✅ | Fetch paged/filtered question data |
+| Services – `ProgressService` | ✅ | Fetch summary and toggle progress state |
+| Services – `AdminService` | ✅ | Import questions and load category dropdown |
 
 ### Shared Components (`shared/components/`)
 
@@ -106,27 +106,27 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `DashboardComponent` | ⏳ | Main user dashboard |
-| `QuestionTableComponent` | ⏳ | Expandable rows for answers |
-| `LoginComponent` | ⏳ | Auth form |
-| `RegisterComponent` | ⏳ | Registration form |
-| `AdminDashboardComponent` | ✅ | File upload, category dropdown |
+| `DashboardComponent` | ✅ | Added baseline dashboard page with summary and question table |
+| `QuestionTableComponent` | ✅ | Added baseline question list table |
+| `LoginComponent` | ✅ | Added standalone login form |
+| `RegisterComponent` | ✅ | Added standalone registration form |
+| `AdminDashboardComponent` | ✅ | Added standalone import form and category dropdown |
 | `CategoryManagementComponent` | ⏳ | Add/edit/delete categories (if needed) |
 
 ### Layouts (`layouts/`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `AppLayoutComponent` | ⏳ | Sidebar + main content |
-| `AdminLayoutComponent` | ⏳ | Admin navigation |
+| `AppLayoutComponent` | ✅ | Added app shell with category sidebar |
+| `AdminLayoutComponent` | ✅ | Added admin shell and navigation actions |
 
 ### Routing & Config
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `app.routes.ts` | ⏳ | Define all routes, guards |
-| `app.config.ts` | ⏳ | Provide HttpClient, interceptors |
-| `environment.ts` | ⏳ | Store API base URL |
+| `app.routes.ts` | ✅ | Added guarded app, auth, and admin routes |
+| `app.config.ts` | ✅ | Added router and HttpClient with auth interceptor |
+| `environment.ts` | ✅ | Configured API base URL |
 
 ---
 
