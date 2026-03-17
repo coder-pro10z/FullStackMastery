@@ -96,7 +96,7 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `SidebarComponent` | ⏳ | Recursive category tree |
+| `SidebarComponent` | ⏳ | Reusable recursive sidebar component still pending; current `AppLayoutComponent` now has routed category links |
 | `ProgressCardComponent` | ⏳ | Shows solved counts |
 | `QuestionBadgeComponent` | ⏳ | Role/difficulty pills |
 | `ActionToggleComponent` | ⏳ | Solved/revision icons |
@@ -154,7 +154,8 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | Build `AuthController` (register/login) | High | JWT generation |
 | Add global exception handler | Medium | Consistent error responses |
 | Start Angular – core services & models | Medium | Connect to API |
-| Create reusable shared components | Medium | Sidebar, cards, etc. |
+| Create reusable shared components | High | Sidebar remains the main missing shared component; progress cards, badges, and toggles still need extraction |
+| Extract reusable `SidebarComponent` with recursive routed tree | High | Current sidebar routing exists in `AppLayoutComponent`, but it should be moved into a shared component |
 | Implement dashboard UI with question table | Medium | User facing |
 
 ---
