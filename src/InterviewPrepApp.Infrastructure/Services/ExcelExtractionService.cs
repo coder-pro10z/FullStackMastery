@@ -70,7 +70,7 @@ namespace InterviewPrepApp.Infrastructure.Services
                 // Read the question row
                 var questionText = currentRow.Cell(questionColIndex + 1).GetString().Trim();
                 var role = currentRow.Cell(roleColIndex + 1).GetString().Trim();
-                var difficultyStr = currentRow.Cell(difficultyColIndex + 1).GetString().Trim();
+                var difficultyText = currentRow.Cell(difficultyColIndex + 1).GetString().Trim();
 
                 // Validate question row
                 if (string.IsNullOrWhiteSpace(questionText))
@@ -85,11 +85,9 @@ namespace InterviewPrepApp.Infrastructure.Services
                     i++;
                     continue;
                 }
-                if (!Enum.TryParse<Difficulty>(difficultyStr, true, out var difficulty))
+                if (!Enum.TryParse<Difficulty>(difficultyText, true, out var difficulty))
                 {
-                    errors.Add($"Row {rowNumber}: Invalid difficulty '{difficultyStr}'. Must be Easy, Medium, or Hard.");
-                    i++;
-                    continue;
+                    difficulty = Difficulty.Medium;
                 }
 
                 // Determine category ID – priority:

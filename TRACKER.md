@@ -96,11 +96,12 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `SidebarComponent` | ⏳ | Reusable recursive sidebar component still pending; current `AppLayoutComponent` now has routed category links |
-| `ProgressCardComponent` | ⏳ | Shows solved counts |
-| `QuestionBadgeComponent` | ⏳ | Role/difficulty pills |
-| `ActionToggleComponent` | ⏳ | Solved/revision icons |
-| `FilterBarComponent` | ⏳ | Search, dropdowns |
+| `SidebarComponent` | ✅ | Extracted reusable recursive routed category tree |
+| `ProgressCardComponent` | ✅ | Extracted solved-count summary card |
+| `QuestionBadgeComponent` | ✅ | Added reusable role/difficulty pill component |
+| `ActionToggleComponent` | ✅ | Added reusable solved/revision toggle chip |
+| `FilterBarComponent` | ✅ | Added search, difficulty, and role filters |
+| `SubCategoryNavComponent` | ✅ | Added horizontal sub-category pill navigation below progress cards |
 
 ### Features (`features/`)
 
@@ -154,8 +155,13 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | Build `AuthController` (register/login) | High | JWT generation |
 | Add global exception handler | Medium | Consistent error responses |
 | Start Angular – core services & models | Medium | Connect to API |
-| Create reusable shared components | High | Sidebar remains the main missing shared component; progress cards, badges, and toggles still need extraction |
-| Extract reusable `SidebarComponent` with recursive routed tree | High | Current sidebar routing exists in `AppLayoutComponent`, but it should be moved into a shared component |
+| Create reusable shared components | ✅ | Sidebar, progress cards, badges, toggles, and filter bar extracted and wired |
+| Extract reusable `SidebarComponent` with recursive routed tree | ✅ | Completed and moved out of `AppLayoutComponent` |
+| Eliminate full table reload on progress toggles | MAX | Update local question/progress state without refetching the questions list |
+| Compact responsive dashboard layout | MAX | Reduce spacing and density so cards, filters, and rows fit cleanly |
+| Replace tablet table with stacked mobile cards | MAX | Prevent 768px layout breakage by switching away from dense table columns |
+| Root-category sidebar + sub-category top nav | MAX | Keep sidebar minimal and move child-category navigation into a horizontal pill bar |
+| Expand question table interactions | High | Answer expansion and richer row interactions still pending after compact/mobile refactor |
 | Implement dashboard UI with question table | Medium | User facing |
 
 ---

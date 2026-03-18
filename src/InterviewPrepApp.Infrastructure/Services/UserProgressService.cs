@@ -14,34 +14,62 @@ public class UserProgressService(ApplicationDbContext context) : IUserProgressSe
     public async Task<ProgressSummaryDto> GetSummaryAsync(string userId, CancellationToken cancellationToken = default)
     {
         var totalQuestions = await _context.Questions.CountAsync(cancellationToken);
+        var totalSolved = await _context.UserProgresses
+            .AsNoTracking()
+            .CountAsync(progress => progress.UserId == userId && progress.IsSolved, cancellationToken);
 
-        var solvedQuestionIds = await _context.UserProgresses
+        var totalEasy = await _context.Questions
+            .AsNoTracking()
+            .CountAsync(question => question.Difficulty == Difficulty.Easy, cancellationToken);
+
+        var totalMedium = await _context.Questions
+            .AsNoTracking()
+            .CountAsync(question => question.Difficulty == Difficulty.Medium, cancellationToken);
+
+        var totalHard = await _context.Questions
+            .AsNoTracking()
+            .CountAsync(question => question.Difficulty == Difficulty.Hard, cancellationToken);
+
+        var solvedEasy = await _context.UserProgresses
             .AsNoTracking()
             .Where(progress => progress.UserId == userId && progress.IsSolved)
-            .Select(progress => progress.QuestionId)
-            .ToListAsync(cancellationToken);
+            .Join(
+                _context.Questions.AsNoTracking().Where(question => question.Difficulty == Difficulty.Easy),
+                progress => progress.QuestionId,
+                question => question.Id,
+                (progress, question) => question.Id)
+            .CountAsync(cancellationToken);
 
-        var questionDifficulties = await _context.Questions
+        var solvedMedium = await _context.UserProgresses
             .AsNoTracking()
-            .Select(question => question.Difficulty)
-            .ToListAsync(cancellationToken);
+            .Where(progress => progress.UserId == userId && progress.IsSolved)
+            .Join(
+                _context.Questions.AsNoTracking().Where(question => question.Difficulty == Difficulty.Medium),
+                progress => progress.QuestionId,
+                question => question.Id,
+                (progress, question) => question.Id)
+            .CountAsync(cancellationToken);
 
-        var solvedDifficulties = await _context.Questions
+        var solvedHard = await _context.UserProgresses
             .AsNoTracking()
-            .Where(question => solvedQuestionIds.Contains(question.Id))
-            .Select(question => question.Difficulty)
-            .ToListAsync(cancellationToken);
+            .Where(progress => progress.UserId == userId && progress.IsSolved)
+            .Join(
+                _context.Questions.AsNoTracking().Where(question => question.Difficulty == Difficulty.Hard),
+                progress => progress.QuestionId,
+                question => question.Id,
+                (progress, question) => question.Id)
+            .CountAsync(cancellationToken);
 
         return new ProgressSummaryDto
         {
             TotalQuestions = totalQuestions,
-            TotalSolved = solvedQuestionIds.Count,
-            EasyTotal = questionDifficulties.Count(difficulty => difficulty == Difficulty.Easy),
-            EasySolved = solvedDifficulties.Count(difficulty => difficulty == Difficulty.Easy),
-            MediumTotal = questionDifficulties.Count(difficulty => difficulty == Difficulty.Medium),
-            MediumSolved = solvedDifficulties.Count(difficulty => difficulty == Difficulty.Medium),
-            HardTotal = questionDifficulties.Count(difficulty => difficulty == Difficulty.Hard),
-            HardSolved = solvedDifficulties.Count(difficulty => difficulty == Difficulty.Hard)
+            TotalSolved = Math.Max(0, totalSolved),
+            EasyTotal = totalEasy,
+            EasySolved = Math.Max(0, solvedEasy),
+            MediumTotal = totalMedium,
+            MediumSolved = Math.Max(0, solvedMedium),
+            HardTotal = totalHard,
+            HardSolved = Math.Max(0, solvedHard)
         };
     }
 
