@@ -4,11 +4,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   selector: 'app-question-badge',
   standalone: true,
   template: `
-    <span
-      class="badge"
-      [class.badge-easy]="variant === 'Easy'"
-      [class.badge-medium]="variant === 'Medium'"
-      [class.badge-hard]="variant === 'Hard'">
+    <span class="badge" [class]="badgeClass">
       {{ label }}
     </span>
   `,
@@ -17,4 +13,14 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 export class QuestionBadgeComponent {
   @Input({ required: true }) label = '';
   @Input() variant: 'Easy' | 'Medium' | 'Hard' | 'Role' = 'Role';
+
+  get badgeClass(): string {
+    const map: Record<string, string> = {
+      'Easy': 'badge-easy',
+      'Medium': 'badge-medium',
+      'Hard': 'badge-hard',
+      'Role': 'badge-role',
+    };
+    return map[this.variant] ?? 'badge-role';
+  }
 }

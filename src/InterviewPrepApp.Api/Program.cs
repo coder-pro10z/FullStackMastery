@@ -28,13 +28,13 @@ namespace InterviewPrepApp.Api
                 });
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-            
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Interview Prep API", Version = "v1" });
-                
+
                 // Configure Swagger to use JWT
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -44,7 +44,7 @@ namespace InterviewPrepApp.Api
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-                
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -74,7 +74,7 @@ namespace InterviewPrepApp.Api
             // JWT Authentication
             var jwtSettings = builder.Configuration.GetSection("Jwt");
             var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
-            
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -98,12 +98,17 @@ namespace InterviewPrepApp.Api
                 };
             });
 
-            // CORS for Angular
+            // CORS for Angular — allows any localhost origin (any port) so ng serve on any port works.
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("Angular", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200")
+                    policy.SetIsOriginAllowed(origin =>
+                          {
+                              // Allow all localhost origins (any port) for development
+                              var uri = new Uri(origin);
+                              return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                          })
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -115,7 +120,6 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IQuestionService, QuestionService>();
             builder.Services.AddScoped<IUserProgressService, UserProgressService>();
-            // Register other services here (ICategoryService, IQuestionService, etc.)
 
             var app = builder.Build();
 
@@ -123,7 +127,7 @@ namespace InterviewPrepApp.Api
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(c => 
+                app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Interview Prep API V1");
                 });
@@ -140,19 +144,19 @@ namespace InterviewPrepApp.Api
             using (var scope = app.Services.CreateScope())
             {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                
+
                 // Create Admin role if it doesn't exist
                 if (!await roleManager.RoleExistsAsync("Admin"))
                 {
                     await roleManager.CreateAsync(new IdentityRole("Admin"));
                     Console.WriteLine("Admin role created successfully.");
                 }
-                
+
                 // Optional: Create a default admin user (you can remove this in production)
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var adminEmail = "admin@interviewprep.com";
                 var adminUser = await userManager.FindByEmailAsync(adminEmail);
-                
+
                 if (adminUser == null)
                 {
                     adminUser = new ApplicationUser
@@ -161,7 +165,7 @@ namespace InterviewPrepApp.Api
                         Email = adminEmail,
                         EmailConfirmed = true
                     };
-                    
+
                     var result = await userManager.CreateAsync(adminUser, "Admin@123");
                     if (result.Succeeded)
                     {
