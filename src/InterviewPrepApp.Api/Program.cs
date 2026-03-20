@@ -121,6 +121,19 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<IQuestionService, QuestionService>();
             builder.Services.AddScoped<IUserProgressService, UserProgressService>();
 
+            // Admin services
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAuditLogService, InterviewPrepApp.Infrastructure.Services.AuditLogService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminQuestionService, InterviewPrepApp.Infrastructure.Services.AdminQuestionService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminDashboardService, InterviewPrepApp.Infrastructure.Services.AdminDashboardService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminCategoryService, InterviewPrepApp.Infrastructure.Services.AdminCategoryService>();
+
+            // RBAC policies
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+                options.AddPolicy("AdminOrEditor", p => p.RequireRole("Admin", "Editor"));
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
