@@ -128,5 +128,3 @@ This document defines the "What" and the "Why" for Phase 1 (The MVP), ensuring t
 * 🚫 **Monetization/Payments:** Paywalls or Stripe integration.
 * 🚫 **Social Features:** Leaderboards, comments, or user forums.
 * 🚫 **Code Execution:** An integrated IDE to run C# or TypeScript code in the browser (like LeetCode's compiler).
-
----

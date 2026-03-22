@@ -101,7 +101,7 @@ Here's a comprehensive tracker table based on the TRD and PRD. Use this to track
 | `QuestionBadgeComponent` | ✅ | Added reusable role/difficulty pill component |
 | `ActionToggleComponent` | ✅ | Added reusable solved/revision toggle chip |
 | `FilterBarComponent` | ✅ | Added search, difficulty, and role filters |
-| `SubCategoryNavComponent` | ✅ | Added horizontal sub-category pill navigation below progress cards |
+| `SubCategoryNavComponent` | ✅ | Added horizontal scrollable pills with dark theme |
 
 ### Features (`features/`)
 
@@ -279,5 +279,3 @@ dotnet build src\InterviewPrepApp.Api\InterviewPrepApp.Api.csproj -p:OutDir=bin\
 The only remaining build issue is still the existing nullable warning in ExcelExtractionService.cs (line 43).
 
 The next real step is the Angular baseline, but the current frontend workspace is not set up enough to build yet: frontend/package.json, frontend/src/main.ts, and frontend/src/app/app.config.ts are still stubs. I can take the next pass on that and scaffold the core Angular app properly.
-
-

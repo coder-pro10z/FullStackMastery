@@ -53,24 +53,17 @@ The solution follows a practical 4-layer backend split plus a separate Angular f
 
 ## 4. Repository Map
 
-```text
-Interview_PrepApp/
-|-- src/
-|   |-- InterviewPrepApp.Api/
-|   |   |-- Controllers/
-|   |   |-- Infrastructure/
-|   |   `-- Program.cs
-|   |-- InterviewPrepApp.Application/
-|   |   |-- DTOs/
-|   |   `-- Interfaces/
-|   |-- InterviewPrepApp.Domain/
-|   |   |-- Entities/
-|   |   |-- Enums/
-|   |   `-- Shared/
-|   `-- InterviewPrepApp.Infrastructure/
-|       |-- Migrations/
-|       |-- Persistence/
-|       `-- Services/
+|-- docs/
+|   |-- ADMIN.MD
+|   |-- APPLICATION_FLOW.MD
+|   |-- Command.md
+|   |-- PRD.md
+|   |-- TRD.md
+|   |-- TRACKER.md
+|   |-- Steps.md
+|   |-- Gemini_Backend.md
+|   |-- Gemini_Frontend.md
+|   `-- Improvements.md
 |-- frontend/
 |   |-- src/
 |   |   |-- app/
@@ -80,10 +73,7 @@ Interview_PrepApp/
 |   |   |   `-- shared/
 |   |   `-- styles.css
 |   `-- package.json
-|-- PRD.md
-|-- TRD.md
-`-- TRACKER.md
-```
+`-- README.md
 
 ## 5. Backend Domain Model
 
