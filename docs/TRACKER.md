@@ -1,281 +1,391 @@
-Here's a comprehensive tracker table based on the TRD and PRD. Use this to track progress and guide further development.
+# 📊 Project Tracker — Full Stack Interview Preparation Platform
 
----
-
-# 📊 Project Tracker – Full Stack .NET + Angular Interview Prep Platform
+> **Version:** 2.0 | **Last Updated:** March 2026
 
 ## Legend
-- ✅ **Done** – implemented and tested  
-- 🔄 **In Progress** – partially done or under review  
-- ⏳ **Pending** – not started  
-- 🚫 **Out of Scope** – for future phases  
+
+- ✅ **Done** — implemented and tested
+- 🔄 **In Progress** — partially done or under review
+- ⏳ **Pending** — not started
+- 🚫 **Out of Scope** — deferred to future phases
 
 ---
 
-## 1. Backend – Domain Layer (`InterviewPrepApp.Domain`)
+## 1. Backend — Domain Layer (`InterviewPrepApp.Domain`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `Difficulty` enum | ✅ | Defined (Easy, Medium, Hard) |
-| `Category` entity | ✅ | Self-referencing, proper navigation |
-| `Question` entity | ✅ | All properties, enums, relations |
-| `ApplicationUser` (extends IdentityUser) | ✅ | Includes `UserProgresses` |
-| `UserProgress` entity | ✅ | Composite key, IsSolved, IsRevision |
-| `Result<T>` class (shared) | ✅ | In `Domain.Shared` |
-| `IExcelExtractor` interface | ✅ | Moved to Application layer |
+| `Difficulty` enum | ✅ | Easy, Medium, Hard |
+| `Category` entity | ✅ | Self-referencing tree with `ParentId` |
+| `Question` entity | ✅ | All properties, soft delete, versioning |
+| `Answer` entity | ✅ | 1:1 with Question, Markdown content |
+| `ApplicationUser` (IdentityUser) | ✅ | Includes `UserProgresses` |
+| `UserProgress` entity | ✅ | Composite key `(UserId, QuestionId)` |
+| `Result<T>` class | ✅ | In `Domain.Shared` |
+| `AuditLog` entity | ✅ | Immutable append-only log |
+| `QuestionVersion` entity | ✅ | Append-only version history |
+| `QuestionStatus` enum | ✅ | Draft, Published |
 
 ---
 
-## 2. Backend – Infrastructure Layer (`InterviewPrepApp.Infrastructure`)
+## 2. Backend — Infrastructure Layer (`InterviewPrepApp.Infrastructure`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `ApplicationDbContext` | ✅ | Inherits `IdentityDbContext`, configures relationships |
-| Self-referencing Category (DeleteBehavior.Restrict) | ✅ | Configured |
-| UserProgress composite key | ✅ | Configured |
-| Database seeding (categories) | ✅ | Flexible dictionary-based seeder |
-| Migrations | ✅ | Initial migration applied |
-| `ExcelExtractionService` | ✅ | Handles merged cells, Category column, Role fallback |
+| `ApplicationDbContext` | ✅ | Inherits `IdentityDbContext<ApplicationUser>` |
+| Self-referencing Category (`DeleteBehavior.Restrict`) | ✅ | Configured |
+| `UserProgress` composite key | ✅ | Configured |
+| Soft-delete query filters | ✅ | `Question.IsDeleted` global filter |
+| Database seeding (categories) | ✅ | Dictionary-based hierarchical seeder |
+| Migrations (`InitialCreate` + `AddAdminTables`) | ✅ | Applied |
+| `ExcelExtractionService` | ✅ | Merged cells, Category column, Role fallback |
+| `CategoryService` | ✅ | Tree + flat queries |
+| `QuestionService` | ✅ | Paginated, filtered, subtree-aware |
+| `UserProgressService` | ✅ | Summary aggregation + toggles |
 | ClosedXML integration | ✅ | NuGet added |
-| Register services in DI | ✅ | `AddScoped<IExcelExtractor, ExcelExtractionService>()` |
+| DI service registration | ✅ | All services registered |
 
 ---
 
-## 3. Backend – Application Layer (`InterviewPrepApp.Application`)
+## 3. Backend — Application Layer (`InterviewPrepApp.Application`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| DTOs – `CategoryTreeDto` | ✅ | Added for hierarchical API responses |
-| DTOs – `CategoryFlatDto` | ✅ | Added for flat dropdown/list use cases |
-| DTOs – `QuestionDto` | ✅ | Added application contract for question APIs |
-| DTOs – `ProgressSummaryDto` | ✅ | Added dashboard/progress summary contract |
-| DTOs – `FileValidationResult` | ✅ | Added structured import validation model |
-| DTOs – `PagedResponse<T>` | ✅ | Added generic pagination wrapper |
-| Interfaces – `ICategoryService` | ✅ | Added tree + flat list contract |
-| Interfaces – `IQuestionService` | ✅ | Added filtered/paginated question query contract |
-| Interfaces – `IUserProgressService` | ✅ | Added progress summary and toggle contract |
-| Services – `CategoryService` | ✅ | EF-backed tree + flat category queries |
-| Services – `QuestionService` | ✅ | Added paginated question query with category subtree filters |
-| Services – `UserProgressService` | ✅ | Added summary aggregation and solved/revision toggles |
+| `CategoryTreeDto` / `CategoryFlatDto` | ✅ | Hierarchical + flat responses |
+| `QuestionDto` / `QuestionAdminDto` | ✅ | User-facing + admin DTOs |
+| `CreateQuestionDto` / `UpdateQuestionDto` | ✅ | Admin CRUD DTOs |
+| `ImportQuestionDto` | ✅ | Bulk import DTO |
+| `DashboardStatsDto` | ✅ | Admin dashboard statistics |
+| `AuditLogDto` | ✅ | Audit trail DTO |
+| `ProgressSummaryDto` | ✅ | Dashboard progress stats |
+| `FileValidationResult` | ✅ | Structured import validation |
+| `PagedResponse<T>` | ✅ | Generic pagination wrapper |
+| `ICategoryService` | ✅ | Tree + flat list contract |
+| `IQuestionService` | ✅ | Filtered/paginated queries |
+| `IUserProgressService` | ✅ | Progress summary + toggles |
+| `IAdminDashboardService` | ✅ | Admin stats contract |
+| `IQuestionImportService` | ✅ | Import pipeline contract |
+| `IAuditLogService` | ✅ | Audit trail contract |
+| FluentValidation setup | ⏳ | Planned for input validation |
 
 ---
 
-## 4. Backend – API Layer (`InterviewPrepApp.Api`)
+## 4. Backend — API Layer (`InterviewPrepApp.Api`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | JWT Authentication | ✅ | Configured in `Program.cs` |
-| CORS policy (Angular) | ✅ | Allows `http://localhost:4200` |
-| Global Exception Handler (`IExceptionHandler`) | ✅ | Centralized RFC 7807 `ProblemDetails` responses |
-| `AuthController` – Register/Login | ✅ | Added register/login endpoints with JWT responses |
-| `CategoriesController` – tree endpoint | ✅ | `GET /api/categories/tree` and `GET /api/categories/flat` |
-| `QuestionsController` – paged endpoint | ✅ | `GET /api/questions` with filters and pagination |
-| `UserProgressController` – summary & toggles | ✅ | Added authorized summary and toggle endpoints |
-| `AdminController` – import questions | ✅ | `POST /api/admin/import-questions` |
-| `AdminController` – category management | ⏳ | CRUD for categories (optional) |
-| Debug endpoints (temporary) | ✅ | `/debug-categories`, `/debug-questions` |
+| CORS policy (`localhost:4200`) | ✅ | Configured |
+| Global Exception Handler (`IExceptionHandler`) | ✅ | RFC 7807 `ProblemDetails` |
+| Swagger with Bearer auth | ✅ | Development environment |
+| `AuthController` — Register/Login | ✅ | JWT-based auth flow |
+| `CategoriesController` — `/tree`, `/flat` | ✅ | Public endpoints |
+| `QuestionsController` — filtered + paged | ✅ | `[FromQuery]` params |
+| `UserProgressController` — summary + toggles | ✅ | `[Authorize]` protected |
+| `AdminController` — import questions | ✅ | Excel upload endpoint |
+| `AdminQuestionsController` — CRUD | ✅ | Create, update, soft-delete, restore |
+| `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
+| `AdminDashboardController` — stats | ✅ | Dashboard analytics |
+| Admin role enforcement `[Authorize(Roles)]` | 🔄 | Partially implemented — see §11 |
+| `AdminUsersController` — role assignment | ⏳ | Planned |
+| Rate limiting middleware | ⏳ | Planned |
+| Debug endpoints | ✅ | `/debug-categories`, `/debug-questions` |
 
 ---
 
-## 5. Frontend – Angular (`src/app`)
-
-### Core (`core/`)
+## 5. Frontend — Angular Core (`core/`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `auth.guard.ts` | ✅ | Added route protection for authenticated areas |
-| `auth.interceptor.ts` | ✅ | Adds Bearer token from local auth session |
-| Models (interfaces) | ✅ | Added auth, category, question, progress, and admin models |
-| Services – `AuthService` | ✅ | Login, register, local session persistence |
-| Services – `CategoryService` | ✅ | Fetch tree and flat category lists |
-| Services – `QuestionService` | ✅ | Fetch paged/filtered question data |
-| Services – `ProgressService` | ✅ | Fetch summary and toggle progress state |
-| Services – `AdminService` | ✅ | Import questions and load category dropdown |
+| `auth.guard.ts` | ✅ | Route protection |
+| `redirect-if-logged-in.guard.ts` | ✅ | Prevents authed users hitting `/login` |
+| `auth.interceptor.ts` | ✅ | Bearer token attachment |
+| Models (TypeScript interfaces) | ✅ | Auth, category, question, progress, admin |
+| `AuthService` | ✅ | Login, register, session persistence |
+| `CategoryService` | ✅ | Tree + flat category lists |
+| `QuestionService` | ✅ | Paged/filtered question data |
+| `ProgressService` | ✅ | Summary + toggle progress |
+| `AdminService` | ✅ | Import + category dropdown |
+| `AdminApiService` | ✅ | Admin CRUD operations |
 
-### Shared Components (`shared/components/`)
+---
+
+## 6. Frontend — Shared Components (`shared/components/`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `SidebarComponent` | ✅ | Extracted reusable recursive routed category tree |
-| `ProgressCardComponent` | ✅ | Extracted solved-count summary card |
-| `QuestionBadgeComponent` | ✅ | Added reusable role/difficulty pill component |
-| `ActionToggleComponent` | ✅ | Added reusable solved/revision toggle chip |
-| `FilterBarComponent` | ✅ | Added search, difficulty, and role filters |
-| `SubCategoryNavComponent` | ✅ | Added horizontal scrollable pills with dark theme |
+| `SidebarComponent` | ✅ | Recursive category tree, collapsible |
+| `ProgressCardComponent` | ✅ | Dark cards with gradient accents |
+| `QuestionBadgeComponent` | ✅ | Role/difficulty pill badges |
+| `ActionToggleComponent` | ✅ | Solved/revision toggles with micro-animations |
+| `FilterBarComponent` | ✅ | Search, difficulty, role dropdowns |
+| `SubCategoryNavComponent` | ✅ | Horizontal scrollable pills |
 
-### Features (`features/`)
+---
+
+## 7. Frontend — Features (`features/`)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `DashboardComponent` | ✅ | Added baseline dashboard page with summary and question table |
-| `QuestionTableComponent` | ✅ | Added baseline question list table |
-| `LoginComponent` | ✅ | Added standalone login form |
-| `RegisterComponent` | ✅ | Added standalone registration form |
-| `AdminDashboardComponent` | ✅ | Added standalone import form and category dropdown |
-| `CategoryManagementComponent` | ⏳ | Add/edit/delete categories (if needed) |
+| `DashboardPageComponent` | ✅ | Progress cards + filters + question cards |
+| `QuestionTableComponent` | ✅ | Card-based layout with accordion answers |
+| `LoginComponent` | ✅ | Dark SaaS-style auth with glow effects |
+| `RegisterComponent` | ✅ | Matching dark auth page |
+| `AdminDashboardComponent` | ✅ | Drag-drop upload, stats, question CRUD |
+| Pagination UI controls | ⏳ | Backend supports it, but UI not yet wired |
+| Revision-only filter mode | ⏳ | Toggle exists, workflow not operationalized |
+| Answer expand/collapse UX | 🔄 | Basic inline — no deliberate reveal |
 
-### Layouts (`layouts/`)
+---
+
+## 8. Frontend — Layouts, Routing & Config
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `AppLayoutComponent` | ✅ | Added app shell with category sidebar |
-| `AdminLayoutComponent` | ✅ | Added admin shell and navigation actions |
+| `AppLayoutComponent` | ✅ | Sidebar + top navbar + responsive drawer |
+| `AdminLayoutComponent` | ✅ | Top navigation + workspace |
+| `app.routes.ts` | ✅ | Guarded app, auth, and admin routes |
+| `app.config.ts` | ✅ | Router + HttpClient + auth interceptor |
+| `environment.ts` | ✅ | API base URL configured |
+| Responsive design | ✅ | Desktop / tablet / mobile |
+| Loading skeletons | ✅ | Shimmer animations |
 
-### Routing & Config
+---
+
+## 9. CheatSheet Hub Feature *(NEW)*
+
+> Source: [CheetSheet.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/CheetSheet.md)
+
+### 9.1 Backend
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| `app.routes.ts` | ✅ | Added guarded app, auth, and admin routes |
-| `app.config.ts` | ✅ | Added router and HttpClient with auth interceptor |
-| `environment.ts` | ✅ | Configured API base URL |
+| `CheatSheetResource` entity | ⏳ | Title, Type, URL, MarkdownContent, CategoryId |
+| `CheatSheetResourceType` enum | ⏳ | Pdf, Markdown, ExternalLink |
+| DbContext `DbSet` + EF config | ⏳ | FK to Category, indexes, enum conversion |
+| `CheatSheetResourceDto` | ⏳ | API response DTO |
+| `CreateCheatSheetDto` | ⏳ | Admin creation DTO |
+| `ICheatSheetService` interface | ⏳ | GetByCategory, Create, Delete |
+| `CheatSheetService` implementation | ⏳ | EF Core backed, filtered by category |
+| `ResourcesController` (public) | ⏳ | `GET /api/resources?categoryId=` |
+| `AdminResourcesController` | ⏳ | `POST / DELETE /api/admin/resources` |
+| EF Migration for new table | ⏳ | `AddCheatSheetResources` |
+
+### 9.2 Frontend
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `CheatSheetPageComponent` | ⏳ | Browse resources by category |
+| `ResourceCardComponent` (shared) | ⏳ | Title, type badge, open/download action |
+| `CheatSheetService` (Angular) | ⏳ | API calls to `/api/resources` |
+| `/cheatsheets` route | ⏳ | Under `AppLayoutComponent` |
+| Sidebar navigation link | ⏳ | Fixed nav entry above category tree |
+| Admin resources tab | ⏳ | Create/list/delete resources |
+| Question table "Resources" link | ⏳ | Lightweight cross-reference |
 
 ---
 
-## 6. Excel Import Enhancements (Recent Work)
+## 10. Quiz & Assessment System *(NEW)*
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Two‑row format with merged cells | ✅ | Handled by `IsCellEmptyForAnswer` |
-| Category column with hierarchical paths | ✅ | Supports `->` and `/` |
-| Role column fallback (as category name) | ✅ | Used if no Category column |
-| Conditional default category validation | ✅ | Only validated when needed |
+> Source: [QUIZ.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/QUIZ.md)
 
----
+### 10.1 Backend — Domain
 
-## 7. Remaining High‑Priority Tasks (Next Steps)
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `QuizAttempt` entity | ⏳ | User session tracking, mode, timer, score |
+| `QuizQuestion` entity (bridge) | ⏳ | Links to `OriginalQuestionId` (read-only ref) |
+| `QuizUserAnswer` entity | ⏳ | Selected answers per question |
+| `QuizMode` enum | ⏳ | Mock, Real |
 
-| Task | Priority | Notes |
-|------|----------|-------|
-| Implement `ICategoryService` + `CategoryService` | ✅ | Completed with EF-backed tree + flat queries |
-| Create `CategoriesController` with `/tree` | ✅ | `tree` and `flat` endpoints added |
-| Implement `IQuestionService` + `QuestionsController` | ✅ | Completed with pagination, search, role, difficulty, and category subtree filters |
-| Add `UserProgressController` with toggles | ✅ | Added summary, toggle-solved, and toggle-revision endpoints |
-| Build `AuthController` (register/login) | ✅ | Added JWT-based register/login flow |
-| Add `UserProgressController` with toggles | High | Track solved/revision |
-| Build `AuthController` (register/login) | High | JWT generation |
-| Add global exception handler | Medium | Consistent error responses |
-| Start Angular – core services & models | Medium | Connect to API |
-| Create reusable shared components | ✅ | Sidebar, progress cards, badges, toggles, and filter bar extracted and wired |
-| Extract reusable `SidebarComponent` with recursive routed tree | ✅ | Completed and moved out of `AppLayoutComponent` |
-| Eliminate full table reload on progress toggles | MAX | Update local question/progress state without refetching the questions list |
-| Compact responsive dashboard layout | MAX | Reduce spacing and density so cards, filters, and rows fit cleanly |
-| Replace tablet table with stacked mobile cards | MAX | Prevent 768px layout breakage by switching away from dense table columns |
-| Root-category sidebar + sub-category top nav | MAX | Keep sidebar minimal and move child-category navigation into a horizontal pill bar |
-| Expand question table interactions | High | Answer expansion and richer row interactions still pending after compact/mobile refactor |
-| Implement dashboard UI with question table | Medium | User facing |
+### 10.2 Backend — Services & API
 
----
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `IQuizGeneratorService` | ⏳ | Randomized quiz from QA bank |
+| `IScoringService` | ⏳ | Score calculation + analysis |
+| `QuizController` | ⏳ | Start, submit, review endpoints |
+| Quiz DTO masking (Real Mode) | ⏳ | Strip answers for assessment security |
+| Timer validation (backend) | ⏳ | Re-validate client timer on submission |
+| Update `UserProgress` on completion | ⏳ | Feed quiz results into progress stats |
 
-## 8. Out of Scope (Phase 2+)
+### 10.3 Frontend
 
-| Feature | Reason |
-|---------|--------|
-| AI Interview Copilot | Phase 2 |
-| Resume Analyzer | Phase 2 |
-| Payments / Monetization | Phase 3 |
-| Social features (leaderboards, comments) | Phase 3 |
-| Code execution (IDE) | Phase 3 |
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Quiz Dashboard (config/start) | ⏳ | Category, difficulty, mode selection |
+| Quiz Player Component | ⏳ | Question display, navigation, timer |
+| Quiz Reflection/Review Component | ⏳ | Score breakdown, answer review |
+| Shared Question Card (`displayContext`) | ⏳ | Context-aware reusable component |
+| `/quiz` route | ⏳ | Under `AppLayoutComponent` |
+| Quiz API service (Angular) | ⏳ | Start, submit, fetch results |
 
 ---
 
-**Instructions for the Agent:**  
-- Update this tracker after completing each task.  
-- Focus on **High Priority** tasks first (backend foundation).  
-- Keep code aligned with the TRD’s architectural rules (no CQRS/MediatR, Result pattern, etc.).  
-- When starting Angular, follow the provided folder structure and use standalone components.  
+## 11. Improvements & Refactoring
 
-Let me know if you need details on any pending item!
+> Source: [Improvements.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/Improvements.md)
+
+### 11.1 Security (Tier 1 — Critical)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| Admin API role enforcement `[Authorize(Roles = "Admin")]` | 🔄 | Partially done on new admin controllers |
+| Frontend `adminGuard` (role-based) | ⏳ | Currently only auth-gated |
+| Move JWT secret to env/secret store | ⏳ | Currently in `appsettings.json` |
+| Restrict default admin creation to dev only | ⏳ | Currently runs unconditionally |
+| ASP.NET Identity lockout + password policy | ⏳ | No hardening configured |
+
+### 11.2 Feature Completeness (Tier 1–2)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| Dashboard pagination UI | ⏳ | Backend supports pages, UI does not expose |
+| Revision-only filter/workflow | ⏳ | Toggle exists, no dedicated queue/filter |
+| Answer expand/collapse interaction | 🔄 | Basic inline display, no deliberate reveal |
+| Role dropdown from stable source | ⏳ | Currently derives from current page results |
+| Admin import validation feedback | 🔄 | Basic success/error — no `ProblemDetails` rendering |
+
+### 11.3 Architecture (Tier 2)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| Move admin import behind application service | ✅ | `IQuestionImportService` exists |
+| Centralize validation (FluentValidation) | ⏳ | Not yet added |
+| Extract startup bootstrap to hosted service | ⏳ | Role/user seeding in `Program.cs` |
+| Formalize API contract boundaries | ⏳ | Some frontend/backend DTO drift exists |
+
+### 11.4 Performance & Scalability (Tier 3)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| DB indexes for common filters | ⏳ | `CategoryId`, `Difficulty`, `Role` |
+| Consolidate progress summary queries | ⏳ | Multiple separate count queries |
+| Cache category tree | ⏳ | Repeated reads for stable data |
+| Move route filters to URL query params | ⏳ | Filters not shareable/bookmarkable |
+| Debounced search | ⏳ | Risk of chatty requests |
+| Separate migrations from app startup | ⏳ | Auto-migrate on startup currently |
+
+### 11.5 Testing (Tier 1 — Critical)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| Backend integration tests (auth, import, progress) | ⏳ | No test suite exists |
+| Frontend unit/component tests | ⏳ | No test suite exists |
+| Security-focused tests | ⏳ | Admin authorization verification |
+
+### 11.6 Observability (Tier 3)
+
+| Improvement | Status | Notes |
+|-------------|--------|-------|
+| Structured logging with context | ⏳ | Basic `ILogger` usage |
+| Audit trail for admin actions | ✅ | `AuditLog` entity exists |
+| Import metrics and diagnostics | ⏳ | No structured reporting |
+
 ---
 
-🚀 Next Step – Generate APP-01 (Core DTOs)
-I'll now provide the code for the Core DTOs to clear the first bottleneck. After that, we can proceed with CategoryService, QuestionService, etc.
+## 12. PRD/TRD Alignment Status
 
-1. CategoryTreeDto – for hierarchical categories
-csharp
-// InterviewPrepApp.Application/DTOs/CategoryTreeDto.cs
-namespace InterviewPrepApp.Application.DTOs
-{
-    public class CategoryTreeDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public List<CategoryTreeDto> SubCategories { get; set; } = new();
-    }
-}
-2. QuestionDto – for API responses
-csharp
-// InterviewPrepApp.Application/DTOs/QuestionDto.cs
-using InterviewPrepApp.Domain.Enums;
+| Area | PRD/TRD Expectation | Actual Implementation | Aligned? |
+|------|---------------------|----------------------|----------|
+| UI Theme | Dark mode (`#121212`) + Tailwind | Custom CSS, dark SaaS theme | ✅ (adapted) |
+| Dashboard route | `/dashboard` | `/` (redirects) | ✅ (equivalent) |
+| Category sidebar | Infinite nested tree | Root categories + sub-nav pills | ✅ |
+| Question table + answers | Collapsible row reveal | Inline display (partial) | 🔄 |
+| Pagination | Backend + UI | Backend only | ⏳ UI needed |
+| Revision workflow | Bookmark → revision queue | Toggle only, no queue | ⏳ |
+| Admin role protection | `[Authorize(Roles)]` | Partially enabled | 🔄 |
+| JWT auth | Full flow | Working | ✅ |
+| Excel import | Bulk upload | Working | ✅ |
+| `Result<T>` pattern | Service returns | Implemented | ✅ |
+| Clean Architecture | 4-layer, no MediatR | Preserved | ✅ |
+| Angular standalone | No NgModules | Fully standalone | ✅ |
 
-namespace InterviewPrepApp.Application.DTOs
-{
-    public class QuestionDto
-    {
-        public int Id { get; set; }
-        public string? Title { get; set; }
-        public string QuestionText { get; set; } = string.Empty;
-        public string? AnswerText { get; set; }
-        public Difficulty Difficulty { get; set; }
-        public string Role { get; set; } = string.Empty;
-        public int CategoryId { get; set; }
-        public string CategoryName { get; set; } = string.Empty; // optional, for display
-        public bool IsSolved { get; set; }      // for authenticated user
-        public bool IsRevision { get; set; }    // for authenticated user
-    }
-}
-3. PagedResponse<T> – generic wrapper
-csharp
-// InterviewPrepApp.Application/DTOs/PagedResponse.cs
-namespace InterviewPrepApp.Application.DTOs
-{
-    public class PagedResponse<T>
-    {
-        public IEnumerable<T> Data { get; set; } = Enumerable.Empty<T>();
-        public int TotalRecords { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
-        public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
-    }
-}
-4. ProgressSummaryDto – dashboard stats
-csharp
-// InterviewPrepApp.Application/DTOs/ProgressSummaryDto.cs
-namespace InterviewPrepApp.Application.DTOs
-{
-    public class ProgressSummaryDto
-    {
-        public int TotalQuestions { get; set; }
-        public int TotalSolved { get; set; }
-
-        public int EasyTotal { get; set; }
-        public int EasySolved { get; set; }
-
-        public int MediumTotal { get; set; }
-        public int MediumSolved { get; set; }
-
-        public int HardTotal { get; set; }
-        public int HardSolved { get; set; }
-    }
-}
-5. (Optional) FileValidationResult – if you want structured import feedback
-csharp
-// InterviewPrepApp.Application/DTOs/FileValidationResult.cs
-namespace InterviewPrepApp.Application.DTOs
-{
-    public class FileValidationResult
-    {
-        public bool IsValid { get; set; }
-        public List<string> Errors { get; set; } = new();
-        public string? DetectedFormat { get; set; }
-        public int ExpectedRowCount { get; set; }
-    }
-}
-📝
 ---
-Added the global exception handler in GlobalExceptionHandler.cs and wired it in Program.cs with AddProblemDetails(), AddExceptionHandler<...>(), and UseExceptionHandler(). Unhandled exceptions now return centralized RFC 7807 ProblemDetails responses, with basic status mapping for 400, 401, 404, and 500.
 
-I updated Tracker.md to mark that API item complete. Verification passed with:
-dotnet build src\InterviewPrepApp.Api\InterviewPrepApp.Api.csproj -p:OutDir=bin\VerifyBuild\
-The only remaining build issue is still the existing nullable warning in ExcelExtractionService.cs (line 43).
+## 13. Out of Scope (Future Phases)
 
-The next real step is the Angular baseline, but the current frontend workspace is not set up enough to build yet: frontend/package.json, frontend/src/main.ts, and frontend/src/app/app.config.ts are still stubs. I can take the next pass on that and scaffold the core Angular app properly.
+| Feature | Phase | Notes |
+|---------|-------|-------|
+| AI Interview Copilot | Phase 2 | Voice/text evaluation |
+| Resume Analyzer | Phase 2 | PDF upload + ATS scoring |
+| Payments / Monetization | Phase 3 | Stripe integration |
+| Social features | Phase 3 | Leaderboards, comments, forums |
+| Code execution (IDE) | Phase 3 | Browser-based compiler |
+| Real file upload (PDF storage) | Phase 2 | CheatSheet Phase 2 |
+
+---
+
+## 🔥 Next Execution Plan
+
+### MAX Priority — Must Fix Now
+
+| # | Task | Impact |
+|---|------|--------|
+| 1 | Dashboard pagination UI | Core feature incomplete |
+| 2 | Full admin role enforcement (backend + frontend guard) | Security vulnerability |
+| 3 | Eliminate full table reload on progress toggles | Performance |
+| 4 | Move secrets out of committed config | Deployment safety |
+
+### HIGH Priority — Next Features
+
+| # | Task | Impact |
+|---|------|--------|
+| 5 | Quiz System — Mock Mode basic version | Assessment capability |
+| 6 | Quiz System — Real Exam Mode with timer | Full assessment engine |
+| 7 | CheatSheet Hub MVP (metadata-based resources) | Product expansion |
+| 8 | Revision-only filter and dedicated queue | Complete study workflow |
+| 9 | Answer expand/collapse interaction | Study quality |
+| 10 | Admin user management API | Role assignment |
+
+### MEDIUM Priority — Polish & Quality
+
+| # | Task | Impact |
+|---|------|--------|
+| 11 | FluentValidation for DTOs | Input safety |
+| 12 | Backend integration test suite | Change confidence |
+| 13 | Loading/empty/error state polish | Product feel |
+| 14 | Markdown rendering for answers | Rich content display |
+| 15 | Admin import preview + `ProblemDetails` rendering | Operator experience |
+| 16 | Cache category tree (server + client) | Performance |
+
+### LOW Priority — Advanced / Senior-Level
+
+| # | Task | Impact |
+|---|------|--------|
+| 17 | Structured logging + observability | Production readiness |
+| 18 | Full-text search strategy | Scale preparation |
+| 19 | Separate migrations from startup | Deployment discipline |
+| 20 | API versioning / contract discipline | Long-term maintainability |
+
+---
+
+## 14. Alignment Fixes (PRD ↔ TRD ↔ Implementation)
+
+> This section tracks every detected mismatch between planning documents and actual code reality. Each item should be closed by either fixing the code or formally updating the doc to match reality.
+
+| # | Issue | Source | Status | Action Required |
+|---|-------|--------|--------|----------------|
+| 1 | Dashboard pagination: backend pages, no UI controls | PRD §1, TRD §5, README §15 | ⏳ | Wire `PagedResponse` totals to pagination component |
+| 2 | Admin role enforcement missing (`[Authorize]` not `[Authorize(Roles)]`) | TRD §8, Improvements §4.2 | 🔄 | Enable full role guard on all admin controllers + frontend `adminGuard` |
+| 3 | JWT secret stored in committed `appsettings.json` | TRD §8, Improvements §4.6 | ⏳ | Move to .NET User Secrets / environment variable |
+| 4 | Default admin bootstrap runs unconditionally in `Program.cs` | Improvements §4.6 | ⏳ | Wrap in `IsDevelopment()` check |
+| 5 | UI theme: TRD specified Tailwind CSS; implementation uses custom CSS | TRD §1 | ✅ (doc fixed) | TRD updated to reflect custom CSS as the actual approach |
+| 6 | Route: TRD specified `/dashboard`; app uses `/` | TRD §5.1 | ✅ (doc fixed) | TRD updated to reflect actual routes |
+| 7 | Revision workflow: toggle exists but no dedicated queue or filter | PRD §1, Improvements §4.1 | ⏳ | Add revision-only filter param + view |
+| 8 | Answer display: TRD specified collapsible row; current shows inline | README §11 | 🔄 | Implement deliberate expand/collapse interaction |
+| 9 | Role dropdown derives from current page results only | Improvements §4.5 | ⏳ | Load from stable metadata endpoint |
+| 10 | Admin import feedback: no `ProblemDetails` rendering in Angular | Improvements §4.4 | 🔄 | Surface structured error in import UI |
+| 11 | No test suite (backend or frontend) | Improvements §5.1 | ⏳ | Add integration tests for auth, import, progress |
+| 12 | FluentValidation not integrated | TRD §7 | ⏳ | Add validators for all create/update DTOs |
+| 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | ⏳ | Implement per §9 of this tracker |
+| 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | ⏳ | Implement per §10 of this tracker |
+| 15 | Category seeding: name-based; duplicates across branches unsupported | README §16 | ⏳ | Migrate to slug-based keying (already have Slug column) |
+
+---
+
+**Instructions for the Agent:**
+- Update this tracker after completing each task.
+- Follow the priority order defined in § Next Execution Plan.
+- Keep code aligned with Clean Architecture (no MediatR, `Result<T>`, DTO-based APIs).
+- Use Angular standalone components for all new frontend work.

@@ -20,14 +20,28 @@ If you are a code editor agent, start with these files:
 
 ## 2. What The App Does
 
-The app helps a user study interview questions by:
+The platform helps candidates study for Full Stack .NET and Angular interviews by:
 
-- browsing questions by category hierarchy
-- filtering by search text, difficulty, and role
-- marking questions as solved
-- marking questions for revision
-- seeing progress totals on the dashboard
-- importing question banks from Excel through an admin page
+**Candidate features (implemented):**
+- Browsing a curated question bank organized by hierarchical categories
+- Filtering questions by search text, difficulty (Easy/Medium/Hard), and role (Frontend/Backend)
+- Expanding answers inline for each question
+- Marking questions as Solved or flagging for Revision
+- Viewing progress summary cards (total, easy, medium, hard breakdowns)
+- Registering and logging in with JWT-based authentication
+
+**Admin features (implemented):**
+- Importing question banks from Excel (`.xlsx`) files via a drag-and-drop UI
+- Full CRUD for questions: create, edit, soft-delete, restore
+- Hierarchical category management (create, view, delete)
+- Dashboard statistics (totals by difficulty, status, recent activity)
+- Immutable audit log of all content changes
+- Question version history (rollback-ready snapshots)
+
+**Planned (Phase 2 — not yet implemented):**
+- CheatSheet Hub (PDFs, markdown notes, external links per category)
+- Quiz System (Mock Mode + timed Real Mode assessment)
+- Smart Revision Queue (dedicated revision study mode)
 
 ## 3. Current Architecture
 
@@ -53,27 +67,55 @@ The solution follows a practical 4-layer backend split plus a separate Angular f
 
 ## 4. Repository Map
 
-|-- docs/
-|   |-- ADMIN.MD
-|   |-- APPLICATION_FLOW.MD
-|   |-- Command.md
-|   |-- PRD.md
-|   |-- TRD.md
-|   |-- TRACKER.md
-|   |-- Steps.md
-|   |-- Gemini_Backend.md
-|   |-- Gemini_Frontend.md
-|   `-- Improvements.md
+```text
+Interview_PrepApp/
+|-- src/
+|   |-- InterviewPrepApp.Api/
+|   |   |-- Controllers/
+|   |   |   |-- Admin/
+|   |   |   |   |-- AdminQuestionsController.cs
+|   |   |   |   |-- AdminCategoriesController.cs
+|   |   |   |   |-- AdminDashboardController.cs
+|   |   |   |   `-- AdminImportController.cs
+|   |   |   |-- AuthController.cs
+|   |   |   |-- CategoriesController.cs
+|   |   |   |-- QuestionsController.cs
+|   |   |   `-- UserProgressController.cs
+|   |   |-- Infrastructure/
+|   |   `-- Program.cs
+|   |-- InterviewPrepApp.Application/
+|   |   |-- DTOs/
+|   |   `-- Interfaces/
+|   |-- InterviewPrepApp.Domain/
+|   |   |-- Entities/
+|   |   |-- Enums/
+|   |   `-- Shared/
+|   `-- InterviewPrepApp.Infrastructure/
+|       |-- Migrations/
+|       |-- Persistence/
+|       `-- Services/
 |-- frontend/
-|   |-- src/
-|   |   |-- app/
-|   |   |   |-- core/
-|   |   |   |-- features/
-|   |   |   |-- layouts/
-|   |   |   `-- shared/
-|   |   `-- styles.css
+|   |-- src/app/
+|   |   |-- core/         (guards, interceptors, models, services)
+|   |   |-- shared/       (reusable presentation components)
+|   |   |-- features/     (smart page components)
+|   |   `-- layouts/      (app shell, admin shell)
 |   `-- package.json
+|-- docs/
+|   |-- ADMIN.MD          (Admin panel design & architecture)
+|   |-- APPLICATION_FLOW.MD (End-to-end application flow)
+|   |-- CheetSheet.md     (CheatSheet Hub feature spec)
+|   |-- Command.md        (CLI command reference)
+|   |-- Gemini_Backend.md (Backend TRD prompt)
+|   |-- Gemini_Frontend.md (Frontend TRD prompt)
+|   |-- Improvements.md   (Deep gap analysis & improvement plan)
+|   |-- PRD.md            (Product Requirements Document)
+|   |-- QUIZ.md           (Quiz system architecture)
+|   |-- Steps.md          (Development phases)
+|   |-- TRACKER.md        (Project tracker & execution plan)
+|   `-- TRD.md            (Technical Requirements Document)
 `-- README.md
+```
 
 ## 5. Backend Domain Model
 
@@ -642,48 +684,82 @@ Angular dev server:
 
 - default URL: `http://localhost:4200`
 
-## 15. Known Gaps And Code Reality
+## 15. Upcoming Features
+
+The platform is evolving from a Question Practice App into a **Full Interview Preparation Platform**.
+
+### CheatSheet Hub
+
+A centralized resource library linked to the existing category tree. Users will browse PDFs, markdown notes, and external links organized by topic. MVP uses metadata-only resources (no server file storage). See [CheetSheet.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/CheetSheet.md).
+
+### Quiz & Assessment Engine
+
+A quiz system built on top of the existing question bank using read-only referencing. Supports two modes: **Mock Mode** (instant feedback per question) and **Real Mode** (timed assessment with masked answers). See [QUIZ.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/QUIZ.md).
+
+### Smart Revision Mode
+
+A dedicated revision queue that surfaces bookmarked questions as a focused study workflow, moving beyond simple toggle-marking.
+
+---
+
+## 16. Known Gaps And Code Reality
 
 These are important for any future agent working in the repo.
 
-### Product/doc drift
-
-- PRD/TRD mention a dark Tailwind UI; implementation is a custom light CSS theme
-- TRD expected `/dashboard`; implementation uses `/`
-- TRD discussed richer answer expansion; implementation shows answer text inline
-
 ### Security gaps
 
-- admin endpoints are not currently role-protected
-- default admin credentials are hard-coded for development
+- Admin role enforcement is partially implemented on newer controllers but not fully hardened
+- Default admin credentials are hard-coded for development
 - JWT key in `appsettings.json` is a development placeholder
+- No `adminGuard` on the frontend (currently only auth-gated)
 
 ### UX and feature gaps
 
-- no pagination controls on the dashboard despite paged backend support
-- no revision-only filter in current UI
-- no category CRUD UI
-- no answer expand/collapse behavior
-- no drag-and-drop upload zone
-- no toast system or rich `ProblemDetails` error rendering in Angular
+- No pagination controls on the dashboard despite paged backend support
+- No revision-only filter in current UI
+- Answer display is inline — no deliberate expand/collapse interaction
+- Role dropdown derives from current page results only
+- Admin import feedback does not render `ProblemDetails` richly
+
+### Architecture gaps
+
+- No automated test suite (backend or frontend)
+- FluentValidation not yet integrated
+- Startup bootstrap (role/user seeding) is not isolated from `Program.cs`
+- Some frontend/backend DTO drift exists
 
 ### Data/model caveats
 
-- `DashboardPageComponent` derives available role filters from the current question page only
-- category seeding is name-based, so duplicate category names across different branches are not supported cleanly
+- Category seeding is name-based; duplicate names across branches are not supported cleanly
 
-## 16. Recommended Next Work
+For the full gap analysis, see [Improvements.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/Improvements.md).
 
-If continuing development, the highest-value next tasks are:
+---
 
-1. Protect `AdminController` with role-based authorization.
-2. Move secrets and connection strings out of committed config.
-3. Add dashboard pagination and total-count navigation.
-4. Add revision-only filtering and richer question row interactions.
-5. Improve admin import UX with drag-and-drop and `ProblemDetails` rendering.
-6. Decide whether to align the implementation to the PRD/TRD or update those docs to match reality.
+## 17. Recommended Next Work
 
-## 17. Useful File Index
+Prioritized execution plan (see [TRACKER.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/TRACKER.md) § Next Execution Plan):
+
+### MAX Priority
+1. Dashboard pagination UI
+2. Full admin role enforcement (backend + frontend guard)
+3. Eliminate full table reload on progress toggles
+4. Move secrets out of committed config
+
+### HIGH Priority
+5. CheatSheet Hub MVP (metadata-based resources)
+6. Quiz System — Mock Mode basic version
+7. Revision-only filter and dedicated queue
+8. Answer expand/collapse interaction
+9. Admin user management API
+
+### MEDIUM Priority
+10. FluentValidation for DTOs
+11. Backend integration test suite
+12. Markdown rendering for answers
+13. Cache category tree (server + client)
+
+## 18. Useful File Index
 
 - `src/InterviewPrepApp.Api/Program.cs`
 - `src/InterviewPrepApp.Api/Controllers/AuthController.cs`
