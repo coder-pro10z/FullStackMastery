@@ -708,17 +708,11 @@ These are important for any future agent working in the repo.
 
 ### Security gaps
 
-- Admin role enforcement is partially implemented on newer controllers but not fully hardened
 - Default admin credentials are hard-coded for development
 - JWT key in `appsettings.json` is a development placeholder
-- No `adminGuard` on the frontend (currently only auth-gated)
 
 ### UX and feature gaps
 
-- No pagination controls on the dashboard despite paged backend support
-- No revision-only filter in current UI
-- Answer display is inline — no deliberate expand/collapse interaction
-- Role dropdown derives from current page results only
 - Admin import feedback does not render `ProblemDetails` richly
 
 ### Architecture gaps
@@ -741,10 +735,8 @@ For the full gap analysis, see [Improvements.md](file:///c:/Users/Praveen/Deskto
 Prioritized execution plan (see [TRACKER.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/TRACKER.md) § Next Execution Plan):
 
 ### MAX Priority
-1. Dashboard pagination UI
-2. Full admin role enforcement (backend + frontend guard)
-3. Eliminate full table reload on progress toggles
-4. Move secrets out of committed config
+1. Eliminate full table reload on progress toggles
+2. Move secrets out of committed config
 
 ### HIGH Priority
 5. CheatSheet Hub MVP (metadata-based resources)

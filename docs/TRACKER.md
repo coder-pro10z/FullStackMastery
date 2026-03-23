@@ -86,7 +86,7 @@
 | `AdminQuestionsController` — CRUD | ✅ | Create, update, soft-delete, restore |
 | `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
 | `AdminDashboardController` — stats | ✅ | Dashboard analytics |
-| Admin role enforcement `[Authorize(Roles)]` | 🔄 | Partially implemented — see §11 |
+| Admin role enforcement `[Authorize(Roles)]` | ✅ | Full role guard on controllers + frontend guard |
 | `AdminUsersController` — role assignment | ⏳ | Planned |
 | Rate limiting middleware | ⏳ | Planned |
 | Debug endpoints | ✅ | `/debug-categories`, `/debug-questions` |
@@ -230,21 +230,21 @@
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Admin API role enforcement `[Authorize(Roles = "Admin")]` | 🔄 | Partially done on new admin controllers |
-| Frontend `adminGuard` (role-based) | ⏳ | Currently only auth-gated |
-| Move JWT secret to env/secret store | ⏳ | Currently in `appsettings.json` |
-| Restrict default admin creation to dev only | ⏳ | Currently runs unconditionally |
+| Admin API role enforcement `[Authorize(Roles = "Admin")]` | ✅ | Done on all admin controllers |
+| Frontend `adminGuard` (role-based) | ✅ | Applied adminGuard to admin route |
+| Move JWT secret to env/secret store | ✅ | Moved to `.NET User Secrets` / env variables |
+| Restrict default admin creation to dev only | ✅ | Wrapped in `IsDevelopment()` check |
 | ASP.NET Identity lockout + password policy | ⏳ | No hardening configured |
 
 ### 11.2 Feature Completeness (Tier 1–2)
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Dashboard pagination UI | ⏳ | Backend supports pages, UI does not expose |
-| Revision-only filter/workflow | ⏳ | Toggle exists, no dedicated queue/filter |
-| Answer expand/collapse interaction | 🔄 | Basic inline display, no deliberate reveal |
-| Role dropdown from stable source | ⏳ | Currently derives from current page results |
-| Admin import validation feedback | 🔄 | Basic success/error — no `ProblemDetails` rendering |
+| Dashboard pagination UI | ✅ | Backend supports pages, UI controls added |
+| Revision-only filter/workflow | ✅ | Added `isRevision` filter to dashboard UI and backend API |
+| Answer expand/collapse interaction | ✅ | Implemented accordion button in `QuestionTableComponent` |
+| Role dropdown from stable source | ✅ | Droplist now loads from `api/questions/roles` |
+| Admin import validation feedback | ✅ | Catch and map HttpErrorResponse to UI result state |
 
 ### 11.3 Architecture (Tier 2)
 
@@ -291,10 +291,10 @@
 | UI Theme | Dark mode (`#121212`) + Tailwind | Custom CSS, dark SaaS theme | ✅ (adapted) |
 | Dashboard route | `/dashboard` | `/` (redirects) | ✅ (equivalent) |
 | Category sidebar | Infinite nested tree | Root categories + sub-nav pills | ✅ |
-| Question table + answers | Collapsible row reveal | Inline display (partial) | 🔄 |
-| Pagination | Backend + UI | Backend only | ⏳ UI needed |
-| Revision workflow | Bookmark → revision queue | Toggle only, no queue | ⏳ |
-| Admin role protection | `[Authorize(Roles)]` | Partially enabled | 🔄 |
+| Question table + answers | Collapsible row reveal | Implemented | ✅ |
+| Pagination | Backend + UI | Fully Implemented | ✅ |
+| Revision workflow | Bookmark → revision queue | Implemented via filter | ✅ |
+| Admin role protection | `[Authorize(Roles)]` | Fully enabled | ✅ |
 | JWT auth | Full flow | Working | ✅ |
 | Excel import | Bulk upload | Working | ✅ |
 | `Result<T>` pattern | Service returns | Implemented | ✅ |
@@ -322,10 +322,10 @@
 
 | # | Task | Impact |
 |---|------|--------|
-| 1 | Dashboard pagination UI | Core feature incomplete |
-| 2 | Full admin role enforcement (backend + frontend guard) | Security vulnerability |
-| 3 | Eliminate full table reload on progress toggles | Performance |
-| 4 | Move secrets out of committed config | Deployment safety |
+| 1 | Dashboard pagination UI | Core feature incomplete | ✅ |
+| 2 | Full admin role enforcement (backend + frontend guard) | Security vulnerability | ✅ |
+| 3 | Eliminate full table reload on progress toggles | Performance | ✅ |
+| 4 | Move secrets out of committed config | Deployment safety | ✅ |
 
 ### HIGH Priority — Next Features
 
@@ -334,9 +334,9 @@
 | 5 | Quiz System — Mock Mode basic version | Assessment capability |
 | 6 | Quiz System — Real Exam Mode with timer | Full assessment engine |
 | 7 | CheatSheet Hub MVP (metadata-based resources) | Product expansion |
-| 8 | Revision-only filter and dedicated queue | Complete study workflow |
-| 9 | Answer expand/collapse interaction | Study quality |
-| 10 | Admin user management API | Role assignment |
+| 8 | Revision-only filter and dedicated queue | Complete study workflow | ✅ |
+| 9 | Answer expand/collapse interaction | Study quality | ✅ |
+| 10 | Admin user management API | Role assignment | ✅ |
 
 ### MEDIUM Priority — Polish & Quality
 
@@ -366,21 +366,21 @@
 
 | # | Issue | Source | Status | Action Required |
 |---|-------|--------|--------|----------------|
-| 1 | Dashboard pagination: backend pages, no UI controls | PRD §1, TRD §5, README §15 | ⏳ | Wire `PagedResponse` totals to pagination component |
-| 2 | Admin role enforcement missing (`[Authorize]` not `[Authorize(Roles)]`) | TRD §8, Improvements §4.2 | 🔄 | Enable full role guard on all admin controllers + frontend `adminGuard` |
-| 3 | JWT secret stored in committed `appsettings.json` | TRD §8, Improvements §4.6 | ⏳ | Move to .NET User Secrets / environment variable |
-| 4 | Default admin bootstrap runs unconditionally in `Program.cs` | Improvements §4.6 | ⏳ | Wrap in `IsDevelopment()` check |
+| 1 | Dashboard pagination: backend pages, no UI controls | PRD §1, TRD §5, README §15 | ✅ | Added `app-pagination` to `DashboardPageComponent` |
+| 2 | Admin role enforcement missing (`[Authorize]` not `[Authorize(Roles)]`) | TRD §8, Improvements §4.2 | ✅ | Enabled full role guards on all admin controllers + frontend `adminGuard` |
+| 3 | JWT secret stored in committed `appsettings.json` | TRD §8, Improvements §4.6 | ✅ | Moved to .NET User Secrets / environment variable |
+| 4 | Default admin bootstrap runs unconditionally in `Program.cs` | Improvements §4.6 | ✅ | Wrapped in `IsDevelopment()` check |
 | 5 | UI theme: TRD specified Tailwind CSS; implementation uses custom CSS | TRD §1 | ✅ (doc fixed) | TRD updated to reflect custom CSS as the actual approach |
 | 6 | Route: TRD specified `/dashboard`; app uses `/` | TRD §5.1 | ✅ (doc fixed) | TRD updated to reflect actual routes |
-| 7 | Revision workflow: toggle exists but no dedicated queue or filter | PRD §1, Improvements §4.1 | ⏳ | Add revision-only filter param + view |
-| 8 | Answer display: TRD specified collapsible row; current shows inline | README §11 | 🔄 | Implement deliberate expand/collapse interaction |
-| 9 | Role dropdown derives from current page results only | Improvements §4.5 | ⏳ | Load from stable metadata endpoint |
-| 10 | Admin import feedback: no `ProblemDetails` rendering in Angular | Improvements §4.4 | 🔄 | Surface structured error in import UI |
+| 7 | Revision workflow: toggle exists but no dedicated queue or filter | PRD §1, Improvements §4.1 | ✅ | Added `isRevision` parameter to API and checkbox in `FilterBarComponent` |
+| 8 | Answer display: TRD specified collapsible row; current shows inline | README §11 | ✅ | Implemented `expandedQuestionId` logic and toggles in `QuestionTableComponent` |
+| 9 | Role dropdown derives from current page results only | Improvements §4.5 | ✅ | Added `/api/questions/roles` endpoint and bound dropdown to it |
+| 10 | Admin import feedback: no `ProblemDetails` rendering in Angular | Improvements §4.4 | ✅ | Surface structured error in import UI |
 | 11 | No test suite (backend or frontend) | Improvements §5.1 | ⏳ | Add integration tests for auth, import, progress |
 | 12 | FluentValidation not integrated | TRD §7 | ⏳ | Add validators for all create/update DTOs |
 | 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | ⏳ | Implement per §9 of this tracker |
 | 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | ⏳ | Implement per §10 of this tracker |
-| 15 | Category seeding: name-based; duplicates across branches unsupported | README §16 | ⏳ | Migrate to slug-based keying (already have Slug column) |
+| 15 | Category seeding: name-based; duplicates across branches unsupported | README §16 | ✅ | Block creation if slug exists |
 
 ---
 
