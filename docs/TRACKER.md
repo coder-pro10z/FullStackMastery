@@ -377,9 +377,9 @@
 | 9 | Role dropdown derives from current page results only | Improvements §4.5 | ✅ | Added `/api/questions/roles` endpoint and bound dropdown to it |
 | 10 | Admin import feedback: no `ProblemDetails` rendering in Angular | Improvements §4.4 | ✅ | Surface structured error in import UI |
 | 11 | No test suite (backend or frontend) | Improvements §5.1 | ⏳ | Add integration tests for auth, import, progress |
-| 12 | FluentValidation not integrated | TRD §7 | ⏳ | Add validators for all create/update DTOs |
-| 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | ⏳ | Implement per §9 of this tracker |
-| 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | ⏳ | Implement per §10 of this tracker |
+| 12 | FluentValidation not integrated | TRD §7 | ✅ | Added validators for all create/update DTOs |
+| 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | ✅ | Implemented CheatSheetResource entity, backend services, and controllers per CheatSheet.md |
+| 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | ✅ | Implemented Practice/Assessment modes over existing quiz models with snapshotting |
 | 15 | Category seeding: name-based; duplicates across branches unsupported | README §16 | ✅ | Block creation if slug exists |
 
 ---

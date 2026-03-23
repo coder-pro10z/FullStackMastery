@@ -29,6 +29,8 @@ The platform helps candidates study for Full Stack .NET and Angular interviews b
 - Marking questions as Solved or flagging for Revision
 - Viewing progress summary cards (total, easy, medium, hard breakdowns)
 - Registering and logging in with JWT-based authentication
+- CheatSheet Hub (PDFs, markdown notes, external links per category)
+- Quiz System (Practice Mode + Assessment mode snapshotting)
 
 **Admin features (implemented):**
 - Importing question banks from Excel (`.xlsx`) files via a drag-and-drop UI
@@ -37,10 +39,10 @@ The platform helps candidates study for Full Stack .NET and Angular interviews b
 - Dashboard statistics (totals by difficulty, status, recent activity)
 - Immutable audit log of all content changes
 - Question version history (rollback-ready snapshots)
+- CheatSheet Resource management
+- Admin workspace protected by role-based (`[Authorize(Roles = "Admin")]`) API guards
 
-**Planned (Phase 2 — not yet implemented):**
-- CheatSheet Hub (PDFs, markdown notes, external links per category)
-- Quiz System (Mock Mode + timed Real Mode assessment)
+**Planned (Phase 2):**
 - Smart Revision Queue (dedicated revision study mode)
 
 ## 3. Current Architecture
@@ -386,7 +388,7 @@ Protected by `[Authorize]`:
 - `GET /api/admin/debug-categories`
 
 Important reality:
-- `AdminController` is currently **not** role-protected because `[Authorize(Roles = "Admin")]` is commented out.
+- `AdminController` endpoints are now fully protected by `[Authorize(Roles = "Admin")]` role-based guards.
 
 ## 9. Auth And Security
 
@@ -708,8 +710,7 @@ These are important for any future agent working in the repo.
 
 ### Security gaps
 
-- Default admin credentials are hard-coded for development
-- JWT key in `appsettings.json` is a development placeholder
+- None (Secrets moved to User Secrets, Default Admin wrapped in `IsDevelopment()`).
 
 ### UX and feature gaps
 
@@ -718,13 +719,12 @@ These are important for any future agent working in the repo.
 ### Architecture gaps
 
 - No automated test suite (backend or frontend)
-- FluentValidation not yet integrated
-- Startup bootstrap (role/user seeding) is not isolated from `Program.cs`
+- Startup bootstrap (role/user seeding) is now safely wrapped in `IsDevelopment()` check
 - Some frontend/backend DTO drift exists
 
 ### Data/model caveats
 
-- Category seeding is name-based; duplicate names across branches are not supported cleanly
+- Category seeding blocks duplicates through slug-based validation.
 
 For the full gap analysis, see [Improvements.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/Improvements.md).
 

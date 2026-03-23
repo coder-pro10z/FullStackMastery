@@ -17,6 +17,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<QuestionVersion> QuestionVersions => Set<QuestionVersion>();
 
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+    public DbSet<QuizAttemptQuestion> QuizAttemptQuestions => Set<QuizAttemptQuestion>();
+    public DbSet<QuizAttemptResponse> QuizAttemptResponses => Set<QuizAttemptResponse>();
+    public DbSet<CheatSheetResource> CheatSheetResources => Set<CheatSheetResource>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -71,6 +76,51 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.HasIndex(l => l.Timestamp);
             entity.HasIndex(l => new { l.EntityType, l.EntityId });
+        });
+
+        // Quiz configurations
+        builder.Entity<QuizAttempt>(entity =>
+        {
+            entity.HasOne(q => q.User)
+                  .WithMany()
+                  .HasForeignKey(q => q.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(q => q.Mode).HasConversion<int>();
+            entity.Property(q => q.Status).HasConversion<int>();
+        });
+
+        builder.Entity<QuizAttemptQuestion>(entity =>
+        {
+            entity.HasOne(qa => qa.QuizAttempt)
+                  .WithMany(q => q.Questions)
+                  .HasForeignKey(qa => qa.QuizAttemptId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(qa => qa.Question)
+                  .WithMany()
+                  .HasForeignKey(qa => qa.QuestionId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(qa => qa.Response)
+                  .WithOne(r => r.QuizAttemptQuestion)
+                  .HasForeignKey<QuizAttemptResponse>(r => r.QuizAttemptQuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CheatSheet Configurations
+        builder.Entity<CheatSheetResource>(entity =>
+        {
+            entity.HasOne(r => r.Category)
+                  .WithMany()
+                  .HasForeignKey(r => r.CategoryId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(r => r.CategoryId);
+            entity.HasIndex(r => new { r.CategoryId, r.Type });
+            entity.Property(r => r.Type).HasConversion<int>();
+            entity.Property(r => r.Title).IsRequired().HasMaxLength(200);
+            entity.Property(r => r.Url).HasMaxLength(1000);
         });
     }
 }

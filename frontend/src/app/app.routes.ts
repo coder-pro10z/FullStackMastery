@@ -7,6 +7,9 @@ import { RegisterComponent } from './features/auth/register/register.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page/dashboard-page.component';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { AppLayoutComponent } from './layouts/app-layout/app-layout.component';
+import { QuizDashboardComponent } from './features/quiz/quiz-dashboard/quiz-dashboard.component';
+import { QuizPlayerComponent } from './features/quiz/quiz-player/quiz-player.component';
+import { QuizReviewComponent } from './features/quiz/quiz-review/quiz-review.component';
 
 export const appRoutes: Routes = [
   {
@@ -28,6 +31,18 @@ export const appRoutes: Routes = [
         path: '',
         pathMatch: 'full',
         component: DashboardPageComponent
+      },
+      {
+        path: 'quiz/new',
+        component: QuizDashboardComponent
+      },
+      {
+        path: 'quiz/:id',
+        component: QuizPlayerComponent
+      },
+      {
+        path: 'quiz/:id/review',
+        component: QuizReviewComponent
       }
     ]
   },

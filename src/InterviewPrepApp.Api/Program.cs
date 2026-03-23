@@ -126,6 +126,8 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminQuestionService, InterviewPrepApp.Infrastructure.Services.AdminQuestionService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminDashboardService, InterviewPrepApp.Infrastructure.Services.AdminDashboardService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminCategoryService, InterviewPrepApp.Infrastructure.Services.AdminCategoryService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IQuizService, InterviewPrepApp.Infrastructure.Services.QuizService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.ICheatSheetService, InterviewPrepApp.Infrastructure.Services.CheatSheetService>();
 
             // RBAC policies
             builder.Services.AddAuthorization(options =>

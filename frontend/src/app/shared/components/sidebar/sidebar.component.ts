@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CategoryTreeDto } from '../../../core/models/category.models';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [NgFor, NgIf, RouterLink],
+  imports: [NgFor, NgIf, RouterLink, RouterLinkActive],
   template: `
     <nav class="px-2">
       <!-- "All" link -->
@@ -21,6 +21,24 @@ import { CategoryTreeDto } from '../../../core/models/category.models';
         </svg>
         @if (!collapsed) {
           <span class="truncate animate-fade-in">All Questions</span>
+        }
+      </a>
+      
+      <!-- Quiz link -->
+      <a
+        class="group flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 mb-1"
+        [routerLink]="['/quiz/new']"
+        routerLinkActive="bg-accent-blue/10 text-accent-blue border-l-2 border-accent-blue"
+        [routerLinkActiveOptions]="{exact: false}"
+        [class.text-slate-400]="true"
+        [class.border-transparent]="true"
+        [class.hover:text-slate-200]="true"
+        [class.hover:bg-dark-surface-hover]="true">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        @if (!collapsed) {
+          <span class="truncate animate-fade-in">Practice Quiz</span>
         }
       </a>
 
