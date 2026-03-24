@@ -25,24 +25,30 @@ The platform helps candidates study for Full Stack .NET and Angular interviews b
 **Candidate features (implemented):**
 - Browsing a curated question bank organized by hierarchical categories
 - Filtering questions by search text, difficulty (Easy/Medium/Hard), and role (Frontend/Backend)
-- Expanding answers inline for each question
+- Expanding answers with an accordion per question
 - Marking questions as Solved or flagging for Revision
 - Viewing progress summary cards (total, easy, medium, hard breakdowns)
 - Registering and logging in with JWT-based authentication
-- CheatSheet Hub (PDFs, markdown notes, external links per category)
-- Quiz System (Practice Mode + Assessment mode snapshotting)
+- Starting quizzes in Practice or Assessment mode
+- Playing through quiz attempts and reviewing completed quiz results
 
 **Admin features (implemented):**
-- Importing question banks from Excel (`.xlsx`) files via a drag-and-drop UI
+- Importing question banks from Excel (`.xlsx`) files via the current upload form
 - Full CRUD for questions: create, edit, soft-delete, restore
-- Hierarchical category management (create, view, delete)
+- Hierarchical category management APIs (create, view, delete)
 - Dashboard statistics (totals by difficulty, status, recent activity)
 - Immutable audit log of all content changes
 - Question version history (rollback-ready snapshots)
-- CheatSheet Resource management
-- Admin workspace protected by role-based (`[Authorize(Roles = "Admin")]`) API guards
+- CheatSheet resource APIs on the backend (`/api/resources`, `/api/admin/resources`)
 
-**Planned (Phase 2):**
+**Partially implemented / still incomplete:**
+- CheatSheet frontend pages, navigation, and admin UI
+- Quiz timer enforcement and deeper assessment rules
+- Revision-only queue/filter UI
+- Dashboard pagination UI
+- Full admin role enforcement across the legacy admin import path and frontend route
+
+**Planned next:**
 - Smart Revision Queue (dedicated revision study mode)
 
 ## 3. Current Architecture
@@ -203,7 +209,7 @@ Important EF rules in `ApplicationDbContext`:
 ### Database provider
 
 - SQL Server
-- connection string is currently in `src/InterviewPrepApp.Api/appsettings.json`
+- connection string is currently committed in `src/InterviewPrepApp.Api/appsettings.json`
 - default DB name: `InterviewPrepAppDb`
 
 ### Identity tables
@@ -374,6 +380,10 @@ Query params:
 Returns:
 - `PagedResponse<QuestionDto>`
 
+Current reality:
+- there is no `/api/questions/roles` endpoint
+- there is no `isRevision` filter on the current public questions endpoint
+
 ### User Progress
 
 Protected by `[Authorize]`:
@@ -388,7 +398,30 @@ Protected by `[Authorize]`:
 - `GET /api/admin/debug-categories`
 
 Important reality:
-- `AdminController` endpoints are now fully protected by `[Authorize(Roles = "Admin")]` role-based guards.
+- the legacy `AdminController` import/debug endpoints are **not** currently role-protected
+- newer admin controllers under `src/InterviewPrepApp.Api/Controllers/Admin/` do use role attributes
+
+### CheatSheet Resources
+
+- `GET /api/resources?categoryId=`
+- `POST /api/admin/resources`
+- `DELETE /api/admin/resources/{id}`
+
+Current reality:
+- backend endpoints and persistence exist
+- there is no finished CheatSheet frontend route or page yet
+
+### Quizzes
+
+- `POST /api/quizzes`
+- `GET /api/quizzes/{id}`
+- `POST /api/quizzes/{id}/responses/{questionId}`
+- `POST /api/quizzes/{id}/submit`
+
+Current reality:
+- quiz supports `Practice` and `Assessment` modes
+- assessment mode masks answer text until submission
+- timer enforcement is not implemented yet
 
 ## 9. Auth And Security
 
@@ -399,6 +432,10 @@ Important reality:
 - Swagger is configured with Bearer auth support
 - CORS allows `http://localhost:4200`
 - global exception handling uses `.NET 8 IExceptionHandler`
+
+Important reality:
+- JWT settings are still committed in `src/InterviewPrepApp.Api/appsettings.json`
+- legacy `AdminController` endpoints are still missing `[Authorize(Roles = "Admin")]`
 
 ### Startup bootstrap behavior
 
@@ -413,13 +450,19 @@ Current default admin credentials:
 - email: `admin@interviewprep.com`
 - password: `Admin@123`
 
-Treat these as development-only credentials and replace/remove for real deployments.
+Important reality:
+- default admin creation is currently unconditional, not wrapped in `IsDevelopment()`
+- the default password is still hard-coded
 
 ### Frontend
 
 - JWT is stored in `localStorage`
 - auth interceptor attaches `Authorization: Bearer <token>`
 - auth guard redirects unauthenticated users to `/login`
+
+Important reality:
+- `/admin` currently uses `authGuard` only in `app.routes.ts`
+- an `adminGuard` file exists locally but is not the active route guard
 
 ## 10. Frontend Architecture
 
@@ -446,9 +489,19 @@ Defined in `frontend/src/app/app.routes.ts`:
 - `/admin`
   - guarded
   - renders `AdminLayoutComponent` with `AdminDashboardComponent`
+- `/quiz/new`
+  - guarded
+  - renders `QuizDashboardComponent`
+- `/quiz/:id`
+  - guarded
+  - renders `QuizPlayerComponent`
+- `/quiz/:id/review`
+  - guarded
+  - renders `QuizReviewComponent`
 
 Important reality:
 - the implemented routes do **not** match the older TRD path design that expected `/dashboard`
+- the admin route is not role-guarded on the frontend yet
 
 ## 11. Frontend Screen Design
 
@@ -540,6 +593,7 @@ Current filters:
 
 Important behavior:
 - available role options are derived from the currently loaded question page, not from a global role dictionary
+- there is no revision-only filter in the current filter bar
 
 ### Question table
 
@@ -563,7 +617,7 @@ Question display:
 - revision toggle
 
 Important reality:
-- answers are always visible inline when present; there is no expand/collapse interaction yet
+- answers use an expand/collapse accordion interaction
 - dashboard currently requests `pageSize: 10` and does not expose pagination controls in the UI
 
 ### Auth screens
@@ -593,6 +647,18 @@ Important reality:
 - admin upload is a standard file input form, not drag-and-drop
 - there is no category management UI yet
 - there is no structured display of backend `ProblemDetails` payloads yet
+- there is no CheatSheet admin UI yet
+
+### Quiz screens
+
+Current quiz UI includes:
+
+- setup screen for mode/category/role/difficulty/count
+- player screen with sequential navigation and self-marked correctness
+- review screen showing score breakdown and submitted answers
+
+Important reality:
+- there is no timer countdown or timeout enforcement in the current UI
 
 ## 12. Frontend Data Flow
 
@@ -692,11 +758,11 @@ The platform is evolving from a Question Practice App into a **Full Interview Pr
 
 ### CheatSheet Hub
 
-A centralized resource library linked to the existing category tree. Users will browse PDFs, markdown notes, and external links organized by topic. MVP uses metadata-only resources (no server file storage). See [CheetSheet.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/CheetSheet.md).
+The backend data model and APIs exist, but the end-user/frontend experience is still pending. The intended experience is a centralized resource library linked to the category tree. See [CheetSheet.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/CheetSheet.md).
 
 ### Quiz & Assessment Engine
 
-A quiz system built on top of the existing question bank using read-only referencing. Supports two modes: **Mock Mode** (instant feedback per question) and **Real Mode** (timed assessment with masked answers). See [QUIZ.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/QUIZ.md).
+The core quiz flow is already in the repository and uses read-only/snapshotted quiz attempts over the question bank. The next work is hardening it with timer enforcement and UX polish. See [QUIZ.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/QUIZ.md).
 
 ### Smart Revision Mode
 
@@ -710,16 +776,23 @@ These are important for any future agent working in the repo.
 
 ### Security gaps
 
-- None (Secrets moved to User Secrets, Default Admin wrapped in `IsDevelopment()`).
+- JWT key and connection settings are still committed in `appsettings.json`
+- legacy `AdminController` endpoints are not role-protected
+- frontend `/admin` route is not role-guarded
+- default admin creation is still unconditional
 
 ### UX and feature gaps
 
+- No dashboard pagination UI
+- No revision-only filter UI
+- CheatSheet frontend is not implemented
 - Admin import feedback does not render `ProblemDetails` richly
 
 ### Architecture gaps
 
+- No `IQuestionImportService` abstraction in the current application layer
 - No automated test suite (backend or frontend)
-- Startup bootstrap (role/user seeding) is now safely wrapped in `IsDevelopment()` check
+- FluentValidation is not wired into the current API pipeline
 - Some frontend/backend DTO drift exists
 
 ### Data/model caveats
@@ -735,21 +808,21 @@ For the full gap analysis, see [Improvements.md](file:///c:/Users/Praveen/Deskto
 Prioritized execution plan (see [TRACKER.md](file:///c:/Users/Praveen/Desktop/Interview_PrepApp/docs/TRACKER.md) § Next Execution Plan):
 
 ### MAX Priority
-1. Eliminate full table reload on progress toggles
-2. Move secrets out of committed config
+1. Add dashboard pagination UI
+2. Finish full admin role enforcement on backend + frontend
+3. Move secrets and default admin bootstrap out of committed/default config
 
 ### HIGH Priority
-5. CheatSheet Hub MVP (metadata-based resources)
-6. Quiz System — Mock Mode basic version
-7. Revision-only filter and dedicated queue
-8. Answer expand/collapse interaction
-9. Admin user management API
+1. Finish CheatSheet frontend
+2. Add revision-only filter and queue
+3. Harden quiz timer/assessment rules
+4. Admin user management API
 
 ### MEDIUM Priority
-10. FluentValidation for DTOs
-11. Backend integration test suite
-12. Markdown rendering for answers
-13. Cache category tree (server + client)
+1. FluentValidation for DTOs
+2. Backend integration test suite
+3. Markdown rendering for answers
+4. Cache category tree (server + client)
 
 ## 18. Useful File Index
 

@@ -158,6 +158,9 @@ namespace InterviewPrepApp.Api
             // Create admin role and default admin user on startup
             using (var scope = app.Services.CreateScope())
             {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await dbContext.Database.MigrateAsync();
+
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
                 // Create Admin role if it doesn't exist
