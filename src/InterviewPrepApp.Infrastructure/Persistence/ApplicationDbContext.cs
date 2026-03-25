@@ -21,6 +21,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<QuizAttemptQuestion> QuizAttemptQuestions => Set<QuizAttemptQuestion>();
     public DbSet<QuizAttemptResponse> QuizAttemptResponses => Set<QuizAttemptResponse>();
     public DbSet<CheatSheetResource> CheatSheetResources => Set<CheatSheetResource>();
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+    public DbSet<StudyGuideSection> StudyGuideSections => Set<StudyGuideSection>();
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -121,6 +124,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(r => r.Type).HasConversion<int>();
             entity.Property(r => r.Title).IsRequired().HasMaxLength(200);
             entity.Property(r => r.Url).HasMaxLength(1000);
+        });
+
+        // QuizQuestion configurations
+        builder.Entity<QuizQuestion>(entity =>
+        {
+            entity.HasIndex(q => q.ExternalId).IsUnique();
+            entity.Property(q => q.ExternalId).HasMaxLength(200).IsRequired();
+            entity.Property(q => q.QuestionText).IsRequired();
+            entity.Property(q => q.CorrectAnswer).HasMaxLength(1).IsRequired();
+            entity.Property(q => q.Difficulty).HasConversion<int>();
+            entity.HasOne(q => q.Category)
+                  .WithMany()
+                  .HasForeignKey(q => q.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // StudyGuideSection configurations
+        builder.Entity<StudyGuideSection>(entity =>
+        {
+            entity.HasIndex(s => s.ExternalId).IsUnique();
+            entity.Property(s => s.ExternalId).HasMaxLength(200).IsRequired();
+            entity.Property(s => s.Title).HasMaxLength(400).IsRequired();
+            entity.HasOne(s => s.Category)
+                  .WithMany()
+                  .HasForeignKey(s => s.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ImportJob configurations
+        builder.Entity<ImportJob>(entity =>
+        {
+            entity.Property(j => j.Id).ValueGeneratedOnAdd();
+            entity.Property(j => j.Type).HasConversion<int>();
+            entity.Property(j => j.Status).HasConversion<int>();
+            entity.Property(j => j.FileName).HasMaxLength(500);
+            entity.HasIndex(j => new { j.UploadedByUserId, j.UploadedAtUtc });
         });
     }
 }

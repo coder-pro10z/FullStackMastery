@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Channels;
 
 namespace InterviewPrepApp.Api
 {
@@ -128,6 +129,15 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminCategoryService, InterviewPrepApp.Infrastructure.Services.AdminCategoryService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IQuizService, InterviewPrepApp.Infrastructure.Services.QuizService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.ICheatSheetService, InterviewPrepApp.Infrastructure.Services.CheatSheetService>();
+
+            // Enterprise Import system — async job pipeline
+            var importChannel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions { SingleReader = true });
+            builder.Services.AddSingleton(importChannel.Writer);
+            builder.Services.AddSingleton(importChannel.Reader);
+            builder.Services.AddScoped<IQuizImportService, QuizImportService>();
+            builder.Services.AddScoped<IStudyGuideImportService, StudyGuideImportService>();
+            builder.Services.AddScoped<IImportJobService, ImportJobService>();
+            builder.Services.AddHostedService<ImportBackgroundWorker>();
 
             // RBAC policies
             builder.Services.AddAuthorization(options =>
