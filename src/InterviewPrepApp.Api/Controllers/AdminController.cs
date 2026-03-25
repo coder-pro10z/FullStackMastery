@@ -22,13 +22,13 @@ namespace InterviewPrepApp.Api.Controllers
         }
 
         [HttpPost("import-questions")]
-        public async Task<IActionResult> ImportQuestions([FromForm] ImportQuestionsRequest request)
+        public async Task<IActionResult> ImportQuestions(IFormFile file, [FromForm] int defaultCategoryId)
         {
-            if (request.File == null || request.File.Length == 0)
+            if (file == null || file.Length == 0)
                 return BadRequest(new ProblemDetails { Title = "No file uploaded." });
 
-            using var stream = request.File.OpenReadStream();
-            var result = await _excelExtractor.ExtractQuestionsAsync(stream, request.DefaultCategoryId);
+            using var stream = file.OpenReadStream();
+            var result = await _excelExtractor.ExtractQuestionsAsync(stream, defaultCategoryId);
 
             if (!result.IsSuccess)
             {

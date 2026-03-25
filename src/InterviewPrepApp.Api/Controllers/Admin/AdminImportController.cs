@@ -20,7 +20,7 @@ public class AdminImportController : ControllerBase
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ImportFile(
-        [FromForm] IFormFile file,
+        IFormFile file,
         [FromForm] int? defaultCategoryId,
         [FromForm] bool dryRun = false,
         CancellationToken ct = default)
@@ -113,3 +113,5 @@ public class AdminImportController : ControllerBase
 
 public class JsonImportBody { public IReadOnlyList<ImportQuestionRowDto> Questions { get; set; } = []; }
 public class JsonImportDocument { public IReadOnlyList<ImportQuestionRowDto>? Questions { get; set; } }
+
+
