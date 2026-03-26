@@ -6,12 +6,12 @@ public interface IAdminQuestionService
 {
     Task<PagedAdminResult<QuestionAdminDto>> GetQuestionsAsync(AdminQuestionFilter filter, CancellationToken ct = default);
     Task<QuestionAdminDto?> GetByIdAsync(int id, bool includeDeleted = false, CancellationToken ct = default);
-    Task<QuestionAdminDto> CreateAsync(CreateQuestionDto dto, string userId, CancellationToken ct = default);
-    Task<QuestionAdminDto?> UpdateAsync(int id, UpdateQuestionDto dto, string userId, CancellationToken ct = default);
-    Task<bool> SoftDeleteAsync(int id, string userId, CancellationToken ct = default);
-    Task<bool> RestoreAsync(int id, string userId, CancellationToken ct = default);
+    Task<QuestionAdminDto> CreateAsync(CreateQuestionDto dto, string userId, string userEmail, CancellationToken ct = default);
+    Task<QuestionAdminDto?> UpdateAsync(int id, UpdateQuestionDto dto, string userId, string userEmail, CancellationToken ct = default);
+    Task<bool> SoftDeleteAsync(int id, string userId, string userEmail, CancellationToken ct = default);
+    Task<bool> RestoreAsync(int id, string userId, string userEmail, CancellationToken ct = default);
     Task<IReadOnlyList<QuestionVersionDto>> GetVersionsAsync(int id, CancellationToken ct = default);
-    Task<BulkImportResultDto> ImportAsync(IEnumerable<ImportQuestionRowDto> rows, int? defaultCategoryId, bool dryRun, CancellationToken ct = default);
+    Task<BulkImportResultDto> ImportAsync(IEnumerable<ImportQuestionRowDto> rows, int? defaultCategoryId, bool dryRun, string userId, string userEmail, CancellationToken ct = default);
 }
 
 public class AdminQuestionFilter

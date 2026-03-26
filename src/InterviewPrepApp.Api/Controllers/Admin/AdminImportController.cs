@@ -2,6 +2,7 @@ using InterviewPrepApp.Application.DTOs.Admin;
 using InterviewPrepApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace InterviewPrepApp.Api.Controllers.Admin;
@@ -14,13 +15,15 @@ public class AdminImportController : ControllerBase
     private readonly IAdminQuestionService _service;
 
     public AdminImportController(IAdminQuestionService service)
-        => _service = service;
+    {
+        _service = service;
+    }
 
     /// <summary>Upload .json or .csv file to import questions.</summary>
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ImportFile(
-        IFormFile file,
+        [FromForm] IFormFile file,
         [FromForm] int? defaultCategoryId,
         [FromForm] bool dryRun = false,
         CancellationToken ct = default)
@@ -48,7 +51,9 @@ public class AdminImportController : ControllerBase
             return BadRequest(new { error = $"File parse error: {ex.Message}" });
         }
 
-        var result = await _service.ImportAsync(rows, defaultCategoryId, dryRun, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var result = await _service.ImportAsync(rows, defaultCategoryId, dryRun, userId, userEmail, ct);
         return Ok(result);
     }
 
@@ -60,7 +65,9 @@ public class AdminImportController : ControllerBase
         [FromQuery] bool dryRun = false,
         CancellationToken ct = default)
     {
-        var result = await _service.ImportAsync(body.Questions, defaultCategoryId, dryRun, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var result = await _service.ImportAsync(body.Questions, defaultCategoryId, dryRun, userId, userEmail, ct);
         return Ok(result);
     }
 

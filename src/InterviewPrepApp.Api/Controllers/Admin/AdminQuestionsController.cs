@@ -3,7 +3,6 @@ using InterviewPrepApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace InterviewPrepApp.Api.Controllers.Admin;
 
@@ -13,12 +12,10 @@ namespace InterviewPrepApp.Api.Controllers.Admin;
 public class AdminQuestionsController : ControllerBase
 {
     private readonly IAdminQuestionService _service;
-    private readonly IAuditLogService _audit;
 
-    public AdminQuestionsController(IAdminQuestionService service, IAuditLogService audit)
+    public AdminQuestionsController(IAdminQuestionService service)
     {
         _service = service;
-        _audit = audit;
     }
 
     [HttpGet]
@@ -37,7 +34,8 @@ public class AdminQuestionsController : ControllerBase
     {
         if (!ModelState.IsValid) return ValidationProblem();
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
-        var result = await _service.CreateAsync(dto, userId, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var result = await _service.CreateAsync(dto, userId, userEmail, ct);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -46,7 +44,8 @@ public class AdminQuestionsController : ControllerBase
     {
         if (!ModelState.IsValid) return ValidationProblem();
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
-        var result = await _service.UpdateAsync(id, dto, userId, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var result = await _service.UpdateAsync(id, dto, userId, userEmail, ct);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -54,7 +53,8 @@ public class AdminQuestionsController : ControllerBase
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
-        var success = await _service.SoftDeleteAsync(id, userId, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var success = await _service.SoftDeleteAsync(id, userId, userEmail, ct);
         return success ? NoContent() : NotFound();
     }
 
@@ -62,7 +62,8 @@ public class AdminQuestionsController : ControllerBase
     public async Task<IActionResult> Restore(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
-        var success = await _service.RestoreAsync(id, userId, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+        var success = await _service.RestoreAsync(id, userId, userEmail, ct);
         return success ? Ok() : NotFound();
     }
 

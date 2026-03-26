@@ -32,13 +32,13 @@ namespace InterviewPrepApp.Infrastructure.Services
 
             // Read headers (case-insensitive)
             var headers = firstRow.Cells().Select(c => c.GetString().Trim()).ToList();
-            var questionColIndex = headers.FindIndex(h => h.Equals("Question", StringComparison.OrdinalIgnoreCase));
-            var roleColIndex = headers.FindIndex(h => h.Equals("Role", StringComparison.OrdinalIgnoreCase));
-            var difficultyColIndex = headers.FindIndex(h => h.Equals("Difficulty", StringComparison.OrdinalIgnoreCase));
-            var categoryColIndex = headers.FindIndex(h => h.Equals("Category", StringComparison.OrdinalIgnoreCase));
+            var questionColIndex = FindHeaderIndex(headers, "Question", "Question Title");
+            var roleColIndex = FindHeaderIndex(headers, "Role");
+            var difficultyColIndex = FindHeaderIndex(headers, "Difficulty");
+            var categoryColIndex = FindHeaderIndex(headers, "Category");
 
             if (questionColIndex == -1 || roleColIndex == -1 || difficultyColIndex == -1)
-                return Result<List<Question>>.Failure("Missing required columns: Question, Role, or Difficulty.");
+                return Result<List<Question>>.Failure("Missing required columns: Question (or Question Title), Role, or Difficulty.");
 
             var rows = worksheet.RangeUsed().RowsUsed().Skip(1).ToList(); // skip header
             var questions = new List<Question>();
@@ -208,6 +208,17 @@ namespace InterviewPrepApp.Infrastructure.Services
                     return true;
             }
             return false;
+        }
+
+        private static int FindHeaderIndex(IReadOnlyList<string> headers, params string[] acceptedNames)
+        {
+            for (int i = 0; i < headers.Count; i++)
+            {
+                if (acceptedNames.Any(name => headers[i].Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    return i;
+            }
+
+            return -1;
         }
 
         private static string GetFullPath(Category category, Dictionary<int, Category> categoryById)

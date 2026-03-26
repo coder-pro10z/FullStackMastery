@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace InterviewPrepApp.Api.Controllers
 {
@@ -14,11 +16,13 @@ namespace InterviewPrepApp.Api.Controllers
     {
         private readonly IExcelExtractor _excelExtractor;
         private readonly ApplicationDbContext _context;
+        private readonly IAuditLogService _audit;
 
-        public AdminController(IExcelExtractor excelExtractor, ApplicationDbContext context)
+        public AdminController(IExcelExtractor excelExtractor, ApplicationDbContext context, IAuditLogService audit)
         {
             _excelExtractor = excelExtractor;
             _context = context;
+            _audit = audit;
         }
 
         [HttpPost("import-questions")]
@@ -42,6 +46,19 @@ namespace InterviewPrepApp.Api.Controllers
             // Add questions to database
             await _context.Questions.AddRangeAsync(result.Data!);
             await _context.SaveChangesAsync();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
+            await _audit.LogAsync(
+                userId,
+                userEmail,
+                "IMPORTED",
+                "Questions",
+                newValues: JsonSerializer.Serialize(new
+                {
+                    Imported = result.Data!.Count,
+                    Source = file.FileName
+                }));
 
             return Ok(new { imported = result.Data!.Count });
         }

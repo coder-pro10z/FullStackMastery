@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface AdminQuestionFilter {
@@ -134,6 +135,23 @@ export class AdminApiService {
         const form = new FormData();
         form.append('file', file);
         form.append('defaultCategoryId', String(defaultCategoryId));
+        const ext = file.name.split('.').pop()?.toLowerCase();
+
+        if (ext === 'xlsx') {
+            return this.http.post<{ imported: number }>(`${this.base}/import-questions`, form).pipe(
+                map(result => ({
+                    imported: result.imported ?? 0,
+                    skipped: 0,
+                    failed: 0,
+                    isDryRun: false,
+                    errors: [],
+                    warnings: dryRun
+                        ? ['Dry run is not supported for Excel imports. The file was imported directly.']
+                        : []
+                }))
+            );
+        }
+
         form.append('dryRun', String(dryRun));
         return this.http.post<BulkImportResultDto>(`${this.base}/import`, form);
     }

@@ -73,7 +73,7 @@ public class AdminQuestionService : IAdminQuestionService
         return q is null ? null : ToDto(q);
     }
 
-    public async Task<QuestionAdminDto> CreateAsync(CreateQuestionDto dto, string userId, CancellationToken ct = default)
+    public async Task<QuestionAdminDto> CreateAsync(CreateQuestionDto dto, string userId, string userEmail, CancellationToken ct = default)
     {
         var question = new Question
         {
@@ -91,13 +91,13 @@ public class AdminQuestionService : IAdminQuestionService
         _db.Questions.Add(question);
         await _db.SaveChangesAsync(ct);
 
-        await _audit.LogAsync(userId, userId, "CREATED", "Question",
+        await _audit.LogAsync(userId, userEmail, "CREATED", "Question",
             question.Id.ToString(), newValues: JsonSerializer.Serialize(new { question.Title, question.QuestionText, question.Difficulty }), ct: ct);
 
         return await GetByIdAsync(question.Id, ct: ct) ?? ToDto(question);
     }
 
-    public async Task<QuestionAdminDto?> UpdateAsync(int id, UpdateQuestionDto dto, string userId, CancellationToken ct = default)
+    public async Task<QuestionAdminDto?> UpdateAsync(int id, UpdateQuestionDto dto, string userId, string userEmail, CancellationToken ct = default)
     {
         var question = await _db.Questions.FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted, ct);
         if (question is null) return null;
@@ -133,7 +133,7 @@ public class AdminQuestionService : IAdminQuestionService
 
         await _db.SaveChangesAsync(ct);
 
-        await _audit.LogAsync(userId, userId, "EDITED", "Question", id.ToString(),
+        await _audit.LogAsync(userId, userEmail, "EDITED", "Question", id.ToString(),
             oldValues: oldSnapshot,
             newValues: JsonSerializer.Serialize(new { dto.Title, dto.QuestionText }),
             ct: ct);
@@ -141,7 +141,7 @@ public class AdminQuestionService : IAdminQuestionService
         return await GetByIdAsync(id, ct: ct);
     }
 
-    public async Task<bool> SoftDeleteAsync(int id, string userId, CancellationToken ct = default)
+    public async Task<bool> SoftDeleteAsync(int id, string userId, string userEmail, CancellationToken ct = default)
     {
         var question = await _db.Questions.FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted, ct);
         if (question is null) return false;
@@ -151,11 +151,11 @@ public class AdminQuestionService : IAdminQuestionService
         question.Status = QuestionStatus.Draft;
         await _db.SaveChangesAsync(ct);
 
-        await _audit.LogAsync(userId, userId, "DELETED", "Question", id.ToString(), ct: ct);
+        await _audit.LogAsync(userId, userEmail, "DELETED", "Question", id.ToString(), ct: ct);
         return true;
     }
 
-    public async Task<bool> RestoreAsync(int id, string userId, CancellationToken ct = default)
+    public async Task<bool> RestoreAsync(int id, string userId, string userEmail, CancellationToken ct = default)
     {
         var question = await _db.Questions.IgnoreQueryFilters()
             .FirstOrDefaultAsync(q => q.Id == id && q.IsDeleted, ct);
@@ -166,7 +166,7 @@ public class AdminQuestionService : IAdminQuestionService
         question.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
 
-        await _audit.LogAsync(userId, userId, "RESTORED", "Question", id.ToString(), ct: ct);
+        await _audit.LogAsync(userId, userEmail, "RESTORED", "Question", id.ToString(), ct: ct);
         return true;
     }
 
@@ -191,7 +191,7 @@ public class AdminQuestionService : IAdminQuestionService
 
     public async Task<BulkImportResultDto> ImportAsync(
         IEnumerable<ImportQuestionRowDto> rows,
-        int? defaultCategoryId, bool dryRun, CancellationToken ct = default)
+        int? defaultCategoryId, bool dryRun, string userId, string userEmail, CancellationToken ct = default)
     {
         var errors = new List<string>();
         var warnings = new List<string>();
@@ -255,7 +255,21 @@ public class AdminQuestionService : IAdminQuestionService
         }
 
         if (!dryRun && imported > 0)
+        {
             await _db.SaveChangesAsync(ct);
+            await _audit.LogAsync(
+                userId,
+                userEmail,
+                "IMPORTED",
+                "Questions",
+                newValues: JsonSerializer.Serialize(new
+                {
+                    Imported = imported,
+                    Failed = failed,
+                    Skipped = skipped
+                }),
+                ct: ct);
+        }
 
         return new BulkImportResultDto
         {

@@ -137,12 +137,12 @@ type AdminTab = 'dashboard' | 'questions' | 'categories' | 'import';
                 @for (log of stats()!.recentActivity; track log.id) {
                   <div class="px-5 py-3 flex items-center gap-3">
                     <span class="text-xs px-2 py-0.5 rounded-full font-medium"
-                      [class]="log.action === 'CREATED' ? 'bg-green-500/10 text-green-400' :
+                      [class]="log.action === 'CREATED' || log.action === 'IMPORTED' ? 'bg-green-500/10 text-green-400' :
                                 log.action === 'DELETED' ? 'bg-red-500/10 text-red-400' :
                                 'bg-blue-500/10 text-blue-400'">
                       {{ log.action }}
                     </span>
-                    <span class="text-xs text-slate-400 flex-1">{{ log.entityType }} #{{ log.entityId }}</span>
+                    <span class="text-xs text-slate-400 flex-1">{{ log.entityType }}{{ log.entityId ? ' #' + log.entityId : '' }}</span>
                     <span class="text-xs text-slate-600">{{ log.userEmail }}</span>
                     <span class="text-xs text-slate-600">{{ log.timestamp | date:'short' }}</span>
                   </div>
