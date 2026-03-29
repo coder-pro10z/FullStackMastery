@@ -85,7 +85,7 @@ Controller → Service → Parser → Validator → Database
 
 ---
 
-# 🧩 PHASE 1 — EXCEL PARSER
+# 🧩 PHASE 1 — EXCEL PARSER (✅ COMPLETED)
 
 ## 🎯 Goal
 
@@ -144,7 +144,7 @@ public class RawQuestionRecord
 
 ---
 
-# 🧩 PHASE 2 — VALIDATION ENGINE
+# 🧩 PHASE 2 — VALIDATION ENGINE (✅ COMPLETED)
 
 ## 🎯 Goal
 
@@ -236,7 +236,7 @@ public class ValidationError
 
 ---
 
-# 🧩 PHASE 3 — IMPORT SERVICE
+# 🧩 PHASE 3 — IMPORT SERVICE (✅ COMPLETED)
 
 ## 🎯 Goal
 
@@ -276,7 +276,7 @@ Upload → Parse → Validate → Save → Return Result
 
 ---
 
-# 🧩 PHASE 4 — TESTING (XUNIT)
+# 🧩 PHASE 4 — TESTING (XUNIT) (⏳ PENDING)
 
 ## 🎯 Goal
 

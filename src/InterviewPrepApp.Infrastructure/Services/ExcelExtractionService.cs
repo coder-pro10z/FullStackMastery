@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using InterviewPrepApp.Application.DTOs.Admin;
 using InterviewPrepApp.Application.Interfaces;
 using InterviewPrepApp.Domain.Entities;
 using InterviewPrepApp.Domain.Enums;
@@ -243,6 +244,165 @@ namespace InterviewPrepApp.Infrastructure.Services
                                       .Select(s => s.Trim())
                                       .Where(s => !string.IsNullOrEmpty(s));
             return string.Join("/", segments);
+        }
+
+        // ── New DTO-based extraction for unified import pipeline ──────────────────
+
+        public ExcelExtractionResult ExtractImportRows(Stream excelStream)
+        {
+            using var workbook = new XLWorkbook(excelStream);
+            var worksheet = workbook.Worksheet(1);
+            var firstRow = worksheet.FirstRowUsed();
+            if (firstRow == null)
+                return ExcelExtractionResult.Fatal("Excel file is empty.");
+
+            var headers = firstRow.Cells().Select(c => c.GetString().Trim()).ToList();
+
+            // Flexible column mapping (case-insensitive)
+            var questionCol = FindHeaderIndex(headers, "QuestionText", "Question", "Question Title");
+            var roleCol = FindHeaderIndex(headers, "Role");
+            var difficultyCol = FindHeaderIndex(headers, "Difficulty");
+            var categoryCol = FindHeaderIndex(headers, "Category", "CategorySlug");
+            var answerCol = FindHeaderIndex(headers, "AnswerText", "AnswerMarkdown", "Answer");
+            var titleCol = FindHeaderIndex(headers, "Title");
+
+            if (questionCol == -1)
+                return ExcelExtractionResult.Fatal("Missing required column: QuestionText (or Question, Question Title).");
+            if (roleCol == -1)
+                return ExcelExtractionResult.Fatal("Missing required column: Role.");
+
+            var dataRows = worksheet.RangeUsed()?.RowsUsed().Skip(1).ToList();
+            if (dataRows == null || dataRows.Count == 0)
+                return ExcelExtractionResult.Fatal("Excel file has a header but no data rows.");
+
+            var result = new List<ImportQuestionRowDto>();
+            var diagnostics = new List<ExcelRowDiagnostic>();
+            int i = 0;
+
+            while (i < dataRows.Count)
+            {
+                var currentRow = dataRows[i];
+                var excelRowNum = currentRow.RowNumber(); // Actual Excel row number for user-friendly messages
+                var questionText = currentRow.Cell(questionCol + 1).GetString().Trim();
+                var role = currentRow.Cell(roleCol + 1).GetString().Trim();
+
+                // Skip entirely empty rows
+                if (string.IsNullOrWhiteSpace(questionText) && string.IsNullOrWhiteSpace(role))
+                {
+                    i++;
+                    continue;
+                }
+
+                // ── Per-row validation ──
+                if (string.IsNullOrWhiteSpace(questionText))
+                {
+                    diagnostics.Add(new ExcelRowDiagnostic
+                    {
+                        RowNumber = excelRowNum,
+                        Severity = "Error",
+                        Message = "QuestionText is empty — row skipped."
+                    });
+                    i++;
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(role))
+                {
+                    diagnostics.Add(new ExcelRowDiagnostic
+                    {
+                        RowNumber = excelRowNum,
+                        Severity = "Warning",
+                        Message = "Role is empty — defaulted to 'General'."
+                    });
+                    role = "General";
+                }
+
+                var difficulty = difficultyCol != -1
+                    ? currentRow.Cell(difficultyCol + 1).GetString().Trim()
+                    : string.Empty;
+
+                if (string.IsNullOrWhiteSpace(difficulty))
+                {
+                    diagnostics.Add(new ExcelRowDiagnostic
+                    {
+                        RowNumber = excelRowNum,
+                        Severity = "Warning",
+                        Message = "Difficulty is empty — defaulted to 'Medium'."
+                    });
+                    difficulty = "Medium";
+                }
+
+                var category = categoryCol != -1
+                    ? currentRow.Cell(categoryCol + 1).GetString().Trim()
+                    : string.Empty;
+
+                var title = titleCol != -1
+                    ? currentRow.Cell(titleCol + 1).GetString().Trim()
+                    : null;
+
+                // Direct AnswerText column takes priority
+                string? answerText = null;
+                if (answerCol != -1)
+                {
+                    answerText = currentRow.Cell(answerCol + 1).GetString().Trim();
+                    if (string.IsNullOrEmpty(answerText)) answerText = null;
+                }
+
+                // Legacy answer-row detection
+                if (answerText == null && i + 1 < dataRows.Count)
+                {
+                    var nextRow = dataRows[i + 1];
+                    var nextQuestion = nextRow.Cell(questionCol + 1).GetString().Trim();
+                    var nextRole = nextRow.Cell(roleCol + 1).GetString().Trim();
+                    var nextDifficulty = difficultyCol != -1
+                        ? nextRow.Cell(difficultyCol + 1).GetString().Trim()
+                        : string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(nextQuestion) &&
+                        string.IsNullOrWhiteSpace(nextRole) &&
+                        string.IsNullOrWhiteSpace(nextDifficulty))
+                    {
+                        answerText = nextQuestion;
+                        diagnostics.Add(new ExcelRowDiagnostic
+                        {
+                            RowNumber = excelRowNum,
+                            Severity = "Warning",
+                            Message = $"Answer auto-detected from row {nextRow.RowNumber()} (legacy two-row format)."
+                        });
+                        i += 2; // consume both rows
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
+                else
+                {
+                    i++;
+                }
+
+                if (answerText == null)
+                {
+                    diagnostics.Add(new ExcelRowDiagnostic
+                    {
+                        RowNumber = excelRowNum,
+                        Severity = "Warning",
+                        Message = "No answer found — question imported without an answer."
+                    });
+                }
+
+                result.Add(new ImportQuestionRowDto
+                {
+                    Title = title,
+                    QuestionText = questionText,
+                    AnswerMarkdown = answerText,
+                    Difficulty = difficulty,
+                    Role = role,
+                    CategorySlug = category
+                });
+            }
+
+            return ExcelExtractionResult.Ok(result, diagnostics);
         }
     }
 }

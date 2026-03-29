@@ -92,8 +92,8 @@ public class BulkImportResultDto
     public int Skipped { get; set; }
     public int Failed { get; set; }
     public bool IsDryRun { get; set; }
-    public IReadOnlyList<string> Errors { get; set; } = [];
-    public IReadOnlyList<string> Warnings { get; set; } = [];
+    public List<string> Errors { get; set; } = [];
+    public List<string> Warnings { get; set; } = [];
 }
 
 public class ImportQuestionRowDto
@@ -101,7 +101,7 @@ public class ImportQuestionRowDto
     public string? Title { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string? AnswerMarkdown { get; set; }
-    public string Difficulty { get; set; } = "Easy";
+    public string Difficulty { get; set; } = "Medium";
     public string Role { get; set; } = string.Empty;
     public string CategorySlug { get; set; } = string.Empty;
 }

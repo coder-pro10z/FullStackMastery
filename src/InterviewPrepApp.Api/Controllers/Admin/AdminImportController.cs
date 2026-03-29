@@ -13,13 +13,15 @@ namespace InterviewPrepApp.Api.Controllers.Admin;
 public class AdminImportController : ControllerBase
 {
     private readonly IAdminQuestionService _service;
+    private readonly IExcelExtractor _excelExtractor;
 
-    public AdminImportController(IAdminQuestionService service)
+    public AdminImportController(IAdminQuestionService service, IExcelExtractor excelExtractor)
     {
         _service = service;
+        _excelExtractor = excelExtractor;
     }
 
-    /// <summary>Upload .json or .csv file to import questions.</summary>
+    /// <summary>Upload .json, .csv, or .xlsx file to import questions.</summary>
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ImportFile(
@@ -33,18 +35,35 @@ public class AdminImportController : ControllerBase
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         IEnumerable<ImportQuestionRowDto> rows;
+        List<ExcelRowDiagnostic>? excelDiagnostics = null;
 
         try
         {
-            using var reader = new StreamReader(file.OpenReadStream());
-            var content = await reader.ReadToEndAsync(ct);
-
-            rows = ext switch
+            if (ext == ".xlsx")
             {
-                ".json" => ParseJson(content),
-                ".csv" => ParseCsv(content),
-                _ => throw new NotSupportedException($"Unsupported format: {ext}")
-            };
+                using var stream = file.OpenReadStream();
+                var extractResult = _excelExtractor.ExtractImportRows(stream);
+                if (extractResult.IsFatalError)
+                    return BadRequest(new { error = $"Excel parse error: {extractResult.FatalErrorMessage}" });
+                rows = extractResult.Rows;
+                excelDiagnostics = extractResult.Diagnostics;
+            }
+            else if (ext == ".xls")
+            {
+                return BadRequest(new { error = "Legacy .xls format is not supported. Please save as .xlsx and re-upload." });
+            }
+            else
+            {
+                using var reader = new StreamReader(file.OpenReadStream());
+                var content = await reader.ReadToEndAsync(ct);
+
+                rows = ext switch
+                {
+                    ".json" => ParseJson(content),
+                    ".csv" => ParseCsv(content),
+                    _ => throw new NotSupportedException($"Unsupported format: {ext}. Accepted: .xlsx, .csv, .json")
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -54,6 +73,20 @@ public class AdminImportController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
         var userEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name ?? userId;
         var result = await _service.ImportAsync(rows, defaultCategoryId, dryRun, userId, userEmail, ct);
+
+        // Merge Excel extraction diagnostics into the response
+        if (excelDiagnostics is { Count: > 0 })
+        {
+            foreach (var d in excelDiagnostics)
+            {
+                var msg = $"Excel Row {d.RowNumber}: {d.Message}";
+                if (d.Severity == "Error")
+                    result.Errors.Add(msg);
+                else
+                    result.Warnings.Add(msg);
+            }
+        }
+
         return Ok(result);
     }
 
@@ -81,36 +114,109 @@ public class AdminImportController : ControllerBase
 
     private static IEnumerable<ImportQuestionRowDto> ParseCsv(string csv)
     {
-        var lines = csv.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (lines.Length <= 1) return [];
+        var lines = SplitCsvLines(csv);
+        if (lines.Count <= 1) return [];
 
-        // Skip header row
+        // Parse header row — column-name-based mapping (case-insensitive)
+        var headerParts = SplitCsvLine(lines[0]);
+        var headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (int h = 0; h < headerParts.Length; h++)
+        {
+            var name = headerParts[h].Trim();
+            if (!string.IsNullOrEmpty(name) && !headerMap.ContainsKey(name))
+                headerMap[name] = h;
+        }
+
+        string GetCol(string[] parts, params string[] names)
+        {
+            foreach (var name in names)
+                if (headerMap.TryGetValue(name, out var idx) && idx < parts.Length)
+                    return parts[idx];
+            return string.Empty;
+        }
+
         return lines.Skip(1).Select(line =>
         {
             var parts = SplitCsvLine(line);
             return new ImportQuestionRowDto
             {
-                Title = parts.ElementAtOrDefault(0),
-                QuestionText = parts.ElementAtOrDefault(1) ?? string.Empty,
-                Difficulty = parts.ElementAtOrDefault(2) ?? "Easy",
-                Role = parts.ElementAtOrDefault(3) ?? "General",
-                CategorySlug = parts.ElementAtOrDefault(4) ?? string.Empty,
-                AnswerMarkdown = parts.ElementAtOrDefault(5)
+                Title = NullIfEmpty(GetCol(parts, "Title")),
+                QuestionText = GetCol(parts, "QuestionText", "Question", "Question Title"),
+                Difficulty = NullCoalesce(GetCol(parts, "Difficulty"), "Medium"),
+                Role = NullCoalesce(GetCol(parts, "Role"), "General"),
+                CategorySlug = GetCol(parts, "CategorySlug", "Category"),
+                AnswerMarkdown = NullIfEmpty(GetCol(parts, "AnswerMarkdown", "AnswerText", "Answer"))
             };
         }).ToList();
     }
 
+    private static string NullCoalesce(string value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static string? NullIfEmpty(string value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>
+    /// Split CSV content into logical lines, handling newlines inside quoted fields.
+    /// </summary>
+    private static List<string> SplitCsvLines(string csv)
+    {
+        var lines = new List<string>();
+        var current = new System.Text.StringBuilder();
+        bool inQuotes = false;
+
+        foreach (char c in csv)
+        {
+            if (c == '"') { inQuotes = !inQuotes; current.Append(c); continue; }
+            if ((c == '\n' || c == '\r') && !inQuotes)
+            {
+                if (current.Length > 0)
+                {
+                    lines.Add(current.ToString().Trim());
+                    current.Clear();
+                }
+                continue;
+            }
+            current.Append(c);
+        }
+        if (current.Length > 0)
+            lines.Add(current.ToString().Trim());
+        return lines;
+    }
+
+    /// <summary>
+    /// RFC-4180 compliant CSV line splitter: handles quoted fields and escaped double-quotes ("").
+    /// </summary>
     private static string[] SplitCsvLine(string line)
     {
-        // Basic CSV split respecting quoted fields
         var result = new List<string>();
         bool inQuotes = false;
         var current = new System.Text.StringBuilder();
 
-        foreach (char c in line)
+        for (int i = 0; i < line.Length; i++)
         {
-            if (c == '"') { inQuotes = !inQuotes; continue; }
-            if (c == ',' && !inQuotes) { result.Add(current.ToString().Trim()); current.Clear(); continue; }
+            char c = line[i];
+
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    // Escaped double-quote ("") → literal "
+                    current.Append('"');
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+                continue;
+            }
+            if (c == ',' && !inQuotes)
+            {
+                result.Add(current.ToString().Trim());
+                current.Clear();
+                continue;
+            }
             current.Append(c);
         }
         result.Add(current.ToString().Trim());
@@ -120,5 +226,3 @@ public class AdminImportController : ControllerBase
 
 public class JsonImportBody { public IReadOnlyList<ImportQuestionRowDto> Questions { get; set; } = []; }
 public class JsonImportDocument { public IReadOnlyList<ImportQuestionRowDto>? Questions { get; set; } }
-
-

@@ -124,6 +124,7 @@ namespace InterviewPrepApp.Api
 
             // Admin services
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAuditLogService, InterviewPrepApp.Infrastructure.Services.AuditLogService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Validators.IQuestionImportValidator, InterviewPrepApp.Infrastructure.Services.QuestionImportValidator>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminQuestionService, InterviewPrepApp.Infrastructure.Services.AdminQuestionService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminDashboardService, InterviewPrepApp.Infrastructure.Services.AdminDashboardService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminCategoryService, InterviewPrepApp.Infrastructure.Services.AdminCategoryService>();

@@ -38,7 +38,7 @@
 | Soft-delete query filters | ✅ | `Question.IsDeleted` global filter |
 | Database seeding (categories) | ✅ | Dictionary-based hierarchical seeder |
 | Migrations (`InitialCreate` + `AddAdminTables`) | ✅ | Applied |
-| `ExcelExtractionService` | ✅ | Merged cells, Category column, Role fallback |
+| `ExcelExtractionService` | ✅ | Merged cells, Category column, Role fallback, DTO-based `ExtractImportRows` with per-row `ExcelRowDiagnostic` |
 | `CategoryService` | ✅ | Tree + flat queries |
 | `QuestionService` | ✅ | Paginated, filtered, subtree-aware |
 | `UserProgressService` | ✅ | Summary aggregation + toggles |
@@ -64,7 +64,7 @@
 | `IQuestionService` | ✅ | Filtered/paginated queries |
 | `IUserProgressService` | ✅ | Progress summary + toggles |
 | `IAdminDashboardService` | ✅ | Admin stats contract |
-| `IQuestionImportService` | ⏳ | Not present in current application layer |
+| `IQuestionImportValidator` | ✅ | Dedicated validator class with dedup, difficulty, category resolution. Registered in DI. |
 | `IAuditLogService` | ✅ | Audit trail contract |
 | FluentValidation setup | ⏳ | Planned for input validation |
 
@@ -82,7 +82,8 @@
 | `CategoriesController` — `/tree`, `/flat` | ✅ | Public endpoints |
 | `QuestionsController` — filtered + paged | ✅ | `[FromQuery]` params |
 | `UserProgressController` — summary + toggles | ✅ | `[Authorize]` protected |
-| `AdminController` — import questions | ✅ | Excel upload endpoint |
+| `AdminController` — import questions (legacy) | ✅ | Excel upload endpoint (direct entity insert) |
+| `AdminImportController` — unified import | ✅ | `.xlsx`, `.csv`, `.json` all flow through `ImportAsync` pipeline |
 | `AdminQuestionsController` — CRUD | ✅ | Create, update, soft-delete, restore |
 | `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
 | `AdminDashboardController` — stats | ✅ | Dashboard analytics |
@@ -250,13 +251,13 @@
 | Revision-only filter/workflow | ⏳ | Toggle exists, no dedicated filter wired |
 | Answer expand/collapse interaction | ✅ | Implemented accordion button in `QuestionTableComponent` |
 | Role dropdown from stable source | ⏳ | Roles still derived from the current loaded page |
-| Admin import validation feedback | ⏳ | Basic message text only, no rich ProblemDetails rendering |
+| Admin import validation feedback | ✅ | `.xlsx` + `.csv` (column-name-based, RFC-4180 quotes) + `.json` — all through unified pipeline |
 
 ### 11.3 Architecture (Tier 2)
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Move admin import behind application service | ⏳ | Legacy import flow still uses `IExcelExtractor` directly in controller |
+| Move admin import behind application service | 🔄 | `AdminImportController` now uses `IExcelExtractor.ExtractImportRows` → `ImportAsync`; legacy `AdminController` still uses direct entity path |
 | Centralize validation (FluentValidation) | ⏳ | Not yet added |
 | Extract startup bootstrap to hosted service | ⏳ | Role/user seeding in `Program.cs` |
 | Formalize API contract boundaries | ⏳ | Some frontend/backend DTO drift exists |

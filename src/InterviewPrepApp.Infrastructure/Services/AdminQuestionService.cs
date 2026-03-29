@@ -1,5 +1,6 @@
 using InterviewPrepApp.Application.DTOs.Admin;
 using InterviewPrepApp.Application.Interfaces;
+using InterviewPrepApp.Application.Validators;
 using InterviewPrepApp.Domain.Entities;
 using InterviewPrepApp.Domain.Enums;
 using InterviewPrepApp.Infrastructure.Persistence;
@@ -12,11 +13,13 @@ public class AdminQuestionService : IAdminQuestionService
 {
     private readonly ApplicationDbContext _db;
     private readonly IAuditLogService _audit;
+    private readonly IQuestionImportValidator _importValidator;
 
-    public AdminQuestionService(ApplicationDbContext db, IAuditLogService audit)
+    public AdminQuestionService(ApplicationDbContext db, IAuditLogService audit, IQuestionImportValidator importValidator)
     {
         _db = db;
         _audit = audit;
+        _importValidator = importValidator;
     }
 
     public async Task<PagedAdminResult<QuestionAdminDto>> GetQuestionsAsync(
@@ -193,69 +196,38 @@ public class AdminQuestionService : IAdminQuestionService
         IEnumerable<ImportQuestionRowDto> rows,
         int? defaultCategoryId, bool dryRun, string userId, string userEmail, CancellationToken ct = default)
     {
-        var errors = new List<string>();
-        var warnings = new List<string>();
-        int imported = 0, skipped = 0, failed = 0;
+        // ── Build dedup fingerprint set from existing DB questions ──
+        var existingFingerprints = (await _db.Questions
+            .AsNoTracking()
+            .Select(q => new { q.QuestionText, q.Role })
+            .ToListAsync(ct))
+            .Select(q => QuestionImportValidator.ComputeFingerprint(q.QuestionText, q.Role))
+            .ToHashSet(StringComparer.Ordinal);
 
-        var categoryMap = await _db.Categories
-            .ToDictionaryAsync(c => c.Slug.ToLower(), c => c.Id, ct);
-
+        // ── Validate all rows ──
         var rowList = rows.ToList();
-        for (int i = 0; i < rowList.Count; i++)
+        var validation = await _importValidator.ValidateAsync(rowList, defaultCategoryId, existingFingerprints, ct);
+
+        // ── Insert valid records ──
+        int imported = validation.ValidRecords.Count;
+
+        if (!dryRun && imported > 0)
         {
-            var row = rowList[i];
-            var rowNum = i + 1;
-
-            if (string.IsNullOrWhiteSpace(row.QuestionText))
-            {
-                errors.Add($"Row {rowNum}: QuestionText is required — skipped.");
-                failed++;
-                continue;
-            }
-
-            if (!Enum.TryParse<Difficulty>(row.Difficulty, true, out var difficulty))
-            {
-                warnings.Add($"Row {rowNum}: Unknown difficulty '{row.Difficulty}' — defaulted to Easy.");
-                difficulty = Difficulty.Easy;
-            }
-
-            int categoryId;
-            if (!string.IsNullOrWhiteSpace(row.CategorySlug) &&
-                categoryMap.TryGetValue(row.CategorySlug.ToLower(), out var catId))
-            {
-                categoryId = catId;
-            }
-            else if (defaultCategoryId.HasValue)
-            {
-                warnings.Add($"Row {rowNum}: Category '{row.CategorySlug}' not found — using default.");
-                categoryId = defaultCategoryId.Value;
-            }
-            else
-            {
-                errors.Add($"Row {rowNum}: Category '{row.CategorySlug}' not found and no default set — skipped.");
-                failed++;
-                continue;
-            }
-
-            if (!dryRun)
+            foreach (var rec in validation.ValidRecords)
             {
                 _db.Questions.Add(new Question
                 {
-                    Title = row.Title,
-                    QuestionText = row.QuestionText,
-                    AnswerText = row.AnswerMarkdown,
-                    Difficulty = difficulty,
-                    Role = string.IsNullOrWhiteSpace(row.Role) ? "General" : row.Role,
-                    CategoryId = categoryId,
+                    Title = rec.Title,
+                    QuestionText = rec.QuestionText,
+                    AnswerText = rec.AnswerMarkdown,
+                    Difficulty = rec.Difficulty,
+                    Role = rec.Role,
+                    CategoryId = rec.CategoryId,
                     Status = QuestionStatus.Published,
                     CreatedAt = DateTime.UtcNow
                 });
             }
-            imported++;
-        }
 
-        if (!dryRun && imported > 0)
-        {
             await _db.SaveChangesAsync(ct);
             await _audit.LogAsync(
                 userId,
@@ -265,8 +237,8 @@ public class AdminQuestionService : IAdminQuestionService
                 newValues: JsonSerializer.Serialize(new
                 {
                     Imported = imported,
-                    Failed = failed,
-                    Skipped = skipped
+                    Failed = validation.Failed,
+                    Skipped = validation.Skipped
                 }),
                 ct: ct);
         }
@@ -274,11 +246,11 @@ public class AdminQuestionService : IAdminQuestionService
         return new BulkImportResultDto
         {
             Imported = imported,
-            Skipped = skipped,
-            Failed = failed,
+            Skipped = validation.Skipped,
+            Failed = validation.Failed,
             IsDryRun = dryRun,
-            Errors = errors,
-            Warnings = warnings
+            Errors = validation.Errors,
+            Warnings = validation.Warnings
         };
     }
 
