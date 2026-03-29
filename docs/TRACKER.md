@@ -277,7 +277,7 @@
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Backend integration tests (auth, import, progress) | ⏳ | No test suite exists |
+| Backend integration tests (auth, import, progress) | 🔄 | Import subsystem tests added (`ExcelExtractionService`, `QuestionImportValidator`, `AdminQuestionService`) |
 | Frontend unit/component tests | ⏳ | No test suite exists |
 | Security-focused tests | ⏳ | Admin authorization verification |
 
