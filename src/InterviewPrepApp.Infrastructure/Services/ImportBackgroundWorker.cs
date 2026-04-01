@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Threading.Channels;
 using InterviewPrepApp.Application.DTOs;
+using InterviewPrepApp.Application.Interfaces;
 
 namespace InterviewPrepApp.Infrastructure.Services;
 
@@ -75,7 +76,11 @@ public sealed class ImportBackgroundWorker : BackgroundService
 
         try
         {
-            if (job.Type == ImportJobType.Quiz)
+            if (job.Type == ImportJobType.Question)
+            {
+                await ProcessQuestionJobAsync(db, job, allErrors, ct);
+            }
+            else if (job.Type == ImportJobType.Quiz)
             {
                 await ProcessQuizJobAsync(db, job, allErrors, ct);
             }
@@ -122,6 +127,82 @@ public sealed class ImportBackgroundWorker : BackgroundService
         await db.SaveChangesAsync(ct);
 
         _logger.LogInformation("import.job.completed jobId={JobId} processed={P} failed={F}", job.Id, job.ProcessedRows, job.FailedRows);
+    }
+
+    private async Task ProcessQuestionJobAsync(ApplicationDbContext db, ImportJob job, List<RowImportErrorDto> allErrors, CancellationToken ct)
+    {
+        var extractor = new ExcelExtractionService(db);
+        var validator = new QuestionImportValidator(db);
+
+        ExcelExtractionResult extractResult;
+        await using (var fs = File.OpenRead(job.TempFilePath))
+        {
+            extractResult = extractor.ExtractImportRows(fs);
+        }
+
+        if (extractResult.IsFatalError)
+        {
+            allErrors.Add(new RowImportErrorDto { Message = extractResult.FatalErrorMessage ?? "Fatal extraction error." });
+            return;
+        }
+
+        // Add parser diagnostics as warnings/errors
+        foreach (var diag in extractResult.Diagnostics)
+        {
+            allErrors.Add(new RowImportErrorDto { Row = diag.RowNumber, Message = diag.Message });
+        }
+
+        job.TotalRows = extractResult.Rows.Count;
+        var existingFingerprints = new HashSet<string>(StringComparer.Ordinal);
+        
+        // Load existing fingerprints (we need QuestionText and Role to match computation)
+        var allQuestions = await db.Questions.AsNoTracking().Select(q => new { q.QuestionText, q.Role }).ToListAsync(ct);
+        foreach (var q in allQuestions)
+        {
+            existingFingerprints.Add(QuestionImportValidator.ComputeFingerprint(q.QuestionText, q.Role));
+        }
+
+        foreach (var batch in extractResult.Rows.Chunk(BatchSize))
+        {
+            var validateResult = await validator.ValidateAsync(batch.ToList(), job.DefaultCategoryId, existingFingerprints, ct);
+            
+            foreach (var err in validateResult.Errors) allErrors.Add(new RowImportErrorDto { Message = err });
+            foreach (var wrn in validateResult.Warnings) allErrors.Add(new RowImportErrorDto { Message = wrn });
+
+            job.FailedRows += validateResult.Failed + validateResult.Skipped;
+
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            int batchProcessed = 0, batchFailed = 0;
+
+            foreach (var record in validateResult.ValidRecords)
+            {
+                try
+                {
+                    db.Questions.Add(new Question
+                    {
+                        QuestionText = record.QuestionText,
+                        AnswerText = record.AnswerMarkdown,
+                        Difficulty = record.Difficulty,
+                        Role = record.Role,
+                        CategoryId = record.CategoryId
+                    });
+                    batchProcessed++;
+                }
+                catch (Exception ex)
+                {
+                    batchFailed++;
+                    allErrors.Add(new RowImportErrorDto { Message = $"DB error on valid row: {ex.Message}" });
+                }
+            }
+
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+
+            job.ProcessedRows += batchProcessed;
+            job.FailedRows += batchFailed;
+            job.LastProcessedBatch++;
+            await db.SaveChangesAsync(ct);
+        }
     }
 
     private async Task ProcessQuizJobAsync(ApplicationDbContext db, ImportJob job, List<RowImportErrorDto> allErrors, CancellationToken ct)

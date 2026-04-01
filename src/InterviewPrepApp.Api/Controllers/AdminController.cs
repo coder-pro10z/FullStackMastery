@@ -11,7 +11,7 @@ namespace InterviewPrepApp.Api.Controllers
 {
     [Route("api/admin")]
     [ApiController]
-    // [Authorize(Roles = "Admin")] // Ensure you have an Admin role set up
+    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly IExcelExtractor _excelExtractor;

@@ -277,7 +277,8 @@
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Backend integration tests (auth, import, progress) | 🔄 | Import subsystem tests added (`ExcelExtractionService`, `QuestionImportValidator`, `AdminQuestionService`) |
+| Backend unit tests (Import Modules) | ✅ | Extractor and Validator tests completed for Long-form, Quiz, and StudyGuide |
+| Backend integration test suite | ✅ | `ImportBackgroundWorkerTests` created, pipeline verified |
 | Frontend unit/component tests | ⏳ | No test suite exists |
 | Security-focused tests | ⏳ | Admin authorization verification |
 
@@ -390,6 +391,7 @@
 | 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | 🔄 | Backend API/data model exists; frontend pages and navigation are still pending |
 | 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | 🔄 | Core quiz flow exists; timer enforcement and some UX polish remain |
 | 15 | Category seeding: name-based; duplicates across branches unsupported | README §16 | ✅ | Block creation if slug exists |
+| 16 | QuestionImportValidator bug: intra-file deduplication warnings incorrectly flagged as DB duplicates | Bug Report | ✅ | Fixed duplicate evaluation order and updated tests with precise warning match validation (`result.Warnings.Should().Contain(...)`) |
 
 ---
 

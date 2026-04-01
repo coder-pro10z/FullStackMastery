@@ -52,15 +52,15 @@ public class QuestionImportValidator : IQuestionImportValidator
             // ── Deduplication ──
             var fingerprint = ComputeFingerprint(row.QuestionText, role);
 
-            if (existingFingerprints.Contains(fingerprint))
-            {
-                result.Warnings.Add($"Row {rowNum}: Duplicate — question already exists in database. Skipped.");
-                result.Skipped++;
-                continue;
-            }
             if (!fileFingerprints.Add(fingerprint))
             {
                 result.Warnings.Add($"Row {rowNum}: Duplicate — same question appears earlier in this file. Skipped.");
+                result.Skipped++;
+                continue;
+            }
+            if (existingFingerprints.Contains(fingerprint))
+            {
+                result.Warnings.Add($"Row {rowNum}: Duplicate — question already exists in database. Skipped.");
                 result.Skipped++;
                 continue;
             }

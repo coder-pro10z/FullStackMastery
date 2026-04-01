@@ -10,6 +10,7 @@ import { AppLayoutComponent } from './layouts/app-layout/app-layout.component';
 import { QuizDashboardComponent } from './features/quiz/quiz-dashboard/quiz-dashboard.component';
 import { QuizPlayerComponent } from './features/quiz/quiz-player/quiz-player.component';
 import { QuizReviewComponent } from './features/quiz/quiz-review/quiz-review.component';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const appRoutes: Routes = [
   {
@@ -49,7 +50,7 @@ export const appRoutes: Routes = [
   {
     path: 'admin',
     component: AdminLayoutComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, adminGuard],
     children: [
       {
         path: '',

@@ -122,7 +122,7 @@ namespace InterviewPrepApp.Tests.Services
             // Assert
             result.Skipped.Should().Be(1);
             result.ValidRecords.Should().HaveCount(1); // Only the first one succeeds
-            result.Warnings.Should().Contain(w => w.Contains("Duplicate — question already exists"));
+            result.Warnings.Should().Contain(w => w.Contains("Duplicate — same question appears earlier in this file. Skipped."));
         }
 
         [Fact]
