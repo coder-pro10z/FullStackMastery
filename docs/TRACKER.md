@@ -136,7 +136,7 @@
 | `LoginComponent` | ✅ | Dark SaaS-style auth with glow effects |
 | `RegisterComponent` | ✅ | Matching dark auth page |
 | `AdminDashboardComponent` | ✅ | Drag-drop upload, stats, question CRUD |
-| Pagination UI controls | ⏳ | Backend supports it, but UI not yet wired |
+| Pagination UI controls | 🔄 | Dashboard now uses `PagedResponse` metadata with previous/next controls and page-size switching; remaining closeout is browser validation on desktop and mobile |
 | Revision-only filter mode | ⏳ | Toggle exists, workflow not operationalized |
 | Answer expand/collapse UX | ✅ | Accordion toggle implemented in question cards |
 | Quiz Dashboard Component | ✅ | Quiz setup flow under `/quiz/new` |
@@ -240,14 +240,14 @@
 | Admin API role enforcement `[Authorize(Roles = "Admin")]` | 🔄 | Newer admin controllers use roles, legacy `AdminController` does not |
 | Frontend `adminGuard` (role-based) | ⏳ | Guard file exists locally but route still uses `authGuard` only |
 | Move JWT secret to env/secret store | ⏳ | JWT key still committed in `appsettings.json` |
-| Restrict default admin creation to dev only | ⏳ | Default admin bootstrap still runs unconditionally |
+| Restrict default admin creation to dev only | 🔄 | `Program.cs` now gates seeded admin creation to Development; validate startup behavior in Development and non-Development environments before closing |
 | ASP.NET Identity lockout + password policy | ⏳ | No hardening configured |
 
 ### 11.2 Feature Completeness (Tier 1–2)
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Dashboard pagination UI | ⏳ | Backend supports pages, UI still fixed at first page |
+| Dashboard pagination UI | 🔄 | Dashboard now surfaces page counts, range summary, previous/next controls, and page-size switching; remaining closeout is manual UI validation |
 | Revision-only filter/workflow | ⏳ | Toggle exists, no dedicated filter wired |
 | Answer expand/collapse interaction | ✅ | Implemented accordion button in `QuestionTableComponent` |
 | Role dropdown from stable source | ⏳ | Roles still derived from the current loaded page |
@@ -376,10 +376,10 @@
 
 | # | Issue | Source | Status | Action Required |
 |---|-------|--------|--------|----------------|
-| 1 | Dashboard pagination: backend pages, no UI controls | PRD §1, TRD §5, README §15 | ⏳ | Add UI controls and wire `PagedResponse` metadata |
+| 1 | Dashboard pagination: backend pages, no UI controls | PRD §1, TRD §5, README §15 | 🔄 | Dashboard now wires `PagedResponse` metadata and exposes pagination controls; remaining closeout is README/TRD sync plus manual validation |
 | 2 | Admin role enforcement missing (`[Authorize]` not `[Authorize(Roles)]`) | TRD §8, Improvements §4.2 | 🔄 | New admin controllers protected; legacy `AdminController` and `/admin` route still need guardrails |
 | 3 | JWT secret stored in committed `appsettings.json` | TRD §8, Improvements §4.6 | ⏳ | Move JWT settings to user secrets / environment variables |
-| 4 | Default admin bootstrap runs unconditionally in `Program.cs` | Improvements §4.6 | ⏳ | Wrap default admin creation in `IsDevelopment()` |
+| 4 | Default admin bootstrap runs unconditionally in `Program.cs` | Improvements §4.6 | 🔄 | `Program.cs` now wraps default admin creation in `IsDevelopment()`; remaining closeout is runtime validation plus README/TRD sync |
 | 5 | UI theme: TRD specified Tailwind CSS; implementation uses custom CSS | TRD §1 | ✅ (doc fixed) | TRD updated to reflect custom CSS as the actual approach |
 | 6 | Route: TRD specified `/dashboard`; app uses `/` | TRD §5.1 | ✅ (doc fixed) | TRD updated to reflect actual routes |
 | 7 | Revision workflow: toggle exists but no dedicated queue or filter | PRD §1, Improvements §4.1 | ⏳ | Add API/query support and dashboard filter UI |

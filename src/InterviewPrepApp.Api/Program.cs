@@ -181,25 +181,28 @@ namespace InterviewPrepApp.Api
                     Console.WriteLine("Admin role created successfully.");
                 }
 
-                // Optional: Create a default admin user (you can remove this in production)
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var adminEmail = "admin@interviewprep.com";
-                var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-                if (adminUser == null)
+                if (app.Environment.IsDevelopment())
                 {
-                    adminUser = new ApplicationUser
-                    {
-                        UserName = adminEmail,
-                        Email = adminEmail,
-                        EmailConfirmed = true
-                    };
+                    // Keep the seeded admin account available for local development only.
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                    var adminEmail = "admin@interviewprep.com";
+                    var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-                    var result = await userManager.CreateAsync(adminUser, "Admin@123");
-                    if (result.Succeeded)
+                    if (adminUser == null)
                     {
-                        await userManager.AddToRoleAsync(adminUser, "Admin");
-                        Console.WriteLine("Default admin user created. Email: admin@interviewprep.com, Password: Admin@123");
+                        adminUser = new ApplicationUser
+                        {
+                            UserName = adminEmail,
+                            Email = adminEmail,
+                            EmailConfirmed = true
+                        };
+
+                        var result = await userManager.CreateAsync(adminUser, "Admin@123");
+                        if (result.Succeeded)
+                        {
+                            await userManager.AddToRoleAsync(adminUser, "Admin");
+                            Console.WriteLine("Default admin user created. Email: admin@interviewprep.com, Password: Admin@123");
+                        }
                     }
                 }
             }
