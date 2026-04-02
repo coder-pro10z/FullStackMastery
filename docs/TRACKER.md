@@ -277,10 +277,13 @@
 
 | Improvement | Status | Notes |
 |-------------|--------|-------|
-| Backend unit tests (Import Modules) | ✅ | Extractor and Validator tests completed for Long-form, Quiz, and StudyGuide |
-| Backend integration test suite | ✅ | `ImportBackgroundWorkerTests` created, pipeline verified |
-| Frontend unit/component tests | ⏳ | No test suite exists |
-| Security-focused tests | ⏳ | Admin authorization verification |
+| Backend unit tests — Extractor + Validator | ✅ | `ExcelExtractionServiceTests`, `QuestionImportValidatorTests`, `AdminQuestionServiceTests` passing |
+| Backend integration tests — Import Worker | 🔄 | `ImportBackgroundWorkerTests`: 23 passing / **3 failing** — gate blocker for StudyGuide parity |
+| TDD blueprint — all 3 import modules | ✅ | `tests/integration/import-flow.spec.ts` created; 4-step validation path defined |
+| Test fixtures | ✅ | `tests/fixtures/import-fixtures.json` created; covers Question, Quiz, CheatSheet |
+| New backend test suite (`Import/` directory) | ⏳ | `QuestionImportServiceTests`, `QuizAttemptServiceTests`, `CheatSheetServiceTests`, controller tests, security boundary tests — defined in blueprint, not yet implemented |
+| Frontend unit/component tests | ⏳ | No `.spec.ts` files exist; manual walkthrough required until scaffold created |
+| Security-focused tests | ⏳ | `ImportSecurityBoundaryTests.cs` blueprint created; `[GAP-VERIFY]` test for GAP-01 will fail red until legacy AdminController is fixed |
 
 ### 11.6 Observability (Tier 3)
 
@@ -315,12 +318,12 @@
 
 | Feature | Phase | Notes |
 |---------|-------|-------|
-| AI Interview Copilot | Phase 2 | Voice/text evaluation |
-| Resume Analyzer | Phase 2 | PDF upload + ATS scoring |
+| AI Interview Copilot | Phase 3 | Voice/text evaluation |
+| Resume Analyzer | Phase 3 | PDF upload + ATS scoring |
 | Payments / Monetization | Phase 3 | Stripe integration |
 | Social features | Phase 3 | Leaderboards, comments, forums |
 | Code execution (IDE) | Phase 3 | Browser-based compiler |
-| Real file upload (PDF storage) | Phase 2 | CheatSheet Phase 2 |
+| Real file upload (PDF storage) | Phase 3 | CheatSheet Phase 2 server-side upload |
 
 ---
 
@@ -386,7 +389,7 @@
 | 8 | Answer display: TRD specified collapsible row; current shows inline | README §11 | ✅ | Implemented `expandedQuestionId` logic and toggles in `QuestionTableComponent` |
 | 9 | Role dropdown derives from current page results only | Improvements §4.5 | ⏳ | Add stable roles endpoint or admin dictionary source |
 | 10 | Admin import feedback: no `ProblemDetails` rendering in Angular | Improvements §4.4 | ⏳ | Improve admin upload UI and structured error rendering |
-| 11 | No test suite (backend or frontend) | Improvements §5.1 | ⏳ | Add integration tests for auth, import, progress |
+| 11 | No test suite (backend or frontend) | Improvements §5.1 | 🔄 | Backend: 23 passing / 3 failing `ImportBackgroundWorkerTests`. New `Import/` test suite blueprinted. Frontend: 0 spec files — manual verification required. See `docs/TDD_STRATEGY.md` |
 | 12 | FluentValidation not integrated | TRD §7 | ⏳ | Add validators and register them in the API pipeline |
 | 13 | CheatSheet Hub: documented (QUIZ.md, CheetSheet.md) but not started | PRD §2.1 | 🔄 | Backend API/data model exists; frontend pages and navigation are still pending |
 | 14 | Quiz System: documented (QUIZ.md) but not started | PRD §2.2 | 🔄 | Core quiz flow exists; timer enforcement and some UX polish remain |
@@ -395,8 +398,47 @@
 
 ---
 
+## 15. TDD Initiative — Import Pipeline Test Scaffolding
+
+> **Created:** April 2026 | **Classification:** Class A (Additive — test infrastructure, no application code)
+> **TDD Strategy Doc:** [`docs/TDD_STRATEGY.md`](TDD_STRATEGY.md)
+
+### Artifacts Created
+
+| Artifact | Path | Status |
+|---|---|---|
+| Test fixtures | `tests/fixtures/import-fixtures.json` | ✅ Created |
+| E2E test blueprint | `tests/integration/import-flow.spec.ts` | ✅ Created |
+| TDD strategy document | `docs/TDD_STRATEGY.md` | ✅ Created |
+| Engineering Playbook | `docs/ENGINEERING_PLAYBOOK.md` | ✅ Created (prior session) |
+
+### Test Cases Blueprinted (by module)
+
+| Module | Step 1 (FE Payload) | Step 2 (BE Unit) | Step 3 (BE API) | Step 4 (FE UI) | Total |
+|---|---|---|---|---|---|
+| Question Import | 4 cases | 8 cases | 4 cases | 4 cases | **20** |
+| Quiz Attempt | 3 cases | 6 cases | 5 cases | 5 cases | **19** |
+| CheatSheet Import | 5 cases | 9 cases | 8 cases | 6 cases | **28** |
+| Security Boundary | — | — | 4 cases | — | **4** |
+| **Total** | | | | | **71 test cases** |
+
+### Next Steps (ordered)
+
+| # | Action | Classification | Gate |
+|---|---|---|---|
+| 1 | Fix 3 failing `ImportBackgroundWorkerTests` | Class B | Must complete before StudyGuide parity |
+| 2 | Resolve GAP-01: legacy AdminController role enforcement | Class B | After fix, `LegacyImport_NonAdminUser_Returns403` turns green |
+| 3 | Create `tests/InterviewPrepApp.Tests/Import/` directory and implement all `[TODO-IMPLEMENT]` C# test classes | Class A | All Step 2 & 3 tests must pass before APPROVE AND IMPLEMENT |
+| 4 | Implement application code to satisfy all failing tests | Class A/B | Reply 'APPROVE AND IMPLEMENT' to begin |
+| 5 | Create Angular test scaffold (`.spec.ts`) for Steps 1 & 4 | Class A | After CheatSheet frontend sprint |
+
+---
+
 **Instructions for the Agent:**
+- **Read `docs/ENGINEERING_PLAYBOOK.md` before starting any task.** It is the authority for process, architecture, and Definition of Done.
 - Update this tracker after completing each task.
+- Identify the Modification Class (A / B / C) before writing any code.
 - Follow the priority order defined in § Next Execution Plan.
 - Keep code aligned with Clean Architecture (no MediatR, `Result<T>`, DTO-based APIs).
 - Use Angular standalone components for all new frontend work.
+- Reference `tests/fixtures/import-fixtures.json` for all test data — no inline magic strings.

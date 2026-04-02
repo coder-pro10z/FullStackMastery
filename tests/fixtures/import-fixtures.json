@@ -1,0 +1,526 @@
+{
+  "_meta": {
+    "description": "Test fixtures for all three import pipeline modules: Question, Quiz, and CheatSheet (StudyGuide).",
+    "schema_version": "2.0",
+    "baseline_date": "2026-04-03",
+    "test_project": "tests/InterviewPrepApp.Tests",
+    "rules": [
+      "All categorySlug values must match seeded Category.Slug in the in-memory DB fixture.",
+      "Difficulty values are case-insensitive; the validator normalises them to domain enum: Easy=1, Medium=2, Hard=3.",
+      "Role is a free-text string; Backend, Frontend, FullStack are canonical values.",
+      "CheatSheetResourceType: 'Pdf'=1, 'Markdown'=2, 'ExternalLink'=3.",
+      "QuizMode: 'Practice'=1, 'Assessment'=2.",
+      "SHA-256 fingerprint = hash(lower(QuestionText) + '|' + lower(Role)) — used for dedup."
+    ]
+  },
+
+  "seed_categories": [
+    { "id": 1, "name": "C#",             "slug": "csharp",          "parentId": null },
+    { "id": 2, "name": "Angular",        "slug": "angular",         "parentId": null },
+    { "id": 3, "name": "System Design",  "slug": "system-design",   "parentId": null },
+    { "id": 4, "name": "Entity Framework","slug": "entity-framework","parentId": 1   },
+    { "id": 5, "name": "RxJS",           "slug": "rxjs",            "parentId": 2   }
+  ],
+
+  "question_import": {
+    "_description": "Fixtures for POST /api/admin/import-questions (.xlsx / .csv / .json)",
+
+    "valid_rows": [
+      {
+        "_case": "VALID_FULL — all fields provided; should pass without warnings",
+        "questionText": "Explain the difference between IEnumerable and IQueryable in Entity Framework Core.",
+        "title": "IEnumerable vs IQueryable",
+        "answerMarkdown": "IEnumerable executes the query in memory after fetching all data, while IQueryable builds an expression tree and translates it to SQL — deferring execution. Use IQueryable for server-side filtering and IEnumerable for in-memory operations on already-fetched data.",
+        "role": "Backend",
+        "difficulty": "Hard",
+        "categorySlug": "entity-framework",
+        "expectedResult": {
+          "isValid": true,
+          "resolvedCategoryId": 4,
+          "resolvedDifficulty": 3,
+          "hasFingerprintConflict": false
+        }
+      },
+      {
+        "_case": "VALID_DEFAULTS — difficulty and category omitted; must apply defaults",
+        "questionText": "What is the purpose of the async and await keywords in C#?",
+        "title": null,
+        "answerMarkdown": "They enable asynchronous programming without blocking the calling thread. async marks a method as asynchronous; await suspends execution until the awaited task completes, freeing the thread for other work.",
+        "role": "Backend",
+        "difficulty": "",
+        "categorySlug": "",
+        "defaultCategoryId": 1,
+        "expectedResult": {
+          "isValid": true,
+          "resolvedCategoryId": 1,
+          "resolvedDifficulty": 2,
+          "warningContains": ["Difficulty is empty", "Category slug is empty — using default"]
+        }
+      },
+      {
+        "_case": "VALID_FRONTEND — frontend role, angular category",
+        "questionText": "What is the difference between an Observable and a Promise in Angular?",
+        "title": "Observable vs Promise",
+        "answerMarkdown": "Promises handle a single future value; Observables are streams that can emit multiple values over time. Observables are lazy (require subscription), cancellable, and support operators via RxJS. Promises are eager and cannot be cancelled.",
+        "role": "Frontend",
+        "difficulty": "Medium",
+        "categorySlug": "angular",
+        "expectedResult": {
+          "isValid": true,
+          "resolvedCategoryId": 2,
+          "resolvedDifficulty": 2,
+          "hasFingerprintConflict": false
+        }
+      },
+      {
+        "_case": "VALID_FULLSTACK — system design question, longer answer",
+        "questionText": "Design a URL shortening service. What are the key components?",
+        "title": "URL Shortener System Design",
+        "answerMarkdown": "Key components: 1) A hashing/encoding strategy (Base62) to generate short codes. 2) A write-optimised data store (e.g., Cassandra or Redis) to store mappings. 3) A read-optimised cache layer (Redis) for high-frequency redirects. 4) A load balancer and stateless API layer. 5) Analytics pipeline if click tracking is required. CAP theorem trade-off: favour AP — eventual consistency is acceptable for redirect stats.",
+        "role": "FullStack",
+        "difficulty": "Hard",
+        "categorySlug": "system-design",
+        "expectedResult": {
+          "isValid": true,
+          "resolvedCategoryId": 3,
+          "resolvedDifficulty": 3,
+          "hasFingerprintConflict": false
+        }
+      }
+    ],
+
+    "invalid_rows": [
+      {
+        "_case": "FAIL_MISSING_QUESTION_TEXT — must produce error, row rejected",
+        "questionText": "",
+        "title": "Empty question",
+        "answerMarkdown": "Some answer",
+        "role": "Backend",
+        "difficulty": "Easy",
+        "categorySlug": "csharp",
+        "expectedResult": {
+          "isValid": false,
+          "errorContains": "QuestionText is required"
+        }
+      },
+      {
+        "_case": "FAIL_INVALID_DIFFICULTY — unrecognised string must fail",
+        "questionText": "What is dependency injection?",
+        "title": null,
+        "answerMarkdown": "A design pattern where dependencies are provided to a class rather than created internally.",
+        "role": "Backend",
+        "difficulty": "EXTREME",
+        "categorySlug": "csharp",
+        "expectedResult": {
+          "isValid": false,
+          "errorContains": "Invalid difficulty value"
+        }
+      },
+      {
+        "_case": "FAIL_CATEGORY_NOT_FOUND_NO_DEFAULT — slug unknown, no default provided",
+        "questionText": "Explain SOLID principles.",
+        "title": null,
+        "answerMarkdown": "Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.",
+        "role": "Backend",
+        "difficulty": "Medium",
+        "categorySlug": "nonexistent-slug",
+        "defaultCategoryId": null,
+        "expectedResult": {
+          "isValid": false,
+          "errorContains": "not found and no default set"
+        }
+      }
+    ],
+
+    "deduplication_cases": [
+      {
+        "_case": "DEDUP_INTRA_FILE — same question appears twice in one batch; second must be skipped",
+        "batchRows": [
+          {
+            "questionText": "What is garbage collection in .NET?",
+            "role": "Backend",
+            "difficulty": "Easy",
+            "categorySlug": "csharp"
+          },
+          {
+            "questionText": "What is garbage collection in .NET?",
+            "role": "Backend",
+            "difficulty": "Easy",
+            "categorySlug": "csharp"
+          }
+        ],
+        "existingDbFingerprints": [],
+        "expectedResult": {
+          "validCount": 1,
+          "skippedCount": 1,
+          "warningContains": "Duplicate — same question appears earlier in this file. Skipped."
+        }
+      },
+      {
+        "_case": "DEDUP_VS_DATABASE — fingerprint already in DB, row must be skipped",
+        "batchRows": [
+          {
+            "questionText": "What is dependency injection?",
+            "role": "Backend",
+            "difficulty": "Medium",
+            "categorySlug": "csharp"
+          }
+        ],
+        "existingDbFingerprints": [
+          "__COMPUTED_AT_RUNTIME__: SHA256(lower('what is dependency injection?') + '|' + lower('backend'))"
+        ],
+        "expectedResult": {
+          "validCount": 0,
+          "skippedCount": 1,
+          "warningContains": "Duplicate — question already exists in database"
+        }
+      }
+    ]
+  },
+
+  "quiz_import": {
+    "_description": "Fixtures for creating QuizAttempts via POST /api/quizzes. The quiz system is NOT an import-file pipeline — it creates attempts from the existing question bank. These fixtures define the API request/response contract for the quiz lifecycle.",
+
+    "create_attempt_requests": [
+      {
+        "_case": "PRACTICE_MODE_FULL_FILTER — all filters specified",
+        "request": {
+          "categoryId": 1,
+          "role": "Backend",
+          "difficulty": "Hard",
+          "questionCount": 5,
+          "mode": "Practice"
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasAttemptId": true,
+          "mode": "Practice",
+          "questionCount": 5,
+          "answersVisible": true,
+          "expiresAtUtc": null
+        }
+      },
+      {
+        "_case": "ASSESSMENT_MODE_TIMED — answers must be masked until submission",
+        "request": {
+          "categoryId": 2,
+          "role": "Frontend",
+          "difficulty": "Medium",
+          "questionCount": 10,
+          "mode": "Assessment",
+          "timeLimitSeconds": 1200
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasAttemptId": true,
+          "mode": "Assessment",
+          "questionCount": 10,
+          "answersVisible": false,
+          "expiresAtUtc": "__NON_NULL__"
+        }
+      },
+      {
+        "_case": "PRACTICE_MODE_NO_FILTERS — draws from all questions",
+        "request": {
+          "categoryId": null,
+          "role": null,
+          "difficulty": null,
+          "questionCount": 3,
+          "mode": "Practice"
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasAttemptId": true,
+          "mode": "Practice",
+          "questionCount": 3,
+          "answersVisible": true
+        }
+      }
+    ],
+
+    "save_response_requests": [
+      {
+        "_case": "SAVE_SELF_MARKED_CORRECT — practice mode response",
+        "endpoint": "POST /api/quizzes/{attemptId}/responses/{questionId}",
+        "request": {
+          "responseText": "IQueryable defers query execution to the database layer using expression trees.",
+          "isSelfMarkedCorrect": true
+        },
+        "expectedResponse": {
+          "httpStatus": 200,
+          "saved": true
+        }
+      },
+      {
+        "_case": "SAVE_SELF_MARKED_INCORRECT — practice mode, wrong answer flagged",
+        "endpoint": "POST /api/quizzes/{attemptId}/responses/{questionId}",
+        "request": {
+          "responseText": "They are the same thing.",
+          "isSelfMarkedCorrect": false
+        },
+        "expectedResponse": {
+          "httpStatus": 200,
+          "saved": true
+        }
+      }
+    ],
+
+    "submit_attempt_requests": [
+      {
+        "_case": "SUBMIT_COMPLETED — all questions answered",
+        "endpoint": "POST /api/quizzes/{attemptId}/submit",
+        "request": {},
+        "expectedResponse": {
+          "httpStatus": 200,
+          "hasScore": true,
+          "hasCompletedAt": true,
+          "status": "Completed"
+        }
+      }
+    ],
+
+    "invalid_create_requests": [
+      {
+        "_case": "FAIL_INVALID_MODE — mode must be Practice or Assessment",
+        "request": {
+          "categoryId": 1,
+          "questionCount": 5,
+          "mode": "Exam"
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "mode"
+        }
+      },
+      {
+        "_case": "FAIL_ZERO_QUESTION_COUNT — at least 1 question required",
+        "request": {
+          "categoryId": 1,
+          "questionCount": 0,
+          "mode": "Practice"
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "questionCount"
+        }
+      },
+      {
+        "_case": "FAIL_INSUFFICIENT_QUESTIONS_IN_BANK — requested more than available",
+        "request": {
+          "categoryId": 99,
+          "questionCount": 100,
+          "mode": "Practice"
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "Not enough questions"
+        }
+      }
+    ]
+  },
+
+  "cheatsheet_import": {
+    "_description": "Fixtures for CheatSheet (StudyGuide) resource management via POST /api/admin/resources and GET /api/resources.",
+
+    "valid_create_requests": [
+      {
+        "_case": "CREATE_PDF_RESOURCE — PDF linked by URL, category resolved",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "Entity Framework Core — Cheat Sheet",
+          "type": "Pdf",
+          "url": "https://resources.example.com/ef-core-cheatsheet.pdf",
+          "markdownContent": null,
+          "categoryId": 4,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasId": true,
+          "title": "Entity Framework Core — Cheat Sheet",
+          "type": "Pdf",
+          "categoryId": 4
+        }
+      },
+      {
+        "_case": "CREATE_MARKDOWN_RESOURCE — inline markdown note stored in DB",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "RxJS Operator Quick Reference",
+          "type": "Markdown",
+          "url": null,
+          "markdownContent": "## Core RxJS Operators\n\n| Operator | Purpose |\n|---|---|\n| `map` | Transform emitted values |\n| `filter` | Suppress non-matching values |\n| `switchMap` | Cancel previous inner observable |\n| `mergeMap` | Merge all inner observables |\n| `catchError` | Handle stream errors |\n| `debounceTime` | Throttle rapid emissions |\n| `takeUntil` | Complete stream on signal |",
+          "categoryId": 5,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasId": true,
+          "title": "RxJS Operator Quick Reference",
+          "type": "Markdown",
+          "categoryId": 5
+        }
+      },
+      {
+        "_case": "CREATE_EXTERNAL_LINK — external URL resource",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "Angular Official Documentation",
+          "type": "ExternalLink",
+          "url": "https://angular.dev/guide/components",
+          "markdownContent": null,
+          "categoryId": 2,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasId": true,
+          "title": "Angular Official Documentation",
+          "type": "ExternalLink",
+          "url": "https://angular.dev/guide/components"
+        }
+      },
+      {
+        "_case": "CREATE_CSHARP_RESOURCE — backend category",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": ".NET 8 Minimal API Patterns",
+          "type": "ExternalLink",
+          "url": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis",
+          "markdownContent": null,
+          "categoryId": 1,
+          "displayOrder": 2
+        },
+        "expectedResponse": {
+          "httpStatus": 201,
+          "hasId": true,
+          "categoryId": 1
+        }
+      }
+    ],
+
+    "valid_read_requests": [
+      {
+        "_case": "GET_BY_CATEGORY — should return all non-deleted resources for category, ordered by displayOrder then title",
+        "endpoint": "GET /api/resources?categoryId=4",
+        "expectedResponse": {
+          "httpStatus": 200,
+          "isArray": true,
+          "allHaveCategoryId": 4,
+          "orderedByDisplayOrderThenTitle": true,
+          "excludeDeleted": true
+        }
+      },
+      {
+        "_case": "GET_EMPTY_CATEGORY — category exists but has no resources",
+        "endpoint": "GET /api/resources?categoryId=3",
+        "expectedResponse": {
+          "httpStatus": 200,
+          "isArray": true,
+          "count": 0
+        }
+      }
+    ],
+
+    "invalid_create_requests": [
+      {
+        "_case": "FAIL_PDF_MISSING_URL — Pdf type requires Url field",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "Missing URL PDF",
+          "type": "Pdf",
+          "url": null,
+          "markdownContent": null,
+          "categoryId": 1,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "Url is required"
+        }
+      },
+      {
+        "_case": "FAIL_MARKDOWN_MISSING_CONTENT — Markdown type requires MarkdownContent",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "Empty note",
+          "type": "Markdown",
+          "url": null,
+          "markdownContent": null,
+          "categoryId": 2,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "MarkdownContent is required"
+        }
+      },
+      {
+        "_case": "FAIL_EXTERNAL_LINK_MISSING_URL — ExternalLink type requires Url field",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "No URL Link",
+          "type": "ExternalLink",
+          "url": "",
+          "markdownContent": null,
+          "categoryId": 3,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "Url is required"
+        }
+      },
+      {
+        "_case": "FAIL_CATEGORY_NOT_FOUND — categoryId must reference an existing Category",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "Orphaned Resource",
+          "type": "ExternalLink",
+          "url": "https://example.com",
+          "markdownContent": null,
+          "categoryId": 9999,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "Category not found"
+        }
+      },
+      {
+        "_case": "FAIL_MISSING_TITLE — title is required",
+        "endpoint": "POST /api/admin/resources",
+        "request": {
+          "title": "",
+          "type": "ExternalLink",
+          "url": "https://example.com",
+          "markdownContent": null,
+          "categoryId": 1,
+          "displayOrder": 1
+        },
+        "expectedResponse": {
+          "httpStatus": 400,
+          "errorContains": "Title is required"
+        }
+      }
+    ],
+
+    "delete_requests": [
+      {
+        "_case": "DELETE_EXISTING — should soft-delete and return 204",
+        "endpoint": "DELETE /api/admin/resources/{id}",
+        "expectedResponse": {
+          "httpStatus": 204
+        }
+      },
+      {
+        "_case": "DELETE_NONEXISTENT — should return 404",
+        "endpoint": "DELETE /api/admin/resources/99999",
+        "expectedResponse": {
+          "httpStatus": 404,
+          "errorContains": "not found"
+        }
+      }
+    ]
+  }
+}

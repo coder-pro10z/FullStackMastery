@@ -687,6 +687,16 @@ This section is deliberately honest. These are real gaps, not disclaimers.
 
 If you are an AI coding agent, LLM tool, or MCP client entering this repository, start here.
 
+### Step 0 — Mandatory Pre-Task Reading (ALL agents)
+
+Before touching any code, read these three documents in order:
+
+| # | Document | Why |
+|---|---|---|
+| 1 | [`docs/ENGINEERING_PLAYBOOK.md`](docs/ENGINEERING_PLAYBOOK.md) | Architecture rules, feature lifecycle, Definition of Done — the authority |
+| 2 | [`docs/TRACKER.md`](docs/TRACKER.md) | Current task status, §14 Alignment Fixes, §15 TDD Initiative |
+| 3 | [`docs/TDD_STRATEGY.md`](docs/TDD_STRATEGY.md) | Test coverage map, fixture protocol, test classification tags |
+
 ### Critical files
 
 | Purpose | Path |
@@ -701,6 +711,17 @@ If you are an AI coding agent, LLM tool, or MCP client entering this repository,
 | Dashboard page | `frontend/src/app/features/dashboard/dashboard-page/dashboard-page.component.ts` |
 | Global styles | `frontend/src/styles.css` |
 | Test suite | `tests/InterviewPrepApp.Tests/` |
+
+### Test infrastructure
+
+| Artifact | Path | Purpose |
+|---|---|---|
+| Test fixtures | `tests/fixtures/import-fixtures.json` | Single source of truth for all import test data |
+| E2E blueprint | `tests/integration/import-flow.spec.ts` | 71 test cases mapped across 4-step validation path |
+| xUnit test project | `tests/InterviewPrepApp.Tests/` | Backend test runner (xUnit + FluentAssertions + Moq) |
+| TDD strategy | `docs/TDD_STRATEGY.md` | Coverage maps, run commands, risk register |
+
+**Current test baseline:** 23 passing / 3 failing (`ImportBackgroundWorkerTests`). The 3 failures are a gate blocker for the StudyGuide parity milestone.
 
 ### Rules for all agents
 

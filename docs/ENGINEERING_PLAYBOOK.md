@@ -1,8 +1,14 @@
 # Engineering Playbook — FullStack Mastery Interview Preparation Platform
 
-> **Version:** 1.0 | **Established:** April 2026
+> **Version:** 1.1 | **Established:** April 2026 | **Last Updated:**2 April 2026
 > **Authority:** This document is the single source of truth for infrastructure, workflows, and architectural standards.
 > All contributors (human or AI) must treat the rules in this Playbook as non-negotiable unless a formal Architecture Decision Record (ADR) is raised and approved.
+
+**Companion documents (read in this order before any task):**
+1. This Playbook — `docs/ENGINEERING_PLAYBOOK.md`
+2. Current task state — `docs/TRACKER.md` (especially §14 Alignment Fixes and §15 TDD Initiative)
+3. Test coverage map — `docs/TDD_STRATEGY.md`
+4. Test fixtures — `tests/fixtures/import-fixtures.json`
 
 ---
 
@@ -262,6 +268,8 @@ Work in this order:
 - [ ] Integration test written for any new controller endpoint
 - [ ] All existing tests still pass (`dotnet test`)
 - [ ] `ImportBackgroundWorkerTests` failure count has not increased
+
+**Test data rule:** All test inputs must reference `tests/fixtures/import-fixtures.json` by `_case` name. No inline magic strings in test methods.
 
 **Frontend:**
 - [ ] Manual walkthrough checklist documented in TRACKER (until `.spec.ts` scaffold exists):
