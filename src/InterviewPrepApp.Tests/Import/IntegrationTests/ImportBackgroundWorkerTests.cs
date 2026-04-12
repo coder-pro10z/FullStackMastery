@@ -30,8 +30,9 @@ public class ImportBackgroundWorkerTests : IDisposable
         var services = new ServiceCollection();
         
         // In-memory DB
+        var dbName = Guid.NewGuid().ToString();
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()));
+            options.UseInMemoryDatabase(databaseName: dbName));
             
         _serviceProvider = services.BuildServiceProvider();
         _db = _serviceProvider.GetRequiredService<ApplicationDbContext>();
@@ -92,14 +93,16 @@ public class ImportBackgroundWorkerTests : IDisposable
         _channel.Writer.Complete();
 
         // Act
-        var cts = new CancellationTokenSource();
-        // Run worker just long enough to process the queue
-        await _sut.StartAsync(cts.Token);
-        await Task.Delay(500); // Give it a moment to process the channel message
-        await _sut.StopAsync(cts.Token);
+        // Run worker until the channel is empty and complete
+        await _sut.StartAsync(CancellationToken.None);
+        if (_sut.ExecuteTask != null)
+        {
+            await _sut.ExecuteTask;
+        }
+        await _sut.StopAsync(CancellationToken.None);
 
         // Assert
-        var resultJob = await _db.ImportJobs.FirstAsync(j => j.Id == job.Id);
+        var resultJob = await _db.ImportJobs.AsNoTracking().FirstAsync(j => j.Id == job.Id);
         resultJob.Status.Should().Be(ImportJobStatus.Completed);
         resultJob.ProcessedRows.Should().Be(1);
         resultJob.FailedRows.Should().Be(0);
@@ -131,13 +134,15 @@ public class ImportBackgroundWorkerTests : IDisposable
         _channel.Writer.Complete();
 
         // Act
-        var cts = new CancellationTokenSource();
-        await _sut.StartAsync(cts.Token);
-        await Task.Delay(500); 
-        await _sut.StopAsync(cts.Token);
+        await _sut.StartAsync(CancellationToken.None);
+        if (_sut.ExecuteTask != null)
+        {
+            await _sut.ExecuteTask;
+        }
+        await _sut.StopAsync(CancellationToken.None);
 
         // Assert
-        var resultJob = await _db.ImportJobs.FirstAsync(j => j.Id == job.Id);
+        var resultJob = await _db.ImportJobs.AsNoTracking().FirstAsync(j => j.Id == job.Id);
         resultJob.Status.Should().Be(ImportJobStatus.Failed);
     }
 
@@ -182,13 +187,15 @@ public class ImportBackgroundWorkerTests : IDisposable
         _channel.Writer.Complete();
 
         // Act
-        var cts = new CancellationTokenSource();
-        await _sut.StartAsync(cts.Token);
-        await Task.Delay(500); 
-        await _sut.StopAsync(cts.Token);
+        await _sut.StartAsync(CancellationToken.None);
+        if (_sut.ExecuteTask != null)
+        {
+            await _sut.ExecuteTask;
+        }
+        await _sut.StopAsync(CancellationToken.None);
 
         // Assert
-        var resultJob = await _db.ImportJobs.FirstAsync(j => j.Id == job.Id);
+        var resultJob = await _db.ImportJobs.AsNoTracking().FirstAsync(j => j.Id == job.Id);
         resultJob.Status.Should().Be(ImportJobStatus.PartiallyCompleted);
         resultJob.ProcessedRows.Should().Be(1);
         resultJob.FailedRows.Should().BeGreaterThan(0);

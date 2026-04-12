@@ -171,7 +171,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
 
             job.FailedRows += validateResult.Failed + validateResult.Skipped;
 
-            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            var isInMemory = db.Database.ProviderName?.Contains("InMemory") == true;
+            await using var tx = isInMemory ? null : await db.Database.BeginTransactionAsync(ct);
             int batchProcessed = 0, batchFailed = 0;
 
             foreach (var record in validateResult.ValidRecords)
@@ -196,7 +197,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
             }
 
             await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
+            await db.SaveChangesAsync(ct);
+            if (tx != null) await tx.CommitAsync(ct);
 
             job.ProcessedRows += batchProcessed;
             job.FailedRows += batchFailed;
@@ -217,7 +219,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
         }
 
         allErrors.AddRange(extractErrors);
-        job.TotalRows = rows.Count;
+        job.TotalRows = rows.Count + extractErrors.Count;
+        job.FailedRows += extractErrors.Count;
 
         // Load existing category map and ExternalId set
         // var existingIds = await db.QuizQuestions.AsNoTracking()
@@ -233,7 +236,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
 
         foreach (var batch in rows.Chunk(BatchSize))
         {
-            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            var isInMemory = db.Database.ProviderName?.Contains("InMemory") == true;
+            await using var tx = isInMemory ? null : await db.Database.BeginTransactionAsync(ct);
             int batchProcessed = 0, batchFailed = 0;
 
             foreach (var row in batch)
@@ -294,7 +298,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
             }
 
             await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
+            await db.SaveChangesAsync(ct);
+            if (tx != null) await tx.CommitAsync(ct);
 
             job.ProcessedRows += batchProcessed;
             job.FailedRows += batchFailed;
@@ -317,7 +322,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
         }
 
         allErrors.AddRange(extractErrors);
-        job.TotalRows = rows.Count;
+        job.TotalRows = rows.Count + extractErrors.Count;
+        job.FailedRows += extractErrors.Count;
 
         // var existingIds = await db.StudyGuideSections.AsNoTracking()
         //     .Select(s => s.ExternalId)
@@ -332,7 +338,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
 
         foreach (var batch in rows.Chunk(BatchSize))
         {
-            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            var isInMemory = db.Database.ProviderName?.Contains("InMemory") == true;
+            await using var tx = isInMemory ? null : await db.Database.BeginTransactionAsync(ct);
             int batchProcessed = 0, batchFailed = 0;
 
             foreach (var row in batch)
@@ -381,7 +388,8 @@ public sealed class ImportBackgroundWorker : BackgroundService
             }
 
             await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
+            await db.SaveChangesAsync(ct);
+            if (tx != null) await tx.CommitAsync(ct);
 
             job.ProcessedRows += batchProcessed;
             job.FailedRows += batchFailed;
