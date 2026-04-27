@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CategoryService } from '../../../core/services/category.service';
 import { QuizService, CreateQuizAttemptDto, QuizMode } from '../../../core/services/quiz.service';
+import { QuestionService } from '../../../core/services/question.service';
 import { CategoryTreeDto } from '../../../core/models/category.models';
 import { Difficulty } from '../../../core/models/question.models';
 
@@ -45,7 +46,7 @@ import { Difficulty } from '../../../core/models/question.models';
         <!-- Category -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-300">Category</label>
-          <select [(ngModel)]="form.categoryId" class="input-dark w-full">
+          <select [(ngModel)]="form.categoryId" (ngModelChange)="checkAvailable()" class="input-dark w-full">
             <option [ngValue]="null">Any Category</option>
             <ng-container *ngFor="let cat of flatCategories()">
               <option [ngValue]="cat.id">
@@ -58,7 +59,7 @@ import { Difficulty } from '../../../core/models/question.models';
         <!-- Role -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-300">Role Focus</label>
-          <select [(ngModel)]="form.role" class="input-dark w-full">
+          <select [(ngModel)]="form.role" (ngModelChange)="checkAvailable()" class="input-dark w-full">
             <option [ngValue]="null">Any Role</option>
             <option *ngFor="let r of roles" [ngValue]="r">{{ r }}</option>
           </select>
@@ -67,7 +68,7 @@ import { Difficulty } from '../../../core/models/question.models';
         <!-- Difficulty -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-slate-300">Difficulty</label>
-          <select [(ngModel)]="form.difficulty" class="input-dark w-full">
+          <select [(ngModel)]="form.difficulty" (ngModelChange)="checkAvailable()" class="input-dark w-full">
             <option [ngValue]="null">Any Difficulty</option>
             <option value="Easy">Easy</option>
             <option value="Medium">Medium</option>
@@ -77,17 +78,41 @@ import { Difficulty } from '../../../core/models/question.models';
 
         <!-- Count -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-slate-300">Number of Questions</label>
+          <label class="block text-sm font-medium text-slate-300 flex justify-between">
+            <span>Number of Questions</span>
+            @if (availableCount() !== null) {
+              <span class="text-xs px-2 py-0.5 rounded-md" 
+                    [class.bg-green-500]="availableCount()! > 0" 
+                    [class.bg-opacity-20]="availableCount()! > 0"
+                    [class.text-green-400]="availableCount()! > 0"
+                    [class.bg-red-500]="availableCount() === 0"
+                    [class.bg-opacity-20]="availableCount() === 0"
+                    [class.text-red-400]="availableCount() === 0">
+                {{ availableCount() }} available
+              </span>
+            }
+          </label>
           <input type="number" [(ngModel)]="form.questionCount" min="1" max="50" class="input-dark w-full">
         </div>
       </div>
 
-      <div class="pt-6 border-t border-white/10 flex justify-end">
-        <button (click)="startQuiz()" [disabled]="starting()"
-                class="btn-primary w-full sm:w-auto px-8 py-2.5 flex items-center justify-center gap-2">
-          @if (starting()) {
+      <div class="pt-6 border-t border-white/10 flex flex-col items-end gap-3">
+        @if (availableCount() === 0) {
+          <div class="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+            <svg class="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <div class="text-sm text-red-200">
+              <span class="block font-medium text-red-400 mb-1">No Questions Found</span>
+              There are no active questions matching your current filters. Please select broader criteria (e.g. "Any Difficulty" or "Any Role") to generate a quiz attempt.
+            </div>
+          </div>
+        }
+
+        <button (click)="startQuiz()" [disabled]="starting() || checking() || availableCount() === 0"
+                class="btn-primary w-full sm:w-auto px-8 py-2.5 flex items-center justify-center gap-2"
+                [class.opacity-50]="availableCount() === 0">
+          @if (starting() || checking()) {
             <div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-            <span>Preparing...</span>
+            <span>{{ starting() ? 'Preparing...' : 'Checking...' }}</span>
           } @else {
             <span>Start Quiz</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -101,11 +126,14 @@ import { Difficulty } from '../../../core/models/question.models';
 export class QuizDashboardComponent implements OnInit {
   private quizService = inject(QuizService);
   private categoryService = inject(CategoryService);
+  private questionService = inject(QuestionService);
   private router = inject(Router);
 
   roles = ['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Data Scientist', 'DevOps', 'QA Engineer', 'Product Manager'];
   categories = signal<CategoryTreeDto[]>([]);
   starting = signal(false);
+  checking = signal(false);
+  availableCount = signal<number | null>(null);
 
   form: CreateQuizAttemptDto = {
     mode: 'Practice',
@@ -121,6 +149,23 @@ export class QuizDashboardComponent implements OnInit {
     this.categoryService.getTree().subscribe(res => {
       this.categories.set(res);
       this.flatCategories.set(this.flattenCategories(res));
+    });
+    this.checkAvailable();
+  }
+
+  checkAvailable() {
+    this.checking.set(true);
+    this.questionService.getQuestions({
+      categoryId: this.form.categoryId || undefined,
+      role: this.form.role || undefined,
+      difficulty: this.form.difficulty || undefined,
+      pageSize: 1
+    }).subscribe({
+      next: (res) => {
+        this.availableCount.set(res.totalRecords);
+        this.checking.set(false);
+      },
+      error: () => this.checking.set(false)
     });
   }
 

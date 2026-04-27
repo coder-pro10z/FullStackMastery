@@ -24,8 +24,14 @@ public class QuizzesController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
-        var attempt = await _quizService.CreateAttemptAsync(dto, userId, ct);
-        return Ok(attempt);
+        var attemptResult = await _quizService.CreateAttemptAsync(dto, userId, ct);
+        
+        if (!attemptResult.IsSuccess)
+        {
+            return BadRequest(new { Error = attemptResult.ErrorMessage });
+        }
+
+        return Ok(attemptResult.Data);
     }
 
     [HttpGet("{id:int}")]
