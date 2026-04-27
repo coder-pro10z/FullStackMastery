@@ -122,6 +122,10 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<IQuestionService, QuestionService>();
             builder.Services.AddScoped<IUserProgressService, UserProgressService>();
 
+            //Dasboard services
+            // Register the Dashboard Service
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
+
             // Admin services
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAuditLogService, InterviewPrepApp.Infrastructure.Services.AuditLogService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Validators.IQuestionImportValidator, InterviewPrepApp.Infrastructure.Services.QuestionImportValidator>();
