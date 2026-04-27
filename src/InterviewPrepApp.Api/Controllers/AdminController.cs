@@ -26,6 +26,7 @@ namespace InterviewPrepApp.Api.Controllers
         }
 
         [HttpPost("import-questions")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> ImportQuestions(IFormFile file, [FromForm] int defaultCategoryId)
         {
             if (file == null || file.Length == 0)

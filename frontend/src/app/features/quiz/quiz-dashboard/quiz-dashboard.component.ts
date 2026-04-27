@@ -78,7 +78,7 @@ import { Difficulty } from '../../../core/models/question.models';
 
         <!-- Count -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-slate-300 flex justify-between">
+          <label class="text-sm font-medium text-slate-300 flex justify-between">
             <span>Number of Questions</span>
             @if (availableCount() !== null) {
               <span class="text-xs px-2 py-0.5 rounded-md" 

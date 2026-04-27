@@ -5,3 +5,6 @@ others/Companies.litcoffee
 others/
 obj/
 bin/
+src/InterviewPrepApp.Api/swagger_error.txt
+src/InterviewPrepApp.Api/swagger.json
+src/InterviewPrepApp.Api/swagger2.json

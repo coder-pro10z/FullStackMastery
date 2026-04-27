@@ -21,6 +21,7 @@ public class AdminStudyGuideImportController : ControllerBase
     /// </summary>
     [HttpPost]
     [RequestSizeLimit(50 * 1024 * 1024)]
+    [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadStudyGuideFile(
         IFormFile file,
         [FromForm] int? defaultCategoryId,

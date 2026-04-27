@@ -152,7 +152,7 @@ namespace InterviewPrepApp.Api
             });
 
             var app = builder.Build();
-
+            Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
