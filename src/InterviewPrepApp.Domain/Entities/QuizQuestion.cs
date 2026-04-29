@@ -28,6 +28,9 @@ public class QuizQuestion
 
     public QuizQuestionDifficulty Difficulty { get; set; } = QuizQuestionDifficulty.Medium;
 
+    /// <summary>Controls visibility in the quiz pipeline. Only Published questions are served.</summary>
+    public QuizQuestionStatus Status { get; set; } = QuizQuestionStatus.Published;
+
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
 
@@ -35,3 +38,4 @@ public class QuizQuestion
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
 }
+

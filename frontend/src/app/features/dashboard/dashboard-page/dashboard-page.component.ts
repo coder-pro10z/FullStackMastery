@@ -1,11 +1,11 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, combineLatest, map, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, switchMap, tap } from 'rxjs';
 import { CategoryTreeDto } from '../../../core/models/category.models';
 import { ProgressSummaryDto, UserProgressStateDto } from '../../../core/models/progress.models';
-import { QuestionDto, QuestionQueryParams } from '../../../core/models/question.models';
+import { PagedResponse, QuestionDto, QuestionQueryParams } from '../../../core/models/question.models';
 import { CategoryService } from '../../../core/services/category.service';
 import { ProgressService } from '../../../core/services/progress.service';
 import { QuestionService } from '../../../core/services/question.service';
@@ -17,7 +17,7 @@ import { QuestionTableComponent } from '../components/question-table/question-ta
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [AsyncPipe, NgIf, FilterBarComponent, ProgressCardComponent, SubCategoryNavComponent, QuestionTableComponent],
+  imports: [AsyncPipe, NgClass, NgIf, FilterBarComponent, ProgressCardComponent, SubCategoryNavComponent, QuestionTableComponent],
   template: `
     <div class="space-y-5 animate-fade-in" *ngIf="vm$ | async as vm">
       <!-- Page Header -->
@@ -40,9 +40,9 @@ import { QuestionTableComponent } from '../components/question-table/question-ta
         </div>
 
         <!-- Question count -->
-        @if (vm.questions.length > 0) {
+        @if (vm.totalRecords > 0) {
           <span class="text-xs text-slate-500 bg-dark-surface-light px-3 py-1.5 rounded-lg hidden sm:block">
-            {{ vm.questions.length }} question{{ vm.questions.length === 1 ? '' : 's' }}
+            {{ paginationSummary(vm) }}
           </span>
         }
       </section>
@@ -127,12 +127,62 @@ import { QuestionTableComponent } from '../components/question-table/question-ta
           [questions]="vm.questions"
           (solvedToggled)="toggleSolved($event)"
           (revisionToggled)="toggleRevision($event)" />
+
+        @if (vm.totalPages > 1) {
+          <section class="glass-panel p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm text-slate-400">
+              {{ pageRangeSummary(vm) }}
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div class="flex items-center gap-2">
+                <span class="text-xs uppercase tracking-wider text-slate-500">Page Size</span>
+                <div class="flex items-center gap-2">
+                  @for (size of pageSizeOptions; track size) {
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg text-xs border transition-colors"
+                      [ngClass]="{
+                        'bg-white/10 text-white border-white/10': vm.pageSize === size,
+                        'text-slate-400 border-white/5 hover:bg-white/5': vm.pageSize !== size
+                      }"
+                      (click)="setPageSize(size)">
+                      {{ size }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  class="btn-ghost text-xs px-3 py-2 disabled:opacity-40"
+                  [disabled]="!canGoToPreviousPage(vm)"
+                  (click)="goToPreviousPage(vm.pageNumber)">
+                  Previous
+                </button>
+                <span class="text-sm text-slate-400 min-w-24 text-center">
+                  Page {{ vm.pageNumber }} of {{ vm.totalPages }}
+                </span>
+                <button
+                  type="button"
+                  class="btn-ghost text-xs px-3 py-2 disabled:opacity-40"
+                  [disabled]="!canGoToNextPage(vm)"
+                  (click)="goToNextPage(vm.pageNumber, vm.totalPages)">
+                  Next
+                </button>
+              </div>
+            </div>
+          </section>
+        }
       }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardPageComponent {
+  readonly pageSizeOptions = [10, 20, 50];
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly categoryService = inject(CategoryService);
@@ -144,8 +194,12 @@ export class DashboardPageComponent {
 
   private readonly filters$ = new BehaviorSubject<QuestionQueryParams>({});
   private readonly summary$ = new BehaviorSubject<ProgressSummaryDto | null>(null);
-  private readonly questions$ = new BehaviorSubject<QuestionDto[]>([]);
+  private readonly questionPage$ = new BehaviorSubject<PagedResponse<QuestionDto> | null>(null);
   private readonly categories$ = new BehaviorSubject<CategoryTreeDto[]>([]);
+  private readonly pagination$ = new BehaviorSubject<{ pageNumber: number; pageSize: number }>({
+    pageNumber: 1,
+    pageSize: 10
+  });
 
   private readonly selectedCategoryId$ = this.route.queryParamMap.pipe(
     map((queryParams) => {
@@ -156,11 +210,12 @@ export class DashboardPageComponent {
     })
   );
 
-  private readonly loadQuestions$ = combineLatest([this.selectedCategoryId$, this.filters$]).pipe(
-    switchMap(([categoryId, filters]) =>
+  private readonly loadQuestions$ = combineLatest([this.selectedCategoryId$, this.filters$, this.pagination$]).pipe(
+    tap(() => this.loading.set(true)),
+    switchMap(([categoryId, filters, pagination]) =>
       this.questionService.getQuestions({
-        pageNumber: 1,
-        pageSize: 10,
+        pageNumber: pagination.pageNumber,
+        pageSize: pagination.pageSize,
         ...filters,
         ...(categoryId ? { categoryId } : {})
       })
@@ -169,17 +224,22 @@ export class DashboardPageComponent {
 
   readonly vm$ = combineLatest([
     this.summary$,
-    this.questions$,
+    this.questionPage$,
     this.categories$,
     this.selectedCategoryId$
   ]).pipe(
-    map(([summary, questions, categories, selectedCategoryId]) => {
+    map(([summary, questionPage, categories, selectedCategoryId]) => {
       const selectedRootCategory = this.findRootCategory(categories, selectedCategoryId);
       const selectedCategory = this.findCategory(categories, selectedCategoryId);
+      const questions = questionPage?.data ?? [];
 
       return {
         summary,
         questions,
+        totalRecords: questionPage?.totalRecords ?? 0,
+        pageNumber: questionPage?.pageNumber ?? 1,
+        pageSize: questionPage?.pageSize ?? this.pagination$.value.pageSize,
+        totalPages: questionPage?.totalPages ?? 0,
         selectedCategoryId,
         selectedCategoryName: selectedCategory?.name ?? null,
         selectedRootCategory,
@@ -200,20 +260,26 @@ export class DashboardPageComponent {
     this.loadQuestions$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((response) => {
-        this.questions$.next(response.data);
+        this.questionPage$.next(response);
         this.loading.set(false);
       });
   }
 
   updateFilters(filters: QuestionQueryParams) {
     this.activeFilters = filters;
-    this.loading.set(true);
     this.filters$.next(filters);
+    this.pagination$.next({
+      ...this.pagination$.value,
+      pageNumber: 1
+    });
   }
 
   toggleSolved(questionId: number) {
-    const snapshot = this.questions$.value;
-    const targetQuestion = snapshot.find((question) => question.id === questionId);
+    const snapshot = this.questionPage$.value;
+    if (!snapshot) return;
+
+    const questionSnapshot = snapshot.data;
+    const targetQuestion = questionSnapshot.find((question) => question.id === questionId);
     if (!targetQuestion) return;
 
     const nextSolved = !targetQuestion.isSolved;
@@ -231,15 +297,17 @@ export class DashboardPageComponent {
           this.applyRemoteToggleState(questionId, state);
         },
         error: () => {
-          this.questions$.next(snapshot);
+          this.questionPage$.next(snapshot);
           this.summary$.next(summarySnapshot);
         }
       });
   }
 
   toggleRevision(questionId: number) {
-    const snapshot = this.questions$.value;
-    const targetQuestion = snapshot.find((question) => question.id === questionId);
+    const snapshot = this.questionPage$.value;
+    if (!snapshot) return;
+
+    const targetQuestion = snapshot.data.find((question) => question.id === questionId);
     if (!targetQuestion) return;
 
     this.updateQuestion(questionId, (question) => ({ ...question, isRevision: !question.isRevision }));
@@ -248,15 +316,19 @@ export class DashboardPageComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (state) => this.applyRemoteToggleState(questionId, state),
-        error: () => this.questions$.next(snapshot)
+        error: () => this.questionPage$.next(snapshot)
       });
   }
 
   private updateQuestion(questionId: number, updater: (question: QuestionDto) => QuestionDto) {
-    this.questions$.next(
-      this.questions$.value.map((question) =>
+    const currentPage = this.questionPage$.value;
+    if (!currentPage) return;
+
+    this.questionPage$.next({
+      ...currentPage,
+      data: currentPage.data.map((question) =>
         question.id === questionId ? updater(question) : question)
-    );
+    });
   }
 
   private applyRemoteToggleState(questionId: number, state: UserProgressStateDto) {
@@ -289,6 +361,60 @@ export class DashboardPageComponent {
     }
 
     this.summary$.next(nextSummary);
+  }
+
+  paginationSummary(vm: {
+    totalRecords: number;
+    questions: QuestionDto[];
+    pageNumber: number;
+    pageSize: number;
+  }): string {
+    if (vm.totalRecords === 0) return '0 questions';
+
+    const start = (vm.pageNumber - 1) * vm.pageSize + 1;
+    const end = start + vm.questions.length - 1;
+    return `${start}-${end} of ${vm.totalRecords} questions`;
+  }
+
+  pageRangeSummary(vm: {
+    totalRecords: number;
+    questions: QuestionDto[];
+    pageNumber: number;
+    pageSize: number;
+  }): string {
+    return `Showing ${this.paginationSummary(vm)}`;
+  }
+
+  canGoToPreviousPage(vm: { pageNumber: number }): boolean {
+    return vm.pageNumber > 1;
+  }
+
+  canGoToNextPage(vm: { pageNumber: number; totalPages: number }): boolean {
+    return vm.pageNumber < vm.totalPages;
+  }
+
+  goToPreviousPage(currentPage: number) {
+    if (currentPage <= 1) return;
+    this.pagination$.next({
+      ...this.pagination$.value,
+      pageNumber: currentPage - 1
+    });
+  }
+
+  goToNextPage(currentPage: number, totalPages: number) {
+    if (currentPage >= totalPages) return;
+    this.pagination$.next({
+      ...this.pagination$.value,
+      pageNumber: currentPage + 1
+    });
+  }
+
+  setPageSize(pageSize: number) {
+    if (this.pagination$.value.pageSize === pageSize) return;
+    this.pagination$.next({
+      pageNumber: 1,
+      pageSize
+    });
   }
 
   private getDifficultyLabel(value: QuestionDto['difficulty']): 'Easy' | 'Medium' | 'Hard' {
