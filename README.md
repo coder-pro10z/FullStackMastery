@@ -1,4 +1,4 @@
-# FullStack Mastery — Interview Preparation Platform
+# FullStack Mastery - Interview Preparation Platform
 
 > A production-grade, full-stack interview preparation platform for .NET and Angular engineers.\
 > Built with **ASP.NET Core 8**, **Entity Framework Core**, **SQL Server**, **ASP.NET Identity + JWT**, and **Angular 17 Standalone Components**.
