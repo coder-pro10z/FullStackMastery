@@ -66,6 +66,25 @@ namespace InterviewPrepApp.Api
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        //use from the Development / Production for the SQL / NPGSQL switch in appsettings
+        // Database Context
+
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        var provider = builder.Configuration["DatabaseProvider"];
+
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            if (provider == "Postgres")
+            {
+                options.UseNpgsql(connectionString);
+            }
+            else
+            {
+                options.UseSqlServer(connectionString);
+            }
+        });
+
             // Identity
             builder.Services.AddIdentityCore<ApplicationUser>()
                 .AddRoles<IdentityRole>()
