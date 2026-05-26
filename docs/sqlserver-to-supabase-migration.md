@@ -31,7 +31,7 @@ $env:POSTGRES_CONNECTION="Host=...;Port=5432;Database=postgres;Username=postgres
 ```
 
 Notes:
-- `POSTGRES_CONNECTION` is used by the design-time factory for `dotnet ef ...` commands.
+- `POSTGRES_CONNECTION` (or `PostgresConnection`) is used by the design-time factory for `dotnet ef ...` commands.
 - `ConnectionStrings:PostgresConnection` is used by the running API (via `appsettings.*` + user secrets/env overrides).
 
 ## 2) Program.cs: ensure the provider switch + auto-migrate is wired

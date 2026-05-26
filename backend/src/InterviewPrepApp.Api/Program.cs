@@ -127,7 +127,22 @@ namespace InterviewPrepApp.Api
                               // Allow all localhost origins (any port) for development
                               var uri = new Uri(origin);
                               return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                              
                           })
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200",
+                    "https://fullstackmastery-frontend.vercel.app"
+                    
+                )
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -184,6 +199,7 @@ namespace InterviewPrepApp.Api
             app.UseExceptionHandler();
             app.UseHttpsRedirection();
             app.UseCors("Angular");
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
