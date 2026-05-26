@@ -184,6 +184,8 @@ namespace InterviewPrepApp.Api
                 options.AddPolicy("AdminOrEditor", p => p.RequireRole("Admin", "Editor"));
             });
 
+            builder.Services.AddHealthChecks();
+
             var app = builder.Build();
             Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
             // Configure the HTTP request pipeline.
@@ -206,6 +208,8 @@ namespace InterviewPrepApp.Api
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+
+            app.MapHealthChecks("/health");
 
             // Apply EF migrations on startup (recommended for local/dev; for prod consider running migrations separately)
             using (var scope = app.Services.CreateScope())
