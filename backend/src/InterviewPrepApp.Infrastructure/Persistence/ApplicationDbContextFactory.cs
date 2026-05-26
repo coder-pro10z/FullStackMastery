@@ -6,18 +6,13 @@ namespace InterviewPrepApp.Infrastructure.Persistence;
 
 public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
-    private const string ConnectionString =
-        "Server=DESKTOP-48C94E6\\SQLEXPRESS;Database=InterviewPrepAppDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;";
-
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var provider =
-            Environment.GetEnvironmentVariable("DatabaseProvider");
-        
+        var provider = Environment.GetEnvironmentVariable("DatabaseProvider");
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         
-        if (provider == "Postgres")
+        if (string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase))
         {
             var postgresConnection =
                 Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
@@ -26,7 +21,11 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
         }
         else
         {
-            optionsBuilder.UseSqlServer(ConnectionString);
+            var sqlServerConnection =
+                Environment.GetEnvironmentVariable("SQLSERVER_CONNECTION")
+                ?? "Server=host.docker.internal,1433;Database=InterviewPrepAppDb;TrustServerCertificate=True;";
+
+            optionsBuilder.UseSqlServer(sqlServerConnection);
         }
 
         return new ApplicationDbContext(optionsBuilder.Options);

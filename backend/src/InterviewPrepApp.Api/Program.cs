@@ -62,28 +62,27 @@ namespace InterviewPrepApp.Api
                 });
             });
 
-            // Database Context
+            // Database Context (SQL Server / Postgres switch via appsettings.*.json or env vars)
+            var providerRaw = builder.Configuration["DatabaseProvider"];
+            var provider = string.IsNullOrWhiteSpace(providerRaw) ? "SqlServer" : providerRaw.Trim();
+
+            var connectionString = provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
+                ? builder.Configuration.GetConnectionString("PostgresConnection")
+                : builder.Configuration.GetConnectionString("SqlServerDocker");
+
+            Console.WriteLine($"Database Provider: {provider}");
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-        //use from the Development / Production for the SQL / NPGSQL switch in appsettings
-        // Database Context
-
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-        var provider = builder.Configuration["DatabaseProvider"];
-
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            if (provider == "Postgres")
             {
-                options.UseNpgsql(connectionString);
-            }
-            else
-            {
-                options.UseSqlServer(connectionString);
-            }
-        });
+                if (provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase))
+                {
+                    options.UseNpgsql(connectionString);
+                }
+                else
+                {
+                    options.UseSqlServer(connectionString);
+                }
+            });
 
             // Identity
             builder.Services.AddIdentityCore<ApplicationUser>()
@@ -189,12 +188,16 @@ namespace InterviewPrepApp.Api
             app.UseAuthorization();
             app.MapControllers();
 
-            // Create admin role and default admin user on startup
+            // Apply EF migrations on startup (recommended for local/dev; for prod consider running migrations separately)
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 await dbContext.Database.MigrateAsync();
+            }
 
+            // Create admin role and default admin user on startup
+            using (var scope = app.Services.CreateScope())
+            {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
                 // Create Admin role if it doesn't exist
@@ -228,13 +231,6 @@ namespace InterviewPrepApp.Api
                         }
                     }
                 }
-            }
-
-            // Ensure database is created and migrations are applied
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await dbContext.Database.MigrateAsync();
             }
 
             await app.RunAsync();
