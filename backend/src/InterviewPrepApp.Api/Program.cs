@@ -118,22 +118,22 @@ namespace InterviewPrepApp.Api
             });
 
             // CORS for Angular — allows any localhost origin (any port) so ng serve on any port works.
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("Angular", policy =>
-                {
-                    policy.SetIsOriginAllowed(origin =>
-                          {
-                              // Allow all localhost origins (any port) for development
-                              var uri = new Uri(origin);
-                              return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+            // builder.Services.AddCors(options =>
+            // {
+            //     options.AddPolicy("Angular", policy =>
+            //     {
+            //         policy.SetIsOriginAllowed(origin =>
+            //               {
+            //                   // Allow all localhost origins (any port) for development
+            //                   var uri = new Uri(origin);
+            //                   return uri.Host == "localhost" || uri.Host == "127.0.0.1";
                               
-                          })
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
-                });
-            });
+            //               })
+            //               .AllowAnyHeader()
+            //               .AllowAnyMethod()
+            //               .AllowCredentials();
+            //     });
+            // });
 
             builder.Services.AddCors(options =>
             {
@@ -203,7 +203,7 @@ namespace InterviewPrepApp.Api
             {
                 app.UseHttpsRedirection();
             }
-            app.UseCors("Angular");
+            // app.UseCors("Angular");
             app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
