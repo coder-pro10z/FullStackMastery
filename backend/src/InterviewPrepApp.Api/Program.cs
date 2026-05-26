@@ -187,7 +187,7 @@ namespace InterviewPrepApp.Api
             var app = builder.Build();
             Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
@@ -197,7 +197,10 @@ namespace InterviewPrepApp.Api
             }
 
             app.UseExceptionHandler();
-            app.UseHttpsRedirection();
+            if (app.Environment.IsDevelopment()) //For Render hosting we want to allow HTTP traffic, but in production we want to enforce HTTPS
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseCors("Angular");
             app.UseCors("AllowFrontend");
             app.UseAuthentication();
@@ -223,7 +226,7 @@ namespace InterviewPrepApp.Api
                     Console.WriteLine("Admin role created successfully.");
                 }
 
-                if (app.Environment.IsDevelopment())
+                if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
                 {
                     // Keep the seeded admin account available for local development only.
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
