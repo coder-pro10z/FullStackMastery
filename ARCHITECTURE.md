@@ -7,7 +7,7 @@ This document provides a visual overview of the full-stack architecture for the 
 ```mermaid
 graph TB
     subgraph Client["Client Layer - edudash-frontend"]
-        UI["UI Components<br/>(TypeScript/React)"]
+        UI["UI Components<br/>(TypeScript/Angular)"]
         STATE["State Management"]
         API_CLIENT["API Client"]
     end
@@ -51,10 +51,10 @@ graph TB
 
 ### Frontend (edudash-frontend)
 - **Language**: TypeScript (73.5%)
+- **Framework**: Angular
 - **Markup**: HTML (22.9%)
 - **Styling**: SCSS (3.6%)
-- **Framework**: React (assumed)
-- **Build Tool**: Likely Webpack/Vite
+- **Build Tool**: Angular CLI with Webpack
 
 ### Backend (FullStackMastery)
 - **Language**: C# (66.8%)
@@ -79,9 +79,9 @@ graph TB
 ## Key Components
 
 ### Frontend Components
-- **UI Layer**: React components with TypeScript for type safety
-- **State Management**: Centralized state for application data
-- **API Client**: HTTP client for backend communication
+- **UI Layer**: Angular components with TypeScript for type safety
+- **State Management**: Angular services and RxJS observables for reactive state
+- **API Client**: Angular HttpClient for backend communication
 
 ### Backend Components
 - **API Controllers**: Entry point for HTTP requests
