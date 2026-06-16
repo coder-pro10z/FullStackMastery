@@ -23,7 +23,7 @@ graph TB
     end
     
     subgraph Database["Data Layer"]
-        DB[(("Database<br/>(SQL)"))]
+        DB[("Database<br/>(SQL)")]
     end
     
     UI -->|User Interactions| STATE
