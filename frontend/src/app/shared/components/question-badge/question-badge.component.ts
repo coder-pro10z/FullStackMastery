@@ -16,11 +16,11 @@ export class QuestionBadgeComponent {
 
   get badgeClass(): string {
     const map: Record<string, string> = {
-      'Easy': 'badge-easy',
-      'Medium': 'badge-medium',
-      'Hard': 'badge-hard',
-      'Role': 'badge-role',
+      'Easy': 'bg-green-100 text-green-800 border border-green-200 shadow-sm',
+      'Medium': 'bg-amber-100 text-amber-900 border border-amber-200 shadow-sm',
+      'Hard': 'bg-red-100 text-red-800 border border-red-200 shadow-sm',
+      'Role': 'bg-slate-100 text-slate-700 border border-slate-200 shadow-sm',
     };
-    return map[this.variant] ?? 'badge-role';
+    return map[this.variant] ?? 'bg-slate-100 text-slate-700 border border-slate-200 shadow-sm';
   }
 }

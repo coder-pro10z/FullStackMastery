@@ -1,0 +1,43 @@
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="relative bg-[#F8F9FA] border border-[#E0E0E0] rounded-xl overflow-hidden group">
+        <div class="absolute top-4 left-4 z-10">
+            <app-premium-checkbox [checked]="pitchStrategy().introChecked" (checkedChange)="setChecked('introChecked', $event)"></app-premium-checkbox>
+        </div>
+        <div class="p-4 pl-12">
+            <h3 class="text-xs font-bold text-[#5F6368] uppercase tracking-wider mb-2">The 60-Second Hook</h3>
+            <div contenteditable="true" class="text-[#202124] text-sm leading-relaxed min-h-[100px]"
+                (blur)="saveText('introText', $event)">
+                {{ pitchStrategy().introText }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="relative bg-[#e8f0fe]/40 border border-[#d2e3fc] rounded-xl overflow-hidden group">
+        <div class="absolute top-4 left-4 z-10">
+            <app-premium-checkbox [checked]="pitchStrategy().aboutChecked" (checkedChange)="setChecked('aboutChecked', $event)"></app-premium-checkbox>
+        </div>
+        <div class="p-4 pl-12">
+            <h3 class="text-xs font-bold text-[#1A73E8] uppercase tracking-wider mb-2">Mindset & Core Value</h3>
+            <div contenteditable="true" class="text-[#202124] text-sm leading-relaxed min-h-[100px]"
+                (blur)="saveText('aboutText', $event)">
+                {{ pitchStrategy().aboutText }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="relative bg-[#e6f4ea]/40 border border-[#ceead6] rounded-xl overflow-hidden group">
+        <div class="absolute top-4 left-4 z-10">
+            <app-premium-checkbox [checked]="pitchStrategy().customChecked" (checkedChange)="setChecked('customChecked', $event)"></app-premium-checkbox>
+        </div>
+        <div class="p-4 pl-12">
+            <h3 contenteditable="true" class="text-xs font-bold text-[#137333] uppercase tracking-wider mb-2 inline-block"
+                (blur)="saveText('customTitle', $event)">
+                {{ pitchStrategy().customTitle }}
+            </h3>
+            <div contenteditable="true" class="text-[#202124] text-sm leading-relaxed min-h-[100px]"
+                (blur)="saveText('customText', $event)">
+                {{ pitchStrategy().customText }}
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,117 @@
+<div class="flex flex-col gap-8 w-full max-w-[800px] mx-auto pb-12">
+    
+    <!-- 1. Interactive Code Block -->
+    <div class="bg-white rounded-2xl shadow-md border border-[#E2E8F0] overflow-hidden flex flex-col">
+      <div class="bg-[#F8F9FA] py-3 px-4 flex justify-between items-center border-b border-[#E2E8F0]">
+        <div class="flex gap-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>
+        </div>
+        <span class="text-xs font-bold text-[#5F6368] uppercase tracking-[1px]">SQL</span>
+      </div>
+      <pre class="p-6 m-0 font-mono text-[0.95rem] text-[#202124] bg-white border-0 rounded-none leading-relaxed overflow-x-auto"><code><span class="text-[#7C3AED]">SELECT</span> e.name, e.role, d.name <span class="text-[#7C3AED]">AS</span> department 
+<span class="text-[#7C3AED]">FROM</span> <span class="text-[#1A73E8]">Employees</span> e 
+<span class="text-[#7C3AED]">JOIN</span> <span class="text-[#1A73E8]">Departments</span> d <span class="text-[#7C3AED]">ON</span> e.dept_id = d.id;</code></pre>
+      <div class="p-4 px-6 border-t border-[#E2E8F0] bg-[#F8F9FA] flex justify-end">
+        <button 
+          class="bg-[#1A73E8] text-white border-none py-2.5 px-5 rounded-lg font-semibold flex items-center gap-2 cursor-pointer transition-all duration-200 hover:bg-[#1557B0] hover:-translate-y-0.5"
+          [style.opacity]="isRunning ? '0.8' : '1'"
+          [disabled]="isRunning"
+          (click)="executeQuery()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          {{ isRunning ? 'Running...' : 'Execute Query' }}
+        </button>
+      </div>
+    </div>
+  
+    <!-- 2. Source Data Tables -->
+    <div class="bg-white rounded-2xl p-8 shadow-md">
+      <h3 class="text-lg font-bold m-0 mb-4 flex items-center gap-2 text-[#202124]">Departments (Table B)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">ID (Primary Key)</th>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Department Name</th>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Floor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (dept of departmentsData; track dept.id) {
+              <tr class="transition-colors duration-200"
+                  [class.bg-[#EEF2FF]]="hoveredDeptId === dept.id"
+                  [class.text-[#4F46E5]]="hoveredDeptId === dept.id"
+                  [class.font-semibold]="hoveredDeptId === dept.id">
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default"><strong>{{ dept.id }}</strong></td>
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ dept.name }}</td>
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ dept.floor }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+    <div class="bg-white rounded-2xl p-8 shadow-md">
+      <h3 class="text-lg font-bold m-0 mb-4 flex items-center gap-2 text-[#202124]">Employees (Table A)</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Emp_ID</th>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Name</th>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Role</th>
+              <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_ID (Foreign Key)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of employeesData; track emp.emp_id) {
+              <tr class="hover:bg-[#F1F5F9] transition-colors duration-200"
+                  (mouseenter)="onHoverEmployee(emp.dept_id)"
+                  (mouseleave)="onHoverEmployee(null)">
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ emp.emp_id }}</td>
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ emp.name }}</td>
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ emp.role }}</td>
+                <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default"><strong class="text-[#4F46E5]">{{ emp.dept_id }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+    <!-- 3. Dynamic Output Section -->
+    <div id="output-section" class="transition-all duration-400 opacity-0 -translate-y-2.5 hidden"
+         [class.!block]="showOutput"
+         [class.!opacity-100]="showOutput"
+         [class.!translate-y-0]="showOutput">
+      <span class="text-xs font-extrabold text-[#10B981] uppercase tracking-[1.5px] mb-2 block">Query Successful</span>
+      <div class="bg-white rounded-2xl p-8 shadow-md">
+        <h3 class="text-lg font-bold m-0 mb-4 flex items-center gap-2 text-[#202124]">Output Result (Joined Data)</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left">
+            <thead>
+              <tr>
+                <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Name</th>
+                <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Role</th>
+                <th class="p-4 text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of outputData; track $index) {
+                <tr class="hover:bg-[#F1F5F9] transition-colors duration-200">
+                  <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ row.name }}</td>
+                  <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default">{{ row.role }}</td>
+                  <td class="p-4 text-[0.95rem] border-b border-[#E2E8F0] cursor-default"><strong>{{ row.department }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  
+  </div>

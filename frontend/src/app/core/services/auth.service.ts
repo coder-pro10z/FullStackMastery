@@ -16,6 +16,10 @@ export class AuthService {
 
   readonly currentUser = computed(() => this.authState());
   readonly isAuthenticated = computed(() => !!this.authState()?.token);
+  readonly isAdmin = computed(() =>
+    this.authState()?.roles?.some(r => r.toLowerCase() === 'admin') ?? false
+  );
+
 
   register(request: AuthRequest) {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, request).pipe(

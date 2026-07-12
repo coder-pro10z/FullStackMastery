@@ -1,0 +1,37 @@
+<div class="space-y-4">
+    @for (item of keywords; track item.id) {
+        <div class="group relative bg-white border border-[#E0E0E0] rounded-xl p-5 hover:border-[#1A73E8]/50 hover:shadow-md transition-all flex flex-col md:flex-row gap-5 overflow-hidden">
+            <!-- Decorative accent line -->
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#1A73E8] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div class="pt-0.5 shrink-0">
+                <app-premium-checkbox [(checked)]="item.checked"></app-premium-checkbox>
+            </div>
+            
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Term & Def -->
+                <div class="col-span-1 lg:col-span-4 space-y-1.5">
+                    <h3 class="font-bold text-[#202124] text-base group-hover:text-[#1A73E8] transition-colors" [class.line-through]="item.checked" [class.text-[#5F6368]]="item.checked">
+                        {{ item.term }}
+                    </h3>
+                    <p class="text-xs text-[#5F6368] leading-relaxed">{{ item.def }}</p>
+                </div>
+                
+                <!-- Use Case -->
+                <div class="col-span-1 lg:col-span-4 bg-[#F8F9FA] p-3 rounded-lg border border-transparent group-hover:border-[#E0E0E0] transition-colors">
+                    <p class="text-[10px] font-bold text-[#5F6368] uppercase tracking-wider mb-1">Why They Care</p>
+                    <p class="text-xs text-[#202124]">{{ item.useCase }}</p>
+                </div>
+                
+                <!-- Implementation -->
+                <div class="col-span-1 lg:col-span-4 bg-[#e8f0fe]/30 p-3 rounded-lg border border-transparent group-hover:border-[#d2e3fc] transition-colors">
+                    <p class="text-[10px] font-bold text-[#1A73E8] uppercase tracking-wider mb-1">How to Drop It</p>
+                    <p class="text-xs text-[#202124] font-medium flex items-start gap-1">
+                        <lucide-icon name="chevron-right" [size]="14" class="text-[#1A73E8] shrink-0 mt-0.5"></lucide-icon>
+                        {{ item.impl }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>

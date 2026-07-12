@@ -1,0 +1,72 @@
+<div class="grid lg:grid-cols-[1fr_450px] gap-8 w-full min-h-[600px]">
+    <!-- Left: D3 Graph Canvas -->
+    <div #d3Canvas class="bg-white rounded-3xl shadow-md relative overflow-hidden flex justify-center items-center hover:shadow-lg transition-shadow duration-300 min-h-[400px] lg:min-h-full">
+        <div class="absolute top-6 left-6 text-sm font-medium text-[#5F6368] bg-[#F8F9FA]/80 px-4 py-2 rounded-full backdrop-blur-sm pointer-events-none">
+            Interactive: Drag nodes to explore
+        </div>
+    </div>
+
+    <!-- Right: Dynamic Detail Card (Bento Box) -->
+    <div class="bg-white rounded-3xl shadow-md p-10 flex flex-col relative h-full">
+        <div class="mb-6">
+            <span class="text-xs font-bold text-[#4F46E5] uppercase tracking-[1.5px] mb-3 block">
+                {{ currentNodeData.label }}
+            </span>
+            <h1 class="text-4xl font-extrabold m-0 leading-[1.1] tracking-[-0.02em] text-[#202124]">
+                {{ currentNodeData.title }}
+            </h1>
+        </div>
+        
+        <div class="flex-grow">
+            <p class="text-lg leading-relaxed text-[#5F6368] m-0 animate-fade-in-up">
+                {{ currentNodeData.text }}
+            </p>
+        </div>
+        
+        <!-- Interactive Widget -->
+        <div class="bg-[#F8F9FA] rounded-2xl p-6 mt-8 border border-black/5">
+            <div class="text-xs font-bold text-[#5F6368] uppercase tracking-[1px] mb-3 flex items-center gap-2">
+                <span class="inline-block w-2 h-2 bg-[#4F46E5] rounded-full"></span> Knowledge Checkpoint
+            </div>
+            
+            <h4 class="font-semibold text-lg m-0 mb-5 leading-snug text-[#202124]">
+                {{ currentNodeData.question }}
+            </h4>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button 
+                    class="bg-white border-2 border-transparent text-[#202124] py-3.5 px-6 rounded-xl font-semibold text-base cursor-pointer transition-all duration-200 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:text-[#4F46E5]"
+                    [class.border-[#4F46E5]]="userChoice === true && userChoice !== currentNodeData.answer"
+                    [class.text-[#4F46E5]]="userChoice === true && userChoice !== currentNodeData.answer"
+                    [class.border-[#10B981]]="userChoice === true && userChoice === currentNodeData.answer"
+                    [class.text-[#10B981]]="userChoice === true && userChoice === currentNodeData.answer"
+                    [class.border-[#EF4444]]="userChoice === true && !isCorrect && currentNodeData.answer === false"
+                    [class.text-[#EF4444]]="userChoice === true && !isCorrect && currentNodeData.answer === false"
+                    (click)="submitAnswer(true)">
+                    True
+                </button>
+                
+                <button 
+                    class="bg-white border-2 border-transparent text-[#202124] py-3.5 px-6 rounded-xl font-semibold text-base cursor-pointer transition-all duration-200 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:text-[#4F46E5]"
+                    [class.border-[#4F46E5]]="userChoice === false && userChoice !== currentNodeData.answer"
+                    [class.text-[#4F46E5]]="userChoice === false && userChoice !== currentNodeData.answer"
+                    [class.border-[#10B981]]="userChoice === false && userChoice === currentNodeData.answer"
+                    [class.text-[#10B981]]="userChoice === false && userChoice === currentNodeData.answer"
+                    [class.border-[#EF4444]]="userChoice === false && !isCorrect && currentNodeData.answer === true"
+                    [class.text-[#EF4444]]="userChoice === false && !isCorrect && currentNodeData.answer === true"
+                    (click)="submitAnswer(false)">
+                    False
+                </button>
+            </div>
+            
+            <div 
+                class="mt-5 text-[0.95rem] font-semibold text-center min-h-[1.5em] transition-all duration-300 opacity-0 translate-y-[10px]"
+                [class.opacity-100]="feedbackMessage !== ''"
+                [class.translate-y-0]="feedbackMessage !== ''"
+                [class.text-[#10B981]]="isCorrect"
+                [class.text-[#EF4444]]="!isCorrect">
+                {{ feedbackMessage }}
+            </div>
+        </div>
+    </div>
+</div>

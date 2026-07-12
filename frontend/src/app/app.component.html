@@ -1,0 +1,66 @@
+<!-- TOP NAVIGATION -->
+<nav class="bg-white border-b border-[#E0E0E0] sticky top-0 z-50 h-16 px-6 flex items-center justify-between">
+    <div class="flex items-center gap-8">
+        <a routerLink="/dashboard" class="flex items-center gap-2 rounded-md focus-ring">
+            <div class="w-8 h-8 bg-[#1A73E8] rounded-md text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                E
+            </div>
+            <span class="font-semibold text-lg tracking-tight">EduDash</span>
+        </a>
+        <!-- Global Router Links -->
+        <div class="hidden lg:flex items-center gap-6 text-sm font-medium text-[#5F6368]">
+            <a routerLink="/dashboard" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]" [routerLinkActiveOptions]="{exact: true}"
+                class="hover:text-[#202124] border-b-2 py-5 transition-colors border-transparent">Dashboard</a>
+            <a routerLink="/interview-canvas" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]"
+                class="hover:text-[#202124] transition-colors py-5 border-b-2 border-transparent">Interview Canvas</a>
+            <a routerLink="/skill-tree" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]"
+                class="hover:text-[#202124] transition-colors py-5 border-b-2 border-transparent">Skill Tree</a>
+            <a routerLink="/question-bank" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]"
+                class="hover:text-[#202124] transition-colors py-5 border-b-2 border-transparent">Question Bank</a>
+            <a routerLink="/learning-lab" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]"
+                class="hover:text-[#202124] transition-colors py-5 border-b-2 border-transparent">Learning Lab</a>
+            <a routerLink="/quiz" routerLinkActive="text-[#1A73E8] !border-[#1A73E8]"
+                class="hover:text-[#202124] transition-colors py-5 border-b-2 border-transparent">Quiz</a>
+        </div>
+    </div>
+    <div class="flex items-center gap-4">
+        <!-- Global Nav Search -->
+        <div class="relative hidden md:block" *ngIf="!isLandingRoute">
+            <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6368]" [size]="16"></lucide-icon>
+            <input type="text" placeholder="Search current view..."
+                class="pl-9 pr-4 py-2 bg-[#F8F9FA] border border-[#E0E0E0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent transition-all w-64" />
+        </div>
+        <button class="p-2 text-[#5F6368] hover:bg-[#F8F9FA] rounded-full transition-colors relative">
+            <lucide-icon name="bell" [size]="20"></lucide-icon>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EA4335] rounded-full border-2 border-white"></span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1A73E8] to-[#34A853] flex items-center justify-center text-white font-medium text-sm cursor-pointer ml-2">
+            PK
+        </div>
+    </div>
+</nav>
+
+<!-- FLOATING SEARCH WIDGET (Global) -->
+<div class="fixed right-0 top-1/4 z-[60] flex items-center bg-white/95 backdrop-blur-md rounded-l-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#E0E0E0] border-r-0 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+    *ngIf="!isLandingRoute"
+    [class.translate-x-[calc(100%-3rem)]]="!isSearchOpen"
+    [class.hover:translate-x-[calc(100%-3.5rem)]]="!isSearchOpen"
+    [class.translate-x-0]="isSearchOpen">
+    <button (click)="toggleFloatingSearch()"
+        class="w-12 h-12 flex items-center justify-center text-[#5F6368] hover:text-[#1A73E8] transition-colors cursor-pointer shrink-0"
+        title="Search Active View">
+        <lucide-icon name="search" [size]="20"></lucide-icon>
+    </button>
+    <div class="flex items-center w-56 sm:w-72 py-2 pr-3">
+        <input type="text" placeholder="Search context..."
+            class="w-full text-sm outline-none bg-transparent text-[#202124] placeholder:text-[#5F6368] px-2 font-medium">
+        <button (click)="clearSearch()"
+            class="flex items-center justify-center text-[#5F6368] hover:text-[#EA4335] hover:bg-[#fce8e6] rounded-full w-7 h-7 transition-colors ml-1 shrink-0"
+            title="Clear & Close">
+            <lucide-icon name="x" [size]="16"></lucide-icon>
+        </button>
+    </div>
+</div>
+
+<!-- ROUTER OUTLET -->
+<router-outlet></router-outlet>

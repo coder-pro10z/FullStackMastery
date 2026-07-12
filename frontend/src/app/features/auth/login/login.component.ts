@@ -83,8 +83,8 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  email = '';
-  password = '';
+  email = 'test@email.com';
+  password = 'password';
   readonly errorMessage = signal('');
 
   submit() {

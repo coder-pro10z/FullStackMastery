@@ -1,0 +1,10 @@
+<div class="edudash-card flex flex-col gap-3 h-full hover:-translate-y-1 transition-transform duration-300">
+    <div class="p-2 rounded-lg bg-[#FBBC0515] text-[#FBBC05] w-max">
+        <lucide-icon name="flame" [size]="20" [strokeWidth]="2.5"></lucide-icon>
+    </div>
+    <div>
+        <h3 class="text-3xl font-semibold text-[#202124]">{{ currentStreak }} Days</h3>
+        <p class="text-sm font-medium text-[#5F6368] mt-1">Current Streak</p>
+    </div>
+    <div class="text-xs text-[#5F6368] mt-auto pt-2 border-t border-[#E0E0E0]">Personal best: {{ bestStreak }} days</div>
+</div>

@@ -1,0 +1,368 @@
+<div
+    class="h-screen overflow-y-auto overflow-x-hidden bg-[#F8F9FA] text-[#202124] selection:bg-[#1A73E8] selection:text-white relative">
+
+    <div class="glow-orb glow-blue"></div>
+    <div class="glow-orb glow-indigo"></div>
+
+    <div
+        class="fixed top-24 right-6 z-[60] hidden lg:flex items-center glass-panel rounded-full px-4 py-2.5 shadow-lg border border-white/80 cursor-pointer hover:bg-white/90 transition-all search-float group">
+        <lucide-icon name="search"
+            class="w-4 h-4 text-[#5F6368] group-hover:text-[#1A73E8] transition-colors"></lucide-icon>
+        <span class="ml-3 mr-4 text-sm font-medium text-[#5F6368] group-hover:text-[#202124] transition-colors">Search
+            platform...</span>
+        <span
+            class="text-[10px] font-bold bg-[#F8F9FA] text-[#5F6368] px-2 py-1 rounded border border-[#E0E0E0] shadow-sm">⌘K</span>
+    </div>
+
+    <div
+        class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-[60] glass-panel rounded-full p-1.5 md:p-2 flex items-center gap-2 md:gap-3 pr-3 md:pr-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/80 transform transition-all hover:scale-105 hover:bg-white cursor-pointer animate-[fade-in-up_1s_ease-out_forwards]">
+        <div
+            class="w-8 h-8 md:w-10 md:h-10 relative rounded-full flex items-center justify-center bg-white shadow-sm border border-[#E0E0E0] shrink-0">
+            <svg class="w-8 h-8 md:w-10 md:h-10 transform -rotate-90 absolute">
+                <circle cx="50%" cy="50%" r="40%" stroke="#F8F9FA" stroke-width="3" fill="none" />
+                <circle cx="50%" cy="50%" r="40%" stroke="#1A73E8" stroke-width="3" fill="none" stroke-dasharray="100"
+                    stroke-dashoffset="35" class="transition-all duration-1000" />
+            </svg>
+            <lucide-icon name="zap" class="w-3 h-3 md:w-4 md:h-4 text-[#1A73E8]"></lucide-icon>
+        </div>
+        <div class="flex flex-col pr-1">
+            <span
+                class="text-[9px] md:text-[10px] font-bold text-[#5F6368] uppercase tracking-wider leading-none mb-0.5">Readiness</span>
+            <span class="text-xs md:text-sm font-bold text-[#202124] leading-none">65%</span>
+        </div>
+    </div>
+
+    <nav class="fixed w-full top-0 z-50 glass-panel border-b-0 border-white/40">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-8 h-8 bg-[#1A73E8] rounded-md text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                    E</div>
+                <span class="font-semibold text-lg tracking-tight hidden md:block">EduDash</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="hidden md:block bg-[#202124] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#3C4043] transition-all shadow-md hover:-translate-y-0.5">
+                    Launch Workspace
+                </button>
+                <button class="md:hidden text-[#202124] p-2"><lucide-icon name="menu"
+                        class="w-6 h-6"></lucide-icon></button>
+                <button class="lg:hidden text-[#202124] p-2"><lucide-icon name="search"
+                        class="w-6 h-6"></lucide-icon></button>
+            </div>
+        </div>
+    </nav>
+
+    <main
+        class="pt-28 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 flex flex-col items-center text-center max-w-5xl mx-auto section-trigger">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel text-xs font-semibold text-[#1A73E8] mb-6 animate-reveal"
+            style="transition-delay: 0.1s;">
+            <span class="w-2 h-2 rounded-full bg-[#1A73E8] animate-pulse"></span> EduDash Engine v5.0 Live
+        </div>
+
+        <h1 class="text-4xl md:text-7xl font-bold tracking-tight mb-4 md:mb-6 animate-reveal leading-tight"
+            style="transition-delay: 0.2s;">
+            Don't just practice.<br>
+            <span class="bg-gradient-to-r from-[#1A73E8] to-[#4F46E5] clip-text">Master the architecture.</span>
+        </h1>
+
+        <p class="text-base md:text-xl text-[#5F6368] max-w-2xl mb-8 md:mb-10 animate-reveal"
+            style="transition-delay: 0.3s; line-height: 1.6;">
+            The premium technical learning ecosystem. Build Clean Architecture, master SOLID principles, and engineer
+            systems capable of handling 500+ concurrent users.
+        </p>
+
+        <div id="heroDash"
+            class="w-full h-[280px] md:h-[500px] glass-panel rounded-2xl md:rounded-3xl p-2 md:p-8 hero-dashboard relative overflow-hidden group">
+            <div
+                class="w-full h-full bg-white/50 rounded-xl md:rounded-2xl border border-white/60 shadow-sm flex flex-col gap-3 md:gap-4 p-4 md:p-6 relative">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2 md:pb-4">
+                    <div class="w-24 md:w-32 h-3 md:h-4 bg-gray-200 rounded-full"></div>
+                    <div class="flex gap-2">
+                        <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-blue-100"></div>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col md:flex-row gap-4 md:gap-6">
+                    <div class="flex-1 flex flex-col gap-3 md:gap-4">
+                        <div
+                            class="h-16 md:h-24 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg md:rounded-xl border border-blue-100/50 p-3 md:p-4">
+                            <div class="w-32 md:w-48 h-2 md:h-3 bg-blue-200 rounded-full mb-2"></div>
+                            <div class="w-full h-1.5 md:h-2 bg-blue-100 rounded-full"></div>
+                        </div>
+                        <div class="hidden md:block flex-1 bg-gray-50/50 rounded-xl border border-gray-100 p-4">
+                            <div class="grid grid-cols-12 gap-1 opacity-60">
+                                <div *ngFor="let opacityClass of heroHeatmapItems" class="aspect-square rounded-[2px]"
+                                    [ngClass]="opacityClass"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="hidden md:flex w-1/3 bg-gray-50/50 rounded-xl border border-gray-100 items-center justify-center relative overflow-hidden">
+                        <div
+                            class="w-32 h-32 border border-blue-200 rounded-full absolute rotate-45 group-hover:rotate-90 transition-transform duration-1000">
+                        </div>
+                        <div
+                            class="w-24 h-24 border border-indigo-200 rounded-full absolute -rotate-45 group-hover:-rotate-90 transition-transform duration-1000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="py-16 md:py-24 px-4 md:px-6 relative section-trigger overflow-hidden bg-blueprint">
+        <div
+            class="absolute inset-0 bg-gradient-to-b from-[#F8F9FA] via-transparent to-[#F8F9FA] pointer-events-none z-0">
+        </div>
+
+        <div class="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-12 md:gap-8">
+            <div class="w-full md:w-1/3 text-center md:text-left">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white border border-[#E0E0E0] shadow-sm text-xs font-semibold text-[#5F6368] mb-4 animate-reveal">
+                    <lucide-icon name="box" class="w-3 h-3 text-[#1A73E8]"></lucide-icon> Tactile Playgrounds
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4 animate-reveal"
+                    style="transition-delay: 0.1s;">Don't read.<br>Build.</h2>
+                <p class="text-base text-[#5F6368] mb-6 animate-reveal" style="transition-delay: 0.2s;">
+                    Experience Mac-style code environments and inline bento-box checkpoints. Validate your logic in
+                    real-time before moving to the next architectural tier.
+                </p>
+            </div>
+
+            <div class="w-full md:w-2/3 relative h-[380px] md:h-[480px]">
+
+                <div class="absolute top-0 left-0 w-11/12 md:w-4/5 h-64 md:h-[320px] bg-[#1E1E1E] rounded-xl shadow-2xl border border-[#333] flex flex-col overflow-hidden animate-reveal"
+                    style="transition-delay: 0.3s;">
+                    <div class="bg-[#2D2D2D] px-4 py-3 flex items-center gap-2 border-b border-[#111]">
+                        <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                        <span class="ml-4 text-xs text-gray-400 font-mono">Controller.cs - Architecture Builder</span>
+                    </div>
+
+                    <div class="p-4 md:p-6 font-mono text-xs md:text-sm leading-relaxed overflow-hidden text-white/90">
+                        <span class="text-[#569CD6]">public async</span> <span
+                            class="text-[#4EC9B0]">Task</span>&lt;<span class="text-[#4EC9B0]">IActionResult</span>&gt;
+                        <span class="text-[#DCDCAA]">GetUsers</span>()<br>
+                        &#123;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-[#569CD6]">var</span> users = <span
+                            class="text-[#C586C0]">await</span> <span class="text-[#9CDCFE]">_cache</span>.<span
+                            class="text-[#DCDCAA]">GetOrCreateAsync</span>(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-[#CE9178]">"UsersList"</span>,
+                        <span class="text-[#569CD6]">async</span> entry =&gt; &#123;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.<span
+                            class="text-[#9CDCFE]">AbsoluteExpiration</span> = <span
+                            class="text-[#4EC9B0]">TimeSpan</span>.<span class="text-[#DCDCAA]">FromMinutes</span>(<span
+                            class="text-[#B5CEA8]">5</span>);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+                            class="text-[#C586C0]">return await</span> <span class="text-[#9CDCFE]">_db</span>.<span
+                            class="text-[#4EC9B0]">Users</span>.<span class="text-[#DCDCAA]">ToListAsync</span>();<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#125;);<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-[#C586C0]">return</span> <span
+                            class="text-[#DCDCAA]">Ok</span>(users);<br>
+                        &#125;
+                    </div>
+                </div>
+
+                <div class="absolute bottom-0 right-0 w-10/12 md:w-3/5 bg-white rounded-xl shadow-box-premium p-5 md:p-6 animate-reveal z-10 border border-[#E0E0E0]"
+                    style="transition-delay: 0.5s;">
+                    <div class="flex items-center justify-between mb-4">
+                        <span
+                            class="text-[11px] font-bold text-[#1A73E8] uppercase tracking-wider flex items-center gap-1.5"><lucide-icon
+                                name="help-circle" class="w-3.5 h-3.5"></lucide-icon> Concept Check</span>
+
+                        <div
+                            class="flex gap-1.5 text-[#34A853] text-[11px] font-bold items-center bg-[#e6f4ea] px-2.5 py-1 rounded-full border border-[#34A853]/20">
+                            <lucide-icon name="check-circle-2" class="w-3.5 h-3.5"></lucide-icon> COMPLETED
+                        </div>
+                    </div>
+                    <p class="text-sm font-semibold text-[#202124] mb-4">Why implement the Cache-Aside pattern in this
+                        controller?</p>
+
+                    <div class="space-y-2.5">
+                        <div
+                            class="w-full border border-[#E0E0E0] rounded-lg p-3 text-sm text-[#5F6368] hover:bg-[#F8F9FA] cursor-pointer transition-colors">
+                            To ensure the database is always hit first.
+                        </div>
+                        <div
+                            class="w-full border-2 border-[#34A853] bg-[#f0f9f4] rounded-lg p-3 text-sm text-[#202124] font-medium flex items-center justify-between shadow-sm cursor-pointer hover:-translate-y-0.5 transition-transform">
+                            To reduce latency for subsequent reads.
+                            <div class="w-5 h-5 rounded-full bg-[#34A853] flex items-center justify-center text-white">
+                                <lucide-icon name="check" class="w-3 h-3"></lucide-icon></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-16 md:py-24 px-4 md:px-6 max-w-7xl mx-auto section-trigger">
+        <div class="mb-10 md:mb-16 text-center animate-reveal">
+            <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-3">Uncompromising Telemetry.</h2>
+            <p class="text-sm md:text-base text-[#5F6368] px-4">Track progress, lock your targets, and perfect your
+                pitch.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+
+            <div class="md:col-span-2 glass-panel rounded-2xl md:rounded-3xl p-6 md:p-8 bento-card animate-reveal"
+                style="transition-delay: 0.1s;">
+                <div class="flex items-center gap-2 mb-3 icon-lift"><lucide-icon name="activity"
+                        class="w-5 h-5 text-[#5F6368]"></lucide-icon></div>
+                <h3 class="text-lg font-semibold">Fluid Activity Tracking</h3>
+                <div class="w-full bg-white/50 rounded-xl mt-4 border border-white p-4">
+                    <div class="flex gap-1.5 justify-end">
+                        <div *ngFor="let col of bentoHeatmapColumns" class="flex flex-col gap-1.5">
+                            <div *ngFor="let activeClass of col.rows"
+                                class="w-3 md:w-3.5 h-3 md:h-3.5 rounded-full transition-transform hover:scale-150 cursor-pointer"
+                                [ngClass]="activeClass"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl md:rounded-3xl p-6 md:p-8 bento-card animate-reveal"
+                style="transition-delay: 0.2s;">
+                <div class="flex items-center gap-2 mb-3 icon-lift"><lucide-icon name="crosshair"
+                        class="w-5 h-5 text-[#5F6368]"></lucide-icon></div>
+                <h3 class="text-lg font-semibold">Target Radar</h3>
+                <div
+                    class="aspect-square relative flex items-center justify-center bg-white/50 rounded-xl border border-white mt-4">
+                    <svg viewBox="0 0 100 100" class="w-full h-full p-4 overflow-visible">
+                        <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#E2E8F0"
+                            stroke-width="1" />
+                        <polygon points="50,25 75,40 75,60 50,75 25,60 25,40" fill="none" stroke="#E2E8F0"
+                            stroke-width="1" />
+                        <polygon points="50,15 85,35 80,65 50,85 20,65 15,35" fill="rgba(52, 168, 83, 0.1)"
+                            stroke="#34A853" stroke-width="1" stroke-dasharray="2,2" />
+                        <polygon points="50,25 70,30 85,60 50,80 30,70 25,40" fill="rgba(26, 115, 232, 0.2)"
+                            stroke="#1A73E8" stroke-width="2" class="svg-path" />
+                        <circle cx="50" cy="25" r="3" fill="#1A73E8" />
+                        <circle cx="70" cy="30" r="3" fill="#1A73E8" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="md:col-span-3 glass-panel rounded-2xl md:rounded-3xl p-6 md:p-8 bento-card animate-reveal flex flex-col md:flex-row items-center gap-8 overflow-hidden relative"
+                style="transition-delay: 0.3s;">
+                <div class="w-full md:w-1/2 z-10">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#e8f0fe] text-xs font-semibold text-[#1A73E8] mb-4">
+                        <lucide-icon name="mic" class="w-3 h-3"></lucide-icon> Audio Telemetry
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-semibold mb-2">The Interview Canvas</h3>
+                    <p class="text-sm md:text-base text-[#5F6368] mb-6">Record your responses natively, playback to
+                        audit your pacing, and seamlessly bookmark tough architectural questions for later review.</p>
+                </div>
+
+                <div
+                    class="w-full md:w-1/2 h-48 md:h-64 bg-white/80 rounded-2xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative z-10 flex flex-col p-4 transform translate-x-0 md:translate-x-12 mt-4 md:mt-0">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-full bg-[#F8F9FA] rounded-lg p-3 border border-[#E0E0E0] flex-1 mr-3 shadow-sm">
+                            <div class="w-1/3 h-2 bg-[#E0E0E0] rounded-full mb-3"></div>
+                            <div class="w-full h-2 bg-[#E0E0E0] rounded-full mb-2"></div>
+                            <div class="w-4/5 h-2 bg-[#E0E0E0] rounded-full"></div>
+                        </div>
+                        <div class="p-2 bg-[#fef7e0] rounded-md border border-[#fbbc05]/30 text-[#fbbc05] shadow-sm cursor-pointer hover:-translate-y-0.5 transition-transform"
+                            title="Bookmarked Question">
+                            <lucide-icon name="bookmark" class="w-4 h-4 fill-current"></lucide-icon>
+                        </div>
+                    </div>
+                    <div
+                        class="flex-1 bg-[#202124] rounded-lg flex items-center justify-center gap-3 relative overflow-hidden group/audio shadow-inner border border-[#3C4043]">
+                        <div
+                            class="w-8 h-8 rounded-full bg-[#EA4335] flex items-center justify-center shadow-[0_0_15px_rgba(234,67,53,0.5)] animate-pulse">
+                            <div class="w-2.5 h-2.5 bg-white rounded-sm"></div>
+                        </div>
+                        <div class="flex gap-1 h-8 items-end">
+                            <div class="w-1 bg-[#1A73E8] rounded-t-sm h-4"></div>
+                            <div class="w-1 bg-[#1A73E8] rounded-t-sm h-7"></div>
+                            <div class="w-1 bg-[#1A73E8] rounded-t-sm h-3"></div>
+                            <div class="w-1 bg-[#1A73E8] rounded-t-sm h-6"></div>
+                            <div class="w-1 bg-[#1A73E8] rounded-t-sm h-8"></div>
+                        </div>
+                        <span class="text-white/80 text-xs font-medium ml-2 font-mono">01:24</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 md:py-24 relative section-trigger overflow-hidden">
+        <div
+            class="max-w-4xl mx-auto px-4 md:px-6 relative flex flex-col-reverse md:flex-row items-center gap-10 md:gap-16">
+
+            <div class="w-full md:w-1/2 flex justify-center relative h-[300px] md:h-[400px]">
+                <svg viewBox="0 0 100 400" preserveAspectRatio="xMidYMid meet"
+                    class="w-full h-full absolute top-0 overflow-visible">
+                    <path d="M50,20 C50,100 20,150 50,200 C80,250 50,300 50,380" fill="none" stroke="#E2E8F0"
+                        stroke-width="4" stroke-linecap="round" />
+                    <path d="M50,20 C50,100 20,150 50,200 C80,250 50,300 50,380" fill="none" stroke="#1A73E8"
+                        stroke-width="4" stroke-linecap="round" class="svg-path" />
+
+                    <g transform="translate(50, 20)">
+                        <circle cx="0" cy="0" r="12" fill="#1A73E8" class="shadow-sm" />
+                        <path d="M-4,-1 L-1,2 L5,-4" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </g>
+
+                    <g transform="translate(35, 160)">
+                        <circle cx="0" cy="0" r="16" fill="#e6f4ea" stroke="#34A853" stroke-width="2" />
+                        <circle cx="0" cy="0" r="6" fill="#34A853"
+                            class="animate-pulse shadow-[0_0_10px_rgba(52,168,83,0.6)]" />
+                    </g>
+
+                    <g transform="translate(50, 380)">
+                        <circle cx="0" cy="0" r="12" fill="#F8F9FA" stroke="#E2E8F0" stroke-width="2" />
+                        <rect x="-3" y="-3" width="6" height="5" rx="1" fill="none" stroke="#5F6368"
+                            stroke-width="1.5" />
+                        <path d="M-1.5,-3 C-1.5,-5 1.5,-5 1.5,-3" fill="none" stroke="#5F6368" stroke-width="1.5" />
+                    </g>
+                </svg>
+            </div>
+
+            <div class="w-full md:w-1/2 text-center md:text-left">
+                <h2 class="text-2xl md:text-3xl font-bold tracking-tight mb-3 md:mb-4 animate-reveal">Gamified Pedagogy.
+                </h2>
+                <p class="text-base md:text-lg text-[#5F6368] mb-6 md:mb-8 animate-reveal"
+                    style="transition-delay: 0.1s;">
+                    Abandon the linear table of contents. Navigate a physics-driven progression map that visually
+                    unlocks advanced tracks as you master fundamentals.
+                </p>
+                <ul class="space-y-4 text-left">
+                    <li class="flex items-start gap-3 animate-reveal" style="transition-delay: 0.2s;">
+                        <div class="mt-1 p-1 rounded-full bg-[#1A73E8]/10 text-[#1A73E8]"><lucide-icon name="git-merge"
+                                class="w-4 h-4"></lucide-icon></div>
+                        <div>
+                            <span class="font-semibold block text-[#202124] text-sm md:text-base">Kinetic Node
+                                Mapping</span>
+                            <span class="text-xs md:text-sm text-[#5F6368]">Prerequisites connected by
+                                physics-calculated bezier curves.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-16 md:py-20 border-t border-[#E0E0E0] bg-white relative overflow-hidden">
+        <div class="max-w-3xl mx-auto px-4 md:px-6 text-center">
+            <div
+                class="w-14 h-14 md:w-16 md:h-16 bg-[#1A73E8] rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-[0_10px_20px_rgba(26,115,232,0.3)] transform -rotate-6">
+                E</div>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4 md:mb-6">Ready to upgrade your system?</h2>
+
+            <div class="max-w-md mx-auto relative mt-8 mb-4 group">
+                <input type="email" placeholder="Enter your email address"
+                    class="w-full pl-5 pr-32 py-4 rounded-xl bg-[#F8F9FA] border border-[#E0E0E0] focus:outline-none focus:ring-2 focus:ring-[#1A73E8] focus:border-transparent transition-all shadow-sm">
+                <button
+                    class="absolute right-1.5 top-1.5 bottom-1.5 bg-[#1A73E8] text-white px-6 rounded-lg font-medium hover:bg-[#1557B0] transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md flex items-center gap-2">
+                    Start
+                    <lucide-icon name="arrow-right"
+                        class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></lucide-icon>
+                </button>
+            </div>
+            <p class="text-xs text-[#5F6368]">Join the early access waitlist. No credit card required.</p>
+        </div>
+    </footer>
+</div>

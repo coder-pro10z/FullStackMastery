@@ -1,0 +1,43 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+    <!-- JD Block -->
+    <div class="bg-[#F8F9FA] p-5 rounded-xl border border-[#E0E0E0]">
+        <div class="flex justify-between items-end mb-3">
+            <h3 class="font-semibold text-[#202124] flex items-center gap-2">
+                <lucide-icon name="briefcase" [size]="16" class="text-[#5F6368]"></lucide-icon> Job Description Pointers
+            </h3>
+        </div>
+        <div class="space-y-2">
+            @for (item of jdItems(); track item.id) {
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-[#E0E0E0]">
+                    <div class="pt-0.5 shrink-0">
+                        <app-premium-checkbox [checked]="item.checked" (checkedChange)="toggleJd(item.id)"></app-premium-checkbox>
+                    </div>
+                    <p class="text-sm text-[#202124] leading-relaxed select-none cursor-pointer" (click)="toggleJd(item.id)" [class.line-through]="item.checked" [class.text-[#5F6368]]="item.checked">
+                        {{ item.text }}
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Resume Block -->
+    <div class="bg-[#e8f0fe]/50 p-5 rounded-xl border border-[#d2e3fc]">
+        <div class="flex justify-between items-end mb-3">
+            <h3 class="font-semibold text-[#1557B0] flex items-center gap-2">
+                <lucide-icon name="file-text" [size]="16" class="text-[#1A73E8]"></lucide-icon> My Resume Pointers
+            </h3>
+        </div>
+        <div class="space-y-2">
+            @for (item of resumeItems(); track item.id) {
+                <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-[#d2e3fc]">
+                    <div class="pt-0.5 shrink-0">
+                        <app-premium-checkbox [checked]="item.checked" (checkedChange)="toggleResume(item.id)"></app-premium-checkbox>
+                    </div>
+                    <p class="text-sm text-[#202124] leading-relaxed select-none cursor-pointer" (click)="toggleResume(item.id)" [class.line-through]="item.checked" [class.text-[#5F6368]]="item.checked">
+                        {{ item.text }}
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

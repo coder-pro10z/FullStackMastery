@@ -1,0 +1,168 @@
+<main class="mx-auto block max-w-7xl space-y-10 p-6 md:p-10" *ngIf="vm$ | async as vm">
+    
+    <!-- HEADER: Google Sans Style -->
+    <header class="flex flex-col gap-6 pb-8 border-b border-slate-100 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-2">
+            <nav class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#1A73E8]">
+                <lucide-icon name="database" [size]="14"></lucide-icon>
+                <span>Premium Question Bank</span>
+            </nav>
+            <h1 class="text-4xl font-bold tracking-tight text-[#202124]">Master your Interviews.</h1>
+            <p class="text-lg text-[#5F6368] font-light">Refined high-probability questions curated for your growth.</p>
+        </div>
+        <div class="flex gap-3">
+            <button class="btn-apple-secondary"><lucide-icon name="upload" [size]="18"></lucide-icon> Import</button>
+            <button class="btn-apple-primary"><lucide-icon name="plus" [size]="18"></lucide-icon> Add Question</button>
+        </div>
+    </header>
+
+    <!-- FILTER BAR: Glassmorphism -->
+    <div class="sticky top-4 z-30">
+        <app-filter-bar 
+            class="glass-panel block"
+            [roles]="vm.roles"
+            [searchTerm]="activeFilters.searchTerm ?? ''"
+            [difficulty]="activeFilters.difficulty ?? ''"
+            [role]="activeFilters.role ?? ''"
+            (filtersChanged)="updateFilters($event)">
+        </app-filter-bar>
+    </div>
+
+    <!-- GRID: The Glitch Fix (items-start) -->
+    <section class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 items-start">
+        @if (loading()) {
+            @for (i of [1,2,3,4,5,6]; track i) {
+                <div class="premium-card min-h-[260px] animate-pulse">
+                    <div class="flex justify-between mb-4">
+                        <div class="h-5 w-20 bg-slate-200 rounded-full"></div>
+                        <div class="h-5 w-16 bg-slate-200 rounded-full"></div>
+                    </div>
+                    <div class="h-5 w-3/4 bg-slate-200 rounded mb-3"></div>
+                    <div class="h-4 w-full bg-slate-200 rounded mb-2"></div>
+                    <div class="h-4 w-2/3 bg-slate-200 rounded mb-6"></div>
+                    <div class="mt-auto border-t border-slate-100 pt-4 flex gap-2">
+                        <div class="h-7 w-20 bg-slate-200 rounded-lg"></div>
+                        <div class="h-7 w-20 bg-slate-200 rounded-lg"></div>
+                    </div>
+                </div>
+            }
+        } @else if (vm.questions.length === 0) {
+            <div class="premium-card p-12 text-center sm:col-span-2 lg:col-span-3">
+                <lucide-icon name="inbox" [size]="48" class="mx-auto mb-4 text-[#5F6368]"></lucide-icon>
+                <h3 class="text-lg font-semibold text-[#202124] mb-1">No questions found</h3>
+                <p class="text-sm text-[#5F6368]">Try adjusting your filters or selecting a different category.</p>
+            </div>
+        } @else {
+            @for (question of vm.questions; track question.id) {
+                <article @listAnimation class="premium-card group transition-all duration-500" 
+                         [class.opacity-40]="expandedQuestionId && expandedQuestionId !== question.id"
+                         [class.shadow-2xl]="expandedQuestionId === question.id"
+                         [class.-translate-y-1]="expandedQuestionId === question.id"
+                         [class.is-expanded]="expandedQuestionId === question.id">
+                    <!-- Top Badges -->
+                    <div class="flex items-start justify-between">
+                        <div class="flex gap-2">
+                            <app-question-badge [label]="question.categoryName" variant="Role"></app-question-badge>
+                            <app-question-badge [label]="question.difficulty" [variant]="question.difficulty"></app-question-badge>
+                        </div>
+                        <!-- Social Proof / Gamification -->
+                        <div class="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                            <lucide-icon name="trending-up" [size]="12" class="text-emerald-500"></lucide-icon>
+                            85% Solved
+                        </div>
+                    </div>
+
+                    <!-- Title & Content with Fixed Height for Alignment -->
+                    <div class="mt-5 h-[140px] overflow-hidden flex flex-col gap-3">
+                        @if (question.title) {
+                            <h2 class="text-[1.15rem] font-semibold text-[#202124] group-hover:text-[#1A73E8] transition-colors duration-300 leading-snug line-clamp-2">
+                                {{ question.title }}
+                            </h2>
+                            <p class="text-sm leading-relaxed text-[#5F6368] line-clamp-3 group-hover:line-clamp-none transition-all">
+                                {{ question.questionText }}
+                            </p>
+                        } @else {
+                            <h2 class="text-[1.15rem] font-semibold text-[#202124] group-hover:text-[#1A73E8] transition-colors duration-300 leading-snug line-clamp-5">
+                                {{ question.questionText }}
+                            </h2>
+                        }
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="text-[11px] font-medium text-[#5F6368] bg-slate-100 px-2 py-0.5 rounded-full">
+                            {{ question.role }}
+                        </span>
+                    </div>
+
+                    <!-- Action Bar -->
+                    <div class="mt-6 flex items-center justify-between border-t border-slate-50 pt-4">
+                        <div class="flex gap-2">
+                            <app-action-toggle label="Solved" icon="solved" [active]="question.isSolved" (toggled)="toggleSolved(question.id)"></app-action-toggle>
+                            <app-action-toggle label="Revision" icon="bookmark" [active]="question.isRevision" (toggled)="toggleRevision(question.id)"></app-action-toggle>
+                        </div>
+
+                        @if (question.answerText) {
+                            <button (click)="toggleAnswer(question.id)" class="reveal-btn">
+                                {{ expandedQuestionId === question.id ? 'Hide Solution' : 'View Solution' }}
+                                <lucide-icon [name]="expandedQuestionId === question.id ? 'chevron-up' : 'chevron-down'" [size]="14"></lucide-icon>
+                            </button>
+                        }
+                    </div>
+
+                    <!-- ANIMATED ANSWER SECTION -->
+                    @if (question.answerText) {
+                        <div [@expandCollapse]="expandedQuestionId === question.id ? 'expanded' : 'collapsed'" 
+                             class="answer-box">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Official Guidance</span>
+                            </div>
+                            <p class="text-[14px] text-[#3C4043] leading-[1.625] whitespace-pre-line">
+                                {{ question.answerText }}
+                            </p>
+                        </div>
+                    }
+                </article>
+            }
+        }
+    </section>
+
+    @if (!loading() && vm.totalPages > 1) {
+        <section class="premium-card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between !mt-10">
+            <div class="text-sm text-[#5F6368]">
+                {{ paginationSummary(vm) }}
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs uppercase tracking-wider text-[#5F6368]">Per Page</span>
+                    @for (size of pageSizeOptions; track size) {
+                        <button type="button"
+                            class="px-3 py-1.5 rounded-lg text-xs border transition-colors"
+                            [ngClass]="{
+                                'bg-[#1A73E8]/10 text-[#1A73E8] border-[#1A73E8]/30 font-semibold': vm.pageSize === size,
+                                'text-[#5F6368] border-[#E0E0E0] hover:bg-slate-50': vm.pageSize !== size
+                            }"
+                            (click)="setPageSize(size)">
+                            {{ size }}
+                        </button>
+                    }
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn btn-ghost text-xs disabled:opacity-40"
+                        [disabled]="!canGoToPreviousPage(vm)"
+                        (click)="goToPreviousPage(vm.pageNumber)">
+                        Previous
+                    </button>
+                    <span class="text-sm text-[#5F6368] min-w-24 text-center">
+                        Page {{ vm.pageNumber }} of {{ vm.totalPages }}
+                    </span>
+                    <button type="button" class="btn btn-ghost text-xs disabled:opacity-40"
+                        [disabled]="!canGoToNextPage(vm)"
+                        (click)="goToNextPage(vm.pageNumber, vm.totalPages)">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </section>
+    }
+</main>

@@ -1,0 +1,53 @@
+.skill-node {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skill-node:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #1A73E8;
+    transform: translateY(-2px);
+}
+
+:host ::ng-deep .connector-path {
+    transition: stroke-dashoffset 1s ease-in-out, stroke 0.3s ease;
+    stroke-linecap: round;
+}
+
+.node-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+
+.node-container:hover .node-tooltip,
+.skill-node:focus + .node-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(-8px);
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+:host ::ng-deep .animate-draw {
+    animation: draw 1.5s forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.7s ease-out forwards;
+}

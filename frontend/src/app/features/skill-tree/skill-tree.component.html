@@ -1,0 +1,189 @@
+<div class="p-4 md:p-12 pb-32">
+    <header class="max-w-5xl mx-auto mb-16 relative z-20">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 bg-[#1A73E8] rounded-xl flex items-center justify-center text-white shadow-md">
+                <lucide-icon name="database" [size]="24"></lucide-icon>
+            </div>
+            <div>
+                <h1 class="text-2xl font-semibold tracking-tight text-[#202124]">SQL Core Mastery</h1>
+                <p class="text-[#5F6368] text-sm font-medium">Standard Curriculum</p>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white border border-[#E0E0E0] rounded-xl p-5 shadow-[0_1px_2px_rgba(0,0,0,0.08)] flex items-center gap-6">
+            <div class="flex-1">
+                <div class="flex justify-between text-xs font-semibold text-[#5F6368] mb-2 uppercase tracking-wider">
+                    <span>Core Progress</span>
+                    <span class="text-[#1A73E8]">42% Mastered</span>
+                </div>
+                <div class="h-2 bg-[#F8F9FA] rounded-full overflow-hidden border border-[#E0E0E0]">
+                    <div class="h-full bg-[#1A73E8] transition-all duration-1000 w-[42%]"></div>
+                </div>
+            </div>
+            <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-[#1b5d2b] bg-[#e6f4ea] px-3 py-1.5 rounded-lg border border-[#ceead6]">
+                <lucide-icon name="award" [size]="16"></lucide-icon>
+                <span>Core Certification Path</span>
+            </div>
+        </div>
+    </header>
+
+    @if (isLoading) {
+        <div id="skeleton-loader" class="max-w-5xl mx-auto space-y-16 animate-pulse">
+            <div class="flex justify-center gap-8">
+                <div class="h-24 w-48 bg-[#E0E0E0] rounded-xl"></div>
+                <div class="h-24 w-48 bg-[#E0E0E0] rounded-xl"></div>
+            </div>
+            <div class="flex justify-center gap-8">
+                <div class="h-24 w-48 bg-[#E0E0E0] rounded-xl"></div>
+                <div class="h-24 w-48 bg-[#E0E0E0] rounded-xl"></div>
+                <div class="h-24 w-48 bg-[#E0E0E0] rounded-xl"></div>
+            </div>
+        </div>
+    } @else {
+        <main id="tree-content" class="max-w-6xl mx-auto relative">
+            <svg #connectorSvg id="connector-svg" class="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true"></svg>
+
+            <!-- Core Curriculum -->
+            <div id="core-phases-container" class="space-y-24 relative z-10 focus:outline-none" tabindex="0">
+                @for (phase of coreCurriculum; track phase.phase) {
+                    <section class="space-y-8">
+                        <h2 class="text-xs uppercase tracking-[0.2em] font-semibold text-[#5F6368] text-center">{{ phase.phase }}</h2>
+                        <div class="flex flex-wrap justify-center gap-6 md:gap-12">
+                            @for (node of phase.nodes; track node.id) {
+                                <div class="node-container relative group flex flex-col items-center" [id]="'container-' + node.id">
+                                    <button class="skill-node w-48 rounded-xl border p-4 text-left flex flex-col gap-3 relative z-20 cursor-pointer"
+                                        [class.bg-[#F8F9FA]]="node.status === 'locked'"
+                                        [class.border-[#E0E0E0]]="node.status === 'locked' || node.status === 'completed'"
+                                        [class.opacity-75]="node.status === 'locked'"
+                                        [class.bg-white]="node.status !== 'locked'"
+                                        [class.hover:shadow-md]="node.status !== 'locked'"
+                                        [class.border-[#1A73E8]]="node.status === 'in-progress'"
+                                        [class.border-2]="node.status === 'in-progress'"
+                                        [class.shadow-[0_0_0_4px_#e8f0fe]]="node.status === 'in-progress'"
+                                        tabindex="-1"
+                                        [attr.aria-label]="node.title + '. ' + getAriaStatus(node.status)">
+                                        
+                                        <div class="flex justify-between items-start">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                                                [class.bg-[#1b5d2b]]="node.status === 'completed'"
+                                                [class.bg-[#1A73E8]]="node.status === 'in-progress'"
+                                                [class.bg-[#E0E0E0]]="node.status === 'locked'">
+                                                @if (node.status === 'completed') {
+                                                    <lucide-icon name="check" [size]="20" class="text-white"></lucide-icon>
+                                                } @else if (node.status === 'locked') {
+                                                    <lucide-icon name="lock" [size]="20" class="text-white"></lucide-icon>
+                                                } @else {
+                                                    <lucide-icon [name]="node.icon" [size]="20" class="text-white"></lucide-icon>
+                                                }
+                                            </div>
+                                            @if (node.status === 'in-progress') {
+                                                <div class="flex h-2.5 w-2.5 relative mt-1 mr-1">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1A73E8]"></span>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold leading-tight"
+                                                [class.text-[#5F6368]]="node.status === 'locked'"
+                                                [class.text-[#202124]]="node.status !== 'locked'">{{ node.title }}</p>
+                                            <p class="text-[11px] text-[#5F6368] mt-1 uppercase tracking-wider font-bold">{{ node.status.replace('-', ' ') }}</p>
+                                        </div>
+                                    </button>
+
+                                    <div class="node-tooltip absolute bottom-full mb-3 w-56 bg-[#202124] text-white text-xs p-3 rounded-lg shadow-xl z-50">
+                                        <p class="font-semibold mb-1">{{ node.title }}</p>
+                                        <p class="text-gray-300 leading-relaxed">{{ node.status === 'locked' ? 'Complete prerequisite nodes to unlock this topic.' : node.desc }}</p>
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#202124]"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
+
+            <!-- Specialization Gate -->
+            @if (!showSpecialization) {
+                <div id="specialization-gate" class="relative z-20 flex justify-center mt-24 transition-all duration-300">
+                    <button (click)="revealSpecialization()"
+                        class="bg-white border border-[#E0E0E0] text-[#5F6368] hover:text-[#202124] hover:bg-[#F8F9FA] hover:shadow-md px-6 py-3 rounded-full shadow-sm transition-all font-medium text-sm flex items-center gap-2 group">
+                        <lucide-icon name="lock" [size]="16" class="text-[#EA4335] group-hover:hidden"></lucide-icon>
+                        <lucide-icon name="unlock" [size]="16" class="text-[#34A853] hidden group-hover:block"></lucide-icon>
+                        Unlock T-SQL Specialization
+                        <lucide-icon name="chevron-down" [size]="16" class="ml-1 transition-transform group-hover:translate-y-0.5"></lucide-icon>
+                    </button>
+                </div>
+            }
+
+            <!-- Specialization Branch -->
+            @if (showSpecialization) {
+                <div id="sql-server-branch" class="transition-all duration-700 ease-out mt-16 relative z-10 pb-16 animate-fade-in-up">
+                    <div class="relative py-8">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+                            <div class="w-full border-t border-dashed border-[#E0E0E0]"></div>
+                        </div>
+                        <div class="relative flex justify-center">
+                            <span class="bg-[#F8F9FA] px-4 text-xs uppercase tracking-[0.2em] font-bold text-[#EA4335] flex items-center gap-2">
+                                <lucide-icon name="server" [size]="16"></lucide-icon> Vendor Specific Track
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="specialization-container" class="space-y-24 mt-8">
+                        @for (phase of specializationCurriculum; track phase.phase) {
+                            <section class="space-y-8">
+                                <h2 class="text-xs uppercase tracking-[0.2em] font-semibold text-[#5F6368] text-center">{{ phase.phase }}</h2>
+                                <div class="flex flex-wrap justify-center gap-6 md:gap-12">
+                                    @for (node of phase.nodes; track node.id) {
+                                        <div class="node-container relative group flex flex-col items-center" [id]="'container-' + node.id">
+                                            <button class="skill-node w-48 rounded-xl border p-4 text-left flex flex-col gap-3 relative z-20 cursor-pointer"
+                                                [class.bg-[#F8F9FA]]="node.status === 'locked'"
+                                                [class.border-[#E0E0E0]]="node.status === 'locked' || node.status === 'completed'"
+                                                [class.opacity-75]="node.status === 'locked'"
+                                                [class.bg-white]="node.status !== 'locked'"
+                                                [class.hover:shadow-md]="node.status !== 'locked'"
+                                                [class.border-[#1A73E8]]="node.status === 'in-progress'"
+                                                [class.border-2]="node.status === 'in-progress'"
+                                                [class.shadow-[0_0_0_4px_#e8f0fe]]="node.status === 'in-progress'"
+                                                tabindex="-1"
+                                                [attr.aria-label]="node.title + '. ' + getAriaStatus(node.status)">
+                                                
+                                                <div class="flex justify-between items-start">
+                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                                                        [class.bg-[#1b5d2b]]="node.status === 'completed'"
+                                                        [class.bg-[#1A73E8]]="node.status === 'in-progress'"
+                                                        [class.bg-[#E0E0E0]]="node.status === 'locked'">
+                                                        @if (node.status === 'completed') {
+                                                            <lucide-icon name="check" [size]="20" class="text-white"></lucide-icon>
+                                                        } @else if (node.status === 'locked') {
+                                                            <lucide-icon name="lock" [size]="20" class="text-white"></lucide-icon>
+                                                        } @else {
+                                                            <lucide-icon [name]="node.icon" [size]="20" class="text-white"></lucide-icon>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-semibold leading-tight"
+                                                        [class.text-[#5F6368]]="node.status === 'locked'"
+                                                        [class.text-[#202124]]="node.status !== 'locked'">{{ node.title }}</p>
+                                                    <p class="text-[11px] text-[#5F6368] mt-1 uppercase tracking-wider font-bold">{{ node.status.replace('-', ' ') }}</p>
+                                                </div>
+                                            </button>
+                                            
+                                            <div class="node-tooltip absolute bottom-full mb-3 w-56 bg-[#202124] text-white text-xs p-3 rounded-lg shadow-xl z-50">
+                                                <p class="font-semibold mb-1">{{ node.title }}</p>
+                                                <p class="text-gray-300 leading-relaxed">{{ node.status === 'locked' ? 'Complete prerequisite nodes to unlock this topic.' : node.desc }}</p>
+                                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#202124]"></div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    </div>
+                </div>
+            }
+        </main>
+    }
+</div>

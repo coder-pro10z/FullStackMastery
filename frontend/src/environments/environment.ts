@@ -1,3 +1,5 @@
 export const environment = {
-  apiUrl: 'http://localhost:5000/api'
+  production: false,
+  apiUrl: 'https://fullstackmastery.onrender.com/api'
+  //,apiUrl: 'http://localhost:5000/api'
 };

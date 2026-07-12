@@ -1,0 +1,61 @@
+<div class="grid grid-cols-1 gap-6">
+    @for (item of qaList(); track item.id; let i = $index) {
+        <div class="border border-[#E0E0E0] rounded-xl overflow-hidden bg-white hover:border-[#1A73E8]/50 transition-colors">
+            
+            <!-- Header (Question) -->
+            <div class="p-4 md:p-5 flex items-start gap-4">
+                <div class="pt-1">
+                    <app-premium-checkbox [checked]="item.checked" (checkedChange)="setChecked(item, $event)"></app-premium-checkbox>
+                </div>
+                <div class="flex-1 cursor-pointer" (click)="toggleAnswer(item)">
+                    <h3 class="text-base font-semibold text-[#202124] leading-snug pr-8 relative">
+                        <span class="text-[#1A73E8] mr-1">Q{{ i + 1 }}.</span> {{ item.q }}
+                    </h3>
+                    <p class="text-xs text-[#5F6368] mt-1.5 font-medium flex items-center gap-1.5">
+                        <lucide-icon name="lightbulb" [size]="14" class="text-[#FBBC05]"></lucide-icon>
+                        Why they ask: {{ item.motive }}
+                    </p>
+                </div>
+                <button (click)="toggleAnswer(item)" class="p-2 text-[#5F6368] hover:bg-[#F8F9FA] rounded-md transition-colors shrink-0">
+                    <lucide-icon [name]="item.showAnswer ? 'chevron-up' : 'chevron-down'" [size]="20"></lucide-icon>
+                </button>
+            </div>
+
+            <!-- Expandable Answer Body -->
+            @if (item.showAnswer) {
+                <div class="border-t border-[#E0E0E0] bg-[#F8F9FA] p-4 md:p-5">
+                    
+                    <!-- Hint Toggle -->
+                    <div class="mb-4">
+                        <button (click)="toggleHint(item)" class="text-sm font-medium text-[#1A73E8] hover:underline flex items-center gap-1">
+                            <lucide-icon [name]="item.showHint ? 'chevron-down' : 'chevron-right'" [size]="14"></lucide-icon>
+                            {{ item.showHint ? 'Hide Hint' : 'Show Hint' }}
+                        </button>
+                        @if (item.showHint) {
+                            <div class="mt-2 p-3 bg-white border border-[#FBBC05]/30 rounded-lg text-sm text-[#202124] shadow-sm">
+                                <span class="font-bold text-[#b06000] mr-1">Hint:</span> {{ item.hint }}
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Perfect Answer -->
+                    <div>
+                        <h4 class="text-sm font-bold text-[#34A853] mb-2 flex items-center gap-1.5">
+                            <lucide-icon name="circle-check" [size]="16"></lucide-icon> The Perfect Answer
+                        </h4>
+                        <div class="bg-white p-4 rounded-lg border border-[#E0E0E0] text-sm text-[#202124] leading-relaxed shadow-sm">
+                            {{ item.a }}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-[#E0E0E0]">
+                        <button class="btn btn-ghost text-xs py-1.5 px-3">
+                            <lucide-icon name="volume-2" [size]="14"></lucide-icon> Listen
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

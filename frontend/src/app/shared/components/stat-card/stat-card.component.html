@@ -1,0 +1,22 @@
+<div class="edudash-card p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300">
+    <div class="flex items-start justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            [ngClass]="data.iconBg + ' ' + data.iconColor">
+            <lucide-icon [name]="data.icon" [size]="24" [strokeWidth]="2.5"></lucide-icon>
+        </div>
+        <!-- Trend indicator, assuming positive for now as placeholder, can be dynamic later -->
+        <div class="flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-full bg-[#34A85315] text-[#34A853]">
+            <lucide-icon name="trending-up" [size]="14"></lucide-icon>
+            <span>+12%</span>
+        </div>
+    </div>
+    <div class="mb-1">
+        <h3 class="text-[#5F6368] font-medium text-sm">{{ data.label }}</h3>
+    </div>
+    <div class="flex items-baseline gap-2 mb-4">
+        <span class="text-3xl font-bold text-[#202124] tracking-tight">{{ data.value }}</span>
+    </div>
+    <div class="mt-auto pt-4 border-t border-[#E0E0E0]">
+        <p class="text-xs text-[#5F6368] font-medium">{{ data.footer }}</p>
+    </div>
+</div>

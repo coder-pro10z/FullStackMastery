@@ -1,0 +1,13 @@
+<div class="relative flex items-center cursor-pointer" (click)="toggle()">
+    <div class="w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 shadow-sm"
+        [class.border-[#1A73E8]]="checked"
+        [class.bg-[#1A73E8]]="checked"
+        [class.border-[#E0E0E0]]="!checked"
+        [class.bg-white]="!checked"
+        [class.opacity-50]="disabled">
+        
+        <svg *ngIf="checked" class="w-3 h-3 text-white pointer-events-none" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2 6 5 9 10 3"></polyline>
+        </svg>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+<div class="flex flex-col gap-6 w-full max-w-[1000px] mx-auto min-h-screen">
+    
+    <!-- 1. Interactive Tab Navigation -->
+    <div class="flex flex-col items-center gap-2">
+      <div class="flex flex-wrap gap-2 justify-center bg-white py-3 px-4 rounded-full shadow-sm">
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-2 px-5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[#F8F9FA] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'inner'" [class.!text-[#4F46E5]]="currentJoinType === 'inner'" [class.!border-[#4F46E5]]="currentJoinType === 'inner'"
+                (click)="handleNavigation('inner')">INNER JOIN</button>
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-2 px-5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[#F8F9FA] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'self'" [class.!text-[#4F46E5]]="currentJoinType === 'self'" [class.!border-[#4F46E5]]="currentJoinType === 'self'"
+                (click)="handleNavigation('self')">SELF JOIN</button>
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-2 px-5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[#F8F9FA] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="['left', 'right', 'full'].includes(currentJoinType)" [class.!text-[#4F46E5]]="['left', 'right', 'full'].includes(currentJoinType)" [class.!border-[#4F46E5]]="['left', 'right', 'full'].includes(currentJoinType)"
+                (click)="handleNavigation('outer')">OUTER JOIN</button>
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-2 px-5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-[#F8F9FA] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'cross'" [class.!text-[#4F46E5]]="currentJoinType === 'cross'" [class.!border-[#4F46E5]]="currentJoinType === 'cross'"
+                (click)="handleNavigation('cross')">CROSS JOIN</button>
+      </div>
+      
+      <div class="flex flex-wrap gap-2 justify-center bg-[#F8F9FA] border border-[#E2E8F0] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] rounded-full overflow-hidden transition-all duration-300"
+           [style.max-height]="showSecondaryTabs ? '100px' : '0'"
+           [style.opacity]="showSecondaryTabs ? '1' : '0'"
+           [style.padding]="showSecondaryTabs ? '0.5rem 1rem' : '0'">
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-1.5 px-4 rounded-full font-semibold text-[0.85rem] cursor-pointer transition-all duration-200 hover:bg-[#FFFFFF] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'left'" [class.!text-[#4F46E5]]="currentJoinType === 'left'" [class.!border-[#4F46E5]]="currentJoinType === 'left'"
+                (click)="handleNavigation('left')">LEFT OUTER</button>
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-1.5 px-4 rounded-full font-semibold text-[0.85rem] cursor-pointer transition-all duration-200 hover:bg-[#FFFFFF] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'right'" [class.!text-[#4F46E5]]="currentJoinType === 'right'" [class.!border-[#4F46E5]]="currentJoinType === 'right'"
+                (click)="handleNavigation('right')">RIGHT OUTER</button>
+        <button class="bg-transparent border-2 border-transparent text-[#5F6368] py-1.5 px-4 rounded-full font-semibold text-[0.85rem] cursor-pointer transition-all duration-200 hover:bg-[#FFFFFF] hover:text-[#202124]"
+                [class.!bg-[#EEF2FF]]="currentJoinType === 'full'" [class.!text-[#4F46E5]]="currentJoinType === 'full'" [class.!border-[#4F46E5]]="currentJoinType === 'full'"
+                (click)="handleNavigation('full')">FULL OUTER</button>
+      </div>
+    </div>
+  
+    <!-- 2. Visualizer & Code -->
+    <div class="grid md:grid-cols-[1fr_2fr] gap-6 items-stretch">
+      
+      <div class="bg-white rounded-2xl p-8 shadow-md flex flex-col items-center justify-center relative min-h-[200px]">
+        <!-- Multi-Table Venn Diagram -->
+        <svg class="w-full max-w-[200px] transition-opacity duration-300 absolute" [class.opacity-100]="currentJoinType !== 'self'" [class.opacity-0]="currentJoinType === 'self'" [class.relative]="currentJoinType !== 'self'" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 60,60 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0" clip-path="url(#clip-exclude-right)" class="transition-colors duration-300" [style.fill]="['left', 'full', 'cross'].includes(currentJoinType) ? '#4F46E5' : '#E2E8F0'"/>
+          <path d="M 140,60 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0" clip-path="url(#clip-exclude-left)" class="transition-colors duration-300" [style.fill]="['right', 'full', 'cross'].includes(currentJoinType) ? '#4F46E5' : '#E2E8F0'"/>
+          <path d="M 60,60 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0" clip-path="url(#clip-intersect)" class="transition-colors duration-300" [style.fill]="['inner', 'left', 'right', 'full', 'cross'].includes(currentJoinType) ? '#4F46E5' : '#E2E8F0'"/>
+          <defs>
+            <clipPath id="clip-exclude-right"><path d="M 0,0 L 200,0 L 200,120 L 0,120 z M 140,60 m -50,0 a 50,50 0 1,0 100,0 a 50,50 0 1,0 -100,0" fill-rule="evenodd"/></clipPath>
+            <clipPath id="clip-exclude-left"><path d="M 0,0 L 200,0 L 200,120 L 0,120 z M 60,60 m -50,0 a 50,50 0 1,0 100,0 a 50,50 0 1,0 -100,0" fill-rule="evenodd"/></clipPath>
+            <clipPath id="clip-intersect"><circle cx="140" cy="60" r="50"/></clipPath>
+          </defs>
+          <text x="35" y="65" font-family="Inter" font-size="12" font-weight="bold" fill="#ffffff" style="pointer-events: none;">A</text>
+          <text x="155" y="65" font-family="Inter" font-size="12" font-weight="bold" fill="#ffffff" style="pointer-events: none;">B</text>
+        </svg>
+  
+        <!-- Self-Join Abstract Diagram -->
+        <svg class="w-full max-w-[200px] transition-opacity duration-300 absolute" [class.opacity-100]="currentJoinType === 'self'" [class.opacity-0]="currentJoinType !== 'self'" [class.relative]="currentJoinType === 'self'" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="60" r="40" fill="#4F46E5"/>
+          <path d="M 128,32 C 180,-10 180,130 128,88" fill="none" stroke="#4F46E5" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#4F46E5" />
+            </marker>
+          </defs>
+          <text x="100" y="66" text-anchor="middle" font-family="Inter" font-size="20" font-weight="bold" fill="#ffffff" style="pointer-events: none;">A</text>
+        </svg>
+      </div>
+  
+      <!-- Live Code Block -->
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md flex flex-col border border-[#E2E8F0]">
+        <div class="bg-[#F8F9FA] py-3 px-4 flex justify-between items-center border-b border-[#E2E8F0]">
+          <div class="flex gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>
+          </div>
+          <span class="text-xs font-bold text-[#5F6368] uppercase tracking-[1px]">SQL</span>
+        </div>
+        <pre class="p-6 m-0 font-mono text-[0.95rem] text-[#202124] bg-white leading-relaxed overflow-x-auto flex-grow rounded-none border-0"><code [innerHTML]="sqlQueries[currentJoinType]"></code></pre>
+      </div>
+    </div>
+  
+    <!-- 3. Source Data Tables -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl p-6 shadow-md overflow-x-auto">
+        <div class="text-base font-bold text-[#202124] m-0 mb-4 flex justify-between items-center">
+          <span>Table A: Employees</span>
+          <span class="text-[0.7rem] bg-[#F8F9FA] py-1 px-2.5 rounded-full text-[#5F6368]">Left Table</span>
+        </div>
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Emp_ID</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Name</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_ID</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Manager_ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of tableA; track row.emp_id) {
+              <tr class="transition-colors duration-200" [class.bg-[#EEF2FF]]="hoveredSrcA === row.emp_id" [class.text-[#4F46E5]]="hoveredSrcA === row.emp_id" [class.font-semibold]="hoveredSrcA === row.emp_id"
+                  [class.!bg-[#F0FDF4]]="hoveredSrcASecondary === row.emp_id" [class.!text-[#16A34A]]="hoveredSrcASecondary === row.emp_id">
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">{{ row.emp_id }}</td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">{{ row.name }}</td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.dept_id === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.dept_id }} }
+                </td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.manager_id === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.manager_id }} }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="bg-white rounded-2xl p-6 shadow-md overflow-x-auto transition-opacity duration-300" [style.opacity]="currentJoinType === 'self' ? '0.3' : '1'">
+        <div class="text-base font-bold text-[#202124] m-0 mb-4 flex justify-between items-center">
+          <span>Table B: Departments</span>
+          <span class="text-[0.7rem] bg-[#F8F9FA] py-1 px-2.5 rounded-full text-[#5F6368]">Right Table</span>
+        </div>
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_ID</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of tableB; track row.dept_id) {
+              <tr class="transition-colors duration-200" [class.bg-[#EEF2FF]]="hoveredSrcB === row.dept_id" [class.text-[#4F46E5]]="hoveredSrcB === row.dept_id" [class.font-semibold]="hoveredSrcB === row.dept_id">
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">{{ row.dept_id }}</td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">{{ row.dept_name }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+    <!-- 4. Dynamic Output Table -->
+    <div class="bg-white rounded-2xl p-6 shadow-md overflow-x-auto -mt-4">
+      <h3 class="text-base font-bold m-0 mb-4 text-[#4F46E5] flex flex-col sm:flex-row sm:items-center gap-2">
+        Output Result 
+        <span class="text-[0.8rem] font-medium text-[#5F6368]">(Hover rows to trace logic back to source)</span>
+      </h3>
+      <table class="w-full border-collapse text-left">
+        <thead>
+          @if (currentJoinType === 'self') {
+            <tr>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Employee</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Manager</th>
+            </tr>
+          } @else {
+            <tr>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Emp_Name</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Emp_Dept_ID</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_ID</th>
+              <th class="p-3 whitespace-nowrap text-xs uppercase tracking-[1px] font-bold text-[#5F6368] border-b-2 border-[#E2E8F0]">Dept_Name</th>
+            </tr>
+          }
+        </thead>
+        <tbody>
+          @for (row of outputData; track $index) {
+            <tr class="cursor-crosshair hover:bg-[#F8F9FA] transition-colors" (mouseenter)="onHoverRow(row)" (mouseleave)="onHoverRow(null)">
+              @if (currentJoinType === 'self') {
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.emp === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.emp }} }
+                </td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.manager_name === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.manager_name }} }
+                </td>
+              } @else {
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.emp === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.emp }} }
+                </td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.a_dept === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.a_dept }} }
+                </td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.b_dept === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.b_dept }} }
+                </td>
+                <td class="p-3 whitespace-nowrap text-[0.9rem] border-b border-[#E2E8F0]">
+                  @if (row.dept === null) { <span class="bg-[#F1F5F9] text-[#94A3B8] py-0.5 px-2 rounded-[4px] text-xs font-bold uppercase">NULL</span> } @else { {{ row.dept }} }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  
+  </div>

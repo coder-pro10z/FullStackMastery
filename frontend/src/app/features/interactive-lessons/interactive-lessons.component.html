@@ -1,0 +1,25 @@
+<div class="block max-w-6xl mx-auto p-4 md:p-8 space-y-8">
+  <header class="space-y-2 mb-8">
+    <h1 class="text-3xl font-bold tracking-tight text-[#202124]">Interactive Lessons</h1>
+    <p class="text-[#5F6368] text-sm">Deep dive into concepts with interactive visualizations and quizzes.</p>
+    
+    <div class="flex flex-wrap gap-2 pt-4">
+      <button (click)="setTab('quiz')" class="btn" [class.btn-primary]="activeTab === 'quiz'" [class.btn-secondary]="activeTab !== 'quiz'">Quiz Mode</button>
+      <button (click)="setTab('graph')" class="btn" [class.btn-primary]="activeTab === 'graph'" [class.btn-secondary]="activeTab !== 'graph'">D3 Graph</button>
+      <button (click)="setTab('venn')" class="btn" [class.btn-primary]="activeTab === 'venn'" [class.btn-secondary]="activeTab !== 'venn'">SQL Venn</button>
+      <button (click)="setTab('table')" class="btn" [class.btn-primary]="activeTab === 'table'" [class.btn-secondary]="activeTab !== 'table'">SQL Engine</button>
+    </div>
+  </header>
+
+  <div class="mt-8">
+    @if (activeTab === 'quiz') {
+      <app-forum-quiz></app-forum-quiz>
+    } @else if (activeTab === 'graph') {
+      <app-interactive-graph></app-interactive-graph>
+    } @else if (activeTab === 'venn') {
+      <app-venn-diagram></app-venn-diagram>
+    } @else if (activeTab === 'table') {
+      <app-sql-table></app-sql-table>
+    }
+  </div>
+</div>

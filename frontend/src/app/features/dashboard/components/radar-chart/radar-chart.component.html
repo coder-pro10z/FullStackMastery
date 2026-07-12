@@ -1,0 +1,17 @@
+<section>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[#202124]">Stack Mastery</h2>
+        <button class="btn btn-ghost p-0 text-sm h-auto">Analyze</button>
+    </div>
+    <div class="edudash-card p-0 flex flex-col overflow-hidden">
+        <div class="p-5 flex-1 relative w-full h-[280px] bg-white flex items-center justify-center">
+            <canvas #radarCanvas id="techRadarChart"></canvas>
+            <div *ngIf="!radarCanvas" class="text-xs text-[#5F6368]">Chart.js Placeholder</div>
+        </div>
+        <div class="px-5 py-3 bg-[#F8F9FA] border-t border-[#E0E0E0] flex justify-between items-center">
+            <span class="text-xs font-medium text-[#5F6368] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#1A73E8] animate-pulse"></span> Target: {{ targetLabel }}
+            </span>
+        </div>
+    </div>
+</section>

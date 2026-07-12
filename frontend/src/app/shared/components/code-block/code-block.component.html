@@ -1,0 +1,47 @@
+<div class="edudash-card overflow-hidden bg-[#202124] flex flex-col h-full border-0 rounded-xl shadow-lg ring-1 ring-white/10">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#28292C]">
+        <div class="flex items-center gap-3">
+            <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-[#EA4335]/80"></div>
+                <div class="w-3 h-3 rounded-full bg-[#FBBC05]/80"></div>
+                <div class="w-3 h-3 rounded-full bg-[#34A853]/80"></div>
+            </div>
+            @if (data.filename) {
+                <span class="text-xs font-mono text-[#E0E0E0] opacity-80">{{ data.filename }}</span>
+            }
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white/5 text-[#E0E0E0]/60 border border-white/10 uppercase">{{ data.language }}</span>
+            <button (click)="copyToClipboard()"
+                class="p-1.5 text-[#E0E0E0]/60 hover:text-white hover:bg-white/10 rounded-md transition-colors group relative"
+                title="Copy code">
+                @if (isCopied) {
+                    <lucide-icon name="check" [size]="16" class="text-[#34A853]"></lucide-icon>
+                } @else {
+                    <lucide-icon name="copy" [size]="16"></lucide-icon>
+                }
+                <!-- Tooltip -->
+                <span class="absolute -top-8 right-0 bg-[#E0E0E0] text-[#202124] text-[10px] font-bold px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    {{ isCopied ? 'Copied!' : 'Copy snippet' }}
+                </span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Code Area -->
+    <div class="p-4 overflow-auto scrollbar-premium flex-1 relative bg-[#1E1F22]">
+        <table class="w-full text-sm font-mono leading-relaxed text-[#E0E0E0]">
+            <tbody>
+                @for (line of codeLines; track $index) {
+                    <tr class="hover:bg-white/[0.02] transition-colors group/line">
+                        @if (data.showLineNumbers) {
+                            <td class="pr-4 py-0.5 text-right select-none w-8 text-[#5F6368] group-hover/line:text-[#E0E0E0]/60 transition-colors text-xs">{{ $index + 1 }}</td>
+                        }
+                        <td class="py-0.5 whitespace-pre"><span class="code-content">{{ line }}</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

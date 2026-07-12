@@ -4,23 +4,23 @@ import { ChangeDetectionStrategy, Component, Input, computed, signal } from '@an
   selector: 'app-progress-card',
   standalone: true,
   template: `
-    <article class="glass-panel p-4 group hover:border-dark-border-light transition-all duration-200">
+    <article class="edudash-card p-4 group hover:border-[#1A73E8]/30 transition-all duration-200">
       <!-- Header -->
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-medium uppercase tracking-wider text-slate-500">{{ label }}</span>
+        <span class="text-xs font-medium uppercase tracking-wider text-[#5F6368]">{{ label }}</span>
         <span class="text-xs font-bold" [class]="accentClass">{{ percentage }}%</span>
       </div>
 
       <!-- Value -->
       <div class="flex items-end gap-2 mb-3">
-        <span class="text-2xl font-bold text-white leading-none">{{ solved }}</span>
-        <span class="text-sm text-slate-500 pb-0.5">/ {{ total }}</span>
+        <span class="text-2xl font-bold text-[#202124] leading-none">{{ solved }}</span>
+        <span class="text-sm text-[#5F6368] pb-0.5">/ {{ total }}</span>
       </div>
 
       <!-- Progress Bar -->
-      <div class="progress-track">
+      <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
         <div
-          class="progress-fill"
+          class="h-full rounded-full transition-all duration-500"
           [style.width.%]="percentage"
           [class]="barClass">
         </div>

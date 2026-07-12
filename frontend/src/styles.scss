@@ -1,0 +1,376 @@
+/* You can add global styles to this file, and also import other style files */
+/* EduDash Premium Design System - Global Styles
+Framework: Tailwind CSS
+Architecture: Google-Grade (90% Neutral / 10% Color)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* --- COLOR TOKENS --- */
+        --color-primary: #1A73E8;
+        /* Google Blue */
+        --color-primary-hover: #1557B0;
+
+        --color-success: #34A853;
+        /* Standard Success */
+        --color-success-dark: #1b5d2b;
+        /* WCAG 4.5:1 Accessible Success */
+
+        --color-warning: #FBBC05;
+        --color-error: #EA4335;
+
+        --color-bg-default: #F8F9FA;
+        /* App Background */
+        --color-surface: #FFFFFF;
+        /* Cards / Modals */
+        --color-border: #E0E0E0;
+        /* Universal Divider */
+
+        --color-text-primary: #202124;
+        /* Headings & Primary Content */
+        --color-text-secondary: #5F6368;
+        /* Subtitles & Metatext */
+
+        /* --- SHADOW TOKENS (Subtle Elevation) --- */
+        --shadow-level-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+        --shadow-level-2: 0 4px 8px rgba(0, 0, 0, 0.12);
+        --shadow-level-3: 0 8px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    html,
+    body {
+        @apply font-sans antialiased text-[#202124] bg-[#F8F9FA];
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* --- TYPOGRAPHY SCALE --- */
+    h1 {
+        @apply text-3xl font-semibold tracking-tight;
+    }
+
+    h2 {
+        @apply text-2xl font-semibold tracking-tight;
+    }
+
+    h3 {
+        @apply text-xl font-medium tracking-tight;
+    }
+
+    p {
+        @apply text-base font-normal leading-relaxed text-[#5F6368];
+    }
+
+    small {
+        @apply text-xs font-normal text-[#5F6368];
+    }
+
+    /* --- TECHNICAL TYPOGRAPHY --- */
+    code {
+        @apply font-mono bg-[#F8F9FA] text-[#EA4335] border border-[#E0E0E0] px-1.5 py-0.5 rounded text-[0.85em];
+    }
+
+    pre {
+        @apply font-mono bg-[#F8F9FA] text-[#202124] border border-[#E0E0E0] p-4 rounded-xl overflow-x-auto text-sm;
+    }
+
+    pre code {
+        @apply bg-transparent text-inherit border-none p-0;
+    }
+
+    /* Universal Link Style */
+    a:not([class]) {
+        @apply text-[#1A73E8] hover:underline hover:text-[#1557B0] transition-colors focus-ring rounded-sm;
+    }
+}
+
+@layer components {
+
+    /* --- CORE STRUCTURAL COMPONENTS --- */
+    .edudash-card {
+        @apply bg-white border border-[#E0E0E0] rounded-xl p-5 md:p-6 transition-all duration-200;
+        box-shadow: var(--shadow-level-1);
+    }
+
+    .edudash-card:hover {
+        box-shadow: var(--shadow-level-2);
+    }
+
+    /* --- BUTTON SYSTEM --- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150 active:scale-95 focus-ring;
+    }
+
+    .btn-primary {
+        @apply bg-[#1A73E8] text-white hover:bg-[#1557B0];
+        box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2);
+    }
+
+    .btn-secondary {
+        @apply bg-transparent border border-[#E0E0E0] text-[#202124] hover:bg-[#F8F9FA];
+    }
+
+    .btn-ghost {
+        @apply bg-transparent text-[#5F6368] hover:bg-[#F8F9FA] hover:text-[#202124];
+    }
+
+    /* --- FORM ELEMENTS --- */
+    .edudash-label {
+        @apply block text-sm font-medium text-[#202124] mb-1.5;
+    }
+
+    .edudash-input {
+        @apply w-full bg-white border border-[#E0E0E0] rounded-lg px-4 py-2.5 text-sm text-[#202124] placeholder-[#5F6368] transition-all duration-200 focus-ring;
+    }
+
+    .edudash-input:hover {
+        @apply border-[#5F6368];
+    }
+
+    /* --- BADGES & TAGS --- */
+    .badge {
+        @apply px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5 border;
+    }
+
+    .badge-primary {
+        @apply bg-[#e8f0fe] text-[#1A73E8] border-transparent;
+    }
+
+    .badge-success {
+        @apply bg-[#e6f4ea] text-[#1b5d2b] border-[#ceead6];
+    }
+
+    .badge-warning {
+        @apply bg-[#fef7e0] text-[#b06000] border-transparent;
+    }
+
+    .badge-neutral {
+        @apply bg-[#F8F9FA] text-[#5F6368] border-[#E0E0E0];
+    }
+
+    /* --- INTERACTIVE SVG CONNECTORS --- */
+    .svg-connector {
+        @apply transition-all duration-300 ease-in-out;
+        stroke-linecap: round;
+    }
+
+    .svg-connector-active {
+        stroke: var(--color-primary);
+        stroke-width: 2px;
+    }
+
+    .svg-connector-locked {
+        stroke: var(--color-border);
+        stroke-width: 2px;
+    }
+
+    /* --- TOOLTIPS (WCAG Compliant) --- */
+    .edudash-tooltip {
+        @apply absolute bottom-full mb-2 w-max max-w-xs bg-[#202124] text-white text-xs p-3 rounded-lg shadow-xl z-50;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+        pointer-events: none;
+    }
+
+    .group:hover .edudash-tooltip,
+    .group:focus-within .edudash-tooltip {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(-4px);
+        pointer-events: auto;
+    }
+
+    /* --- UNIVERSAL DISABLED STATE --- */
+    .disabled {
+        @apply opacity-50 cursor-not-allowed pointer-events-none;
+        filter: grayscale(20%);
+    }
+
+    /* --- HEXAGON HONEYCOMB COMPONENT --- */
+    .hex-shape {
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .hex-wrapper {
+        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.08));
+        @apply transition-all duration-300 ease-out;
+    }
+
+    .hex-wrapper:hover {
+        filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.12));
+        @apply -translate-y-1 scale-105 z-10;
+    }
+
+    .hex-row {
+        @apply flex justify-center gap-2;
+    }
+
+    .hex-row+.hex-row {
+        margin-top: -24px;
+    }
+
+    /* --- ACTIVITY HEATMAP COMPONENT --- */
+    .heatmap-scope {
+        --cell-size: 14px;
+        --cell-gap: 4px;
+        --accent-200: #C7D2FE;
+        --accent-400: #818CF8;
+        --accent-600: #4F46E5;
+    }
+
+    .heatmap-scope.shape-square {
+        --cell-gap: 2px;
+    }
+
+    .heatmap-grid {
+        display: grid;
+        gap: var(--cell-gap);
+        padding: 10px 0;
+    }
+
+    .heatmap-cell {
+        width: var(--cell-size);
+        height: var(--cell-size);
+        box-sizing: border-box;
+        border: 1px solid transparent;
+        background-clip: padding-box;
+        @apply transition-transform duration-150 ease-out cursor-pointer relative;
+    }
+
+    .shape-square .heatmap-cell {
+        border-radius: 2px;
+    }
+
+    .shape-circle .heatmap-cell {
+        border-radius: 50%;
+    }
+
+    .heatmap-cell.future {
+        background-color: transparent !important;
+        border: 1px dashed #E0E0E0;
+        cursor: default;
+    }
+
+    .heatmap-cell:not(.future):hover {
+        transform: scale(1.25);
+        box-shadow: var(--shadow-level-2);
+        border-color: rgba(0, 0, 0, 0.1);
+        z-index: 5;
+    }
+
+    /* Heatmap Layout Modifiers */
+    .layout-vertical .days-header {
+        display: grid;
+        grid-template-columns: repeat(7, var(--cell-size));
+        gap: var(--cell-gap);
+        @apply mb-1 text-center text-[10px] font-semibold text-[#5F6368];
+    }
+
+    .layout-vertical .heatmap-grid {
+        grid-template-columns: repeat(7, var(--cell-size));
+        justify-content: center;
+    }
+
+    .layout-horizontal {
+        @apply overflow-x-auto;
+        scrollbar-width: thin;
+        scrollbar-color: #E0E0E0 transparent;
+    }
+
+    .layout-horizontal .days-header {
+        display: none;
+    }
+
+    .layout-horizontal .heatmap-grid {
+        grid-template-rows: repeat(7, var(--cell-size));
+        grid-auto-flow: column;
+        grid-auto-columns: var(--cell-size);
+        justify-content: end;
+    }
+
+    /* --- INTERACTIVE WIDGETS & QUIZZES (BENTO BOX) --- */
+    .interactive-widget {
+        @apply bg-[#F8F9FA] rounded-2xl p-6 mt-8 border border-[rgba(0, 0, 0, 0.05)];
+    }
+
+    .quiz-btn {
+        @apply bg-white border-2 border-transparent text-[#202124] px-6 py-3 rounded-xl font-semibold text-[15px] cursor-pointer transition-all duration-200 shadow-sm;
+    }
+
+    .quiz-btn:hover {
+        @apply -translate-y-0.5 text-[#1A73E8];
+        box-shadow: var(--shadow-level-2);
+    }
+
+    .quiz-btn:active {
+        @apply translate-y-0;
+    }
+
+    .quiz-btn.selected {
+        @apply border-[#1A73E8] text-[#1A73E8];
+    }
+}
+
+@layer utilities {
+    /* --- ACCESSIBILITY --- */
+
+    /* Universal Focus Ring for Keyboard Users */
+    .focus-ring {
+        @apply focus:outline-none focus-visible:border-[#1A73E8] focus-visible:ring-1 focus-visible:ring-[#1A73E8];
+    }
+
+    /* Custom Scrollbar for sidebars and code blocks */
+    .scrollbar-premium::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-premium::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollbar-premium::-webkit-scrollbar-thumb {
+        @apply bg-[#E0E0E0] rounded-full;
+    }
+
+    .scrollbar-premium:hover::-webkit-scrollbar-thumb {
+        @apply bg-[#5F6368];
+    }
+
+    /* --- CUSTOM ANIMATIONS --- */
+    .animate-draw-path {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: dash 1.5s ease-in-out forwards;
+    }
+
+    .animate-subtle-pulse {
+        animation: subtlePulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    @keyframes dash {
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes subtlePulse {
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: .7;
+            transform: scale(1.1);
+        }
+    }
+}

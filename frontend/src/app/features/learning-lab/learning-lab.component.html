@@ -1,0 +1,37 @@
+<main class="mx-auto block max-w-7xl space-y-8 p-4 md:p-8">
+    <header class="flex flex-col gap-5 border-b border-[#E0E0E0] pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="max-w-3xl">
+            <span class="badge badge-primary">Learning Lab</span>
+            <h1 class="mt-3 text-3xl font-semibold tracking-tight text-[#202124]">Practice concepts with interactive lessons.</h1>
+            <p class="mt-2 text-sm text-[#5F6368]">Use quizzes, graphs, SQL visuals, and table practice to make interview concepts easier to remember.</p>
+        </div>
+        <button class="btn btn-primary">
+            <lucide-icon name="play" [size]="16"></lucide-icon>
+            Continue Learning
+        </button>
+    </header>
+
+    <section class="grid gap-4 lg:grid-cols-4">
+        @for (module of modules; track module.id) {
+            <button type="button" class="edudash-card text-left" [class.ring-1]="activeTab === module.id" [class.ring-[#1A73E8]]="activeTab === module.id" (click)="setTab(module.id)">
+                <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[#e8f0fe] text-[#1A73E8]">
+                    <lucide-icon [name]="module.icon" [size]="20"></lucide-icon>
+                </div>
+                <h2 class="text-lg font-semibold text-[#202124]">{{ module.label }}</h2>
+                <p class="mt-2 text-sm leading-6 text-[#5F6368]">{{ module.description }}</p>
+            </button>
+        }
+    </section>
+
+    <section class="edudash-card">
+        @if (activeTab === 'quiz') {
+            <app-forum-quiz></app-forum-quiz>
+        } @else if (activeTab === 'graph') {
+            <app-interactive-graph></app-interactive-graph>
+        } @else if (activeTab === 'venn') {
+            <app-venn-diagram></app-venn-diagram>
+        } @else if (activeTab === 'table') {
+            <app-sql-table></app-sql-table>
+        }
+    </section>
+</main>
