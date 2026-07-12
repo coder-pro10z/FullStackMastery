@@ -142,6 +142,7 @@
 | Quiz Dashboard Component | ✅ | Quiz setup flow under `/quiz/new` |
 | Quiz Player Component | ✅ | Attempt flow under `/quiz/:id` |
 | Quiz Review Component | ✅ | Review flow under `/quiz/:id/review` |
+| `InterviewsComponent` | ✅ | Master-Detail layout for company questions under `/interviews` |
 
 ---
 

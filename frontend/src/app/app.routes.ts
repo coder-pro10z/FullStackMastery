@@ -55,9 +55,9 @@ export const routes: Routes = [
           import('./features/question-bank/question-bank.component').then(m => m.QuestionBankComponent),
       },
       {
-        path: 'quiz',
+        path: 'interviews',
         loadComponent: () =>
-          import('./features/quiz/quiz.component').then(m => m.QuizComponent),
+          import('./features/interviews/interviews.component').then(m => m.InterviewsComponent),
       },
       {
         path: 'job-description',
@@ -169,6 +169,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/docs/docs.component').then(
             m => m.DocsComponent
+          ),
+      },
+      // ── 💼 Interviews Manager ───────────────────────────────────────────────
+      {
+        path: 'interviews',
+        loadComponent: () =>
+          import('./features/admin/admin-interviews/admin-interview-list.component').then(
+            m => m.AdminInterviewListComponent
+          ),
+      },
+      {
+        path: 'interviews/:companyId',
+        loadComponent: () =>
+          import('./features/admin/admin-interviews/admin-interview-canvas.component').then(
+            m => m.AdminInterviewCanvasComponent
           ),
       },
     ],

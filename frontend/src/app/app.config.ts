@@ -11,7 +11,27 @@ import {
   AlertTriangle,
   Folder,
   FolderOpen,
-  Trash2
+  Trash2,
+  Loader2,
+  Building2,
+  Building,
+  Users,
+  FileQuestion,
+  Search,
+  Pencil,
+  ArrowLeft,
+  Plus,
+  CircleUser,
+  GitCommit,
+  GripVertical,
+  PencilRuler,
+  X,
+  Bold,
+  Italic,
+  List,
+  Code,
+  Save,
+  FileCheck
 } from 'lucide-angular';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
@@ -44,7 +64,27 @@ export const appConfig: ApplicationConfig = {
       AlertTriangle,
       Folder,
       FolderOpen,
-      Trash2
+      Trash2,
+      Loader2,
+      Building2,
+      Building,
+      Users,
+      FileQuestion,
+      Search,
+      Pencil,
+      ArrowLeft,
+      Plus,
+      CircleUser,
+      GitCommit,
+      GripVertical,
+      PencilRuler,
+      X,
+      Bold,
+      Italic,
+      List,
+      Code,
+      Save,
+      FileCheck
     })),
 
     // ── Import Pipeline Providers ────────────────────────────────────────────

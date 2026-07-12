@@ -223,6 +223,7 @@ export class SidebarComponent {
 
   readonly toolItems: NavItem[] = [
     { path: '/job-description', label: 'Job Description', icon: 'file-text' },
+    { path: '/interviews', label: 'Interviews', icon: 'briefcase' },
   ];
 
   // ── Admin nav items (only rendered when isAdmin() === true) ───────────
@@ -230,6 +231,7 @@ export class SidebarComponent {
     { path: '/admin/dashboard', label: 'Dashboard',        icon: 'layout-dashboard' },
     { path: '/admin/import',    label: 'Import Questions', icon: 'upload' },
     { path: '/admin/question-bank', label: 'Question Bank', icon: 'database' },
+    { path: '/admin/interviews', label: 'Interviews', icon: 'building-2' },
   ];
 
   readonly adminResourceItems: NavItem[] = [
