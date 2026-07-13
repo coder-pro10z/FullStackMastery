@@ -97,7 +97,7 @@ public class AdminInterviewsController : ControllerBase
             CompanyId = dto.CompanyId,
             RoleName = dto.RoleName,
             LevelTier = dto.LevelTier,
-            InterviewDate = dto.InterviewDate
+            InterviewDate = dto.InterviewDate.HasValue ? DateTime.SpecifyKind(dto.InterviewDate.Value, DateTimeKind.Utc) : null
         };
         _db.CompanyInterviews.Add(interview);
         await _db.SaveChangesAsync();
@@ -114,7 +114,7 @@ public class AdminInterviewsController : ControllerBase
         if (dto.CompanyId != Guid.Empty) interview.CompanyId = dto.CompanyId;
         if (!string.IsNullOrWhiteSpace(dto.RoleName)) interview.RoleName = dto.RoleName;
         if (dto.LevelTier != null) interview.LevelTier = dto.LevelTier;
-        if (dto.InterviewDate != null) interview.InterviewDate = dto.InterviewDate;
+        if (dto.InterviewDate != null) interview.InterviewDate = DateTime.SpecifyKind(dto.InterviewDate.Value, DateTimeKind.Utc);
         
         await _db.SaveChangesAsync();
         return Ok(dto);
