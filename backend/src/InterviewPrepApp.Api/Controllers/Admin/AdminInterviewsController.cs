@@ -91,18 +91,29 @@ public class AdminInterviewsController : ControllerBase
     [HttpPost("roles")]
     public async Task<IActionResult> CreateInterview([FromBody] CompanyInterviewDto dto)
     {
-        var interview = new CompanyInterview
+        try
         {
-            Id = Guid.NewGuid(),
-            CompanyId = dto.CompanyId,
-            RoleName = dto.RoleName,
-            LevelTier = dto.LevelTier,
-            InterviewDate = dto.InterviewDate.HasValue ? DateTime.SpecifyKind(dto.InterviewDate.Value, DateTimeKind.Utc) : null
-        };
-        _db.CompanyInterviews.Add(interview);
-        await _db.SaveChangesAsync();
-        dto.Id = interview.Id;
-        return Ok(dto);
+            var interview = new CompanyInterview
+            {
+                Id = Guid.NewGuid(),
+                CompanyId = dto.CompanyId,
+                RoleName = dto.RoleName,
+                LevelTier = dto.LevelTier,
+                InterviewDate = dto.InterviewDate.HasValue ? DateTime.SpecifyKind(dto.InterviewDate.Value, DateTimeKind.Utc) : null
+            };
+            _db.CompanyInterviews.Add(interview);
+            await _db.SaveChangesAsync();
+            dto.Id = interview.Id;
+            return Ok(dto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { 
+                error = ex.Message, 
+                inner = ex.InnerException?.Message,
+                stack = ex.StackTrace 
+            });
+        }
     }
 
     [HttpPut("roles/{id:guid}")]
@@ -147,17 +158,28 @@ public class AdminInterviewsController : ControllerBase
     [HttpPost("rounds")]
     public async Task<IActionResult> CreateRound([FromBody] InterviewRoundDto dto)
     {
-        var round = new InterviewRound
+        try
         {
-            Id = Guid.NewGuid(),
-            InterviewId = dto.InterviewId,
-            RoundNumber = dto.RoundNumber,
-            FocusArea = dto.FocusArea
-        };
-        _db.InterviewRounds.Add(round);
-        await _db.SaveChangesAsync();
-        dto.Id = round.Id;
-        return Ok(dto);
+            var round = new InterviewRound
+            {
+                Id = Guid.NewGuid(),
+                InterviewId = dto.InterviewId,
+                RoundNumber = dto.RoundNumber,
+                FocusArea = dto.FocusArea
+            };
+            _db.InterviewRounds.Add(round);
+            await _db.SaveChangesAsync();
+            dto.Id = round.Id;
+            return Ok(dto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { 
+                error = ex.Message, 
+                inner = ex.InnerException?.Message,
+                stack = ex.StackTrace 
+            });
+        }
     }
 
     [HttpPut("rounds/{id:guid}")]
