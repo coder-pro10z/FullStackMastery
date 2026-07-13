@@ -55,9 +55,9 @@ public class AdminInterviewsController : ControllerBase
         var company = await _db.Companies.FindAsync(id);
         if (company == null) return NotFound();
         
-        company.Name = dto.Name;
-        company.LogoUrl = dto.LogoUrl;
-        company.IndustryType = dto.IndustryType;
+        if (!string.IsNullOrWhiteSpace(dto.Name)) company.Name = dto.Name;
+        if (dto.LogoUrl != null) company.LogoUrl = dto.LogoUrl;
+        if (dto.IndustryType != null) company.IndustryType = dto.IndustryType;
         
         await _db.SaveChangesAsync();
         return Ok(dto);
@@ -111,9 +111,10 @@ public class AdminInterviewsController : ControllerBase
         var interview = await _db.CompanyInterviews.FindAsync(id);
         if (interview == null) return NotFound();
         
-        interview.RoleName = dto.RoleName;
-        interview.LevelTier = dto.LevelTier;
-        interview.InterviewDate = dto.InterviewDate;
+        if (dto.CompanyId != Guid.Empty) interview.CompanyId = dto.CompanyId;
+        if (!string.IsNullOrWhiteSpace(dto.RoleName)) interview.RoleName = dto.RoleName;
+        if (dto.LevelTier != null) interview.LevelTier = dto.LevelTier;
+        if (dto.InterviewDate != null) interview.InterviewDate = dto.InterviewDate;
         
         await _db.SaveChangesAsync();
         return Ok(dto);
@@ -165,8 +166,9 @@ public class AdminInterviewsController : ControllerBase
         var round = await _db.InterviewRounds.FindAsync(id);
         if (round == null) return NotFound();
         
-        round.RoundNumber = dto.RoundNumber;
-        round.FocusArea = dto.FocusArea;
+        if (dto.InterviewId != Guid.Empty) round.InterviewId = dto.InterviewId;
+        if (dto.RoundNumber > 0) round.RoundNumber = dto.RoundNumber;
+        if (dto.FocusArea != null) round.FocusArea = dto.FocusArea;
         
         await _db.SaveChangesAsync();
         return Ok(dto);
