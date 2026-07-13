@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ENGINEERING_PLAYBOOK](../Architecture/ENGINEERING_PLAYBOOK.md)
+
 Writing a "Mega-Prompt" to feed into an AI coding assistant (like AntiGravity, Cursor, or Gemini Deep Research) is exactly how modern 10x developers scaffold entire architectures in minutes.
 
 To get the best result, the prompt needs to act as a **Technical Requirements Document (TRD)**. It must explicitly define the boundaries (e.g., "Use Clean Architecture but DO NOT use MediatR") so the AI doesn't hallucinate patterns you don't want.

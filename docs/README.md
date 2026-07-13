@@ -242,6 +242,8 @@ QuizAttempt     (1) ── (many) QuizUserAnswer
 
 ## 6. API Reference
 
+> *For the canonical API reference, see [API_REFERENCE.md](API/API_REFERENCE.md).*
+
 Base URL: `http://localhost:5000/api`
 
 ### Authentication

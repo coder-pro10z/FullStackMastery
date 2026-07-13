@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -7,10 +7,12 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AdminInterviewStore } from '../../../core/state/admin-interview.store';
 import { Company, Interview, Round, Question } from '../../../core/models/admin-interview.models';
 
+import { ImmersiveEditorComponent } from './immersive-editor.component';
+
 @Component({
   selector: 'app-admin-interview-canvas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule, ImmersiveEditorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes slideInRight {
@@ -204,11 +206,24 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
                   <div class="space-y-4">
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1">Company Name</label>
-                      <input type="text" [value]="store.activeCompany()?.name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                      <input type="text" [(ngModel)]="editCompanyName" placeholder="e.g. Google" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
                     </div>
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1">Industry</label>
-                      <input type="text" [value]="store.activeCompany()?.industry" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                      <input type="text" [(ngModel)]="editCompanyIndustry" placeholder="e.g. Technology" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    </div>
+                    <div class="flex justify-end pt-2">
+                      <button (click)="saveCompany()"
+                              [disabled]="!editCompanyName.trim() || savingCompany()"
+                              class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors">
+                        @if (savingCompany()) {
+                          <lucide-icon name="loader-2" [size]="16" class="animate-spin"></lucide-icon>
+                          Saving...
+                        } @else {
+                          <lucide-icon name="save" [size]="16"></lucide-icon>
+                          Save Company
+                        }
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -221,15 +236,28 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
                     <lucide-icon name="circle-user" [size]="24" class="text-slate-400"></lucide-icon>
                     Edit Role Pipeline
                   </h2>
-                  <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1">Role Name</label>
-                      <input type="text" [value]="store.activeInterview()?.roleName" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
+                      <input type="text" [(ngModel)]="editInterviewRoleName" placeholder="e.g. Senior Engineer" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                     </div>
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1">Level / Tier</label>
-                      <input type="text" [value]="store.activeInterview()?.level" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none">
+                      <input type="text" [(ngModel)]="editInterviewLevel" placeholder="e.g. L4, Mid-Level" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                     </div>
+                  </div>
+                  <div class="flex justify-end pt-2">
+                    <button (click)="saveInterview()"
+                            [disabled]="!editInterviewRoleName.trim() || savingInterview()"
+                            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors">
+                      @if (savingInterview()) {
+                        <lucide-icon name="loader-2" [size]="16" class="animate-spin"></lucide-icon>
+                        Saving...
+                      } @else {
+                        <lucide-icon name="save" [size]="16"></lucide-icon>
+                        Save Role
+                      }
+                    </button>
                   </div>
                 </div>
               }
@@ -247,9 +275,22 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
                     </button>
                   </div>
                   
-                  <div>
-                      <label class="block text-sm font-bold text-slate-700 mb-1">Focus Area</label>
-                      <input type="text" [value]="store.activeRound()?.focusArea" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none mb-6">
+                  <div class="mb-4">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Focus Area</label>
+                    <input type="text" [(ngModel)]="editRoundFocusArea" placeholder="e.g. System Design" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                  </div>
+                  <div class="flex justify-end mb-6">
+                    <button (click)="saveRound()"
+                            [disabled]="!editRoundFocusArea.trim() || savingRound()"
+                            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors">
+                      @if (savingRound()) {
+                        <lucide-icon name="loader-2" [size]="16" class="animate-spin"></lucide-icon>
+                        Saving...
+                      } @else {
+                        <lucide-icon name="save" [size]="16"></lucide-icon>
+                        Save Round
+                      }
+                    </button>
                   </div>
 
                   <!-- ── Action Buttons: Add Question + Bulk Import ── -->
@@ -305,15 +346,35 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
 
               <!-- State: Question Selected -->
               @if (selectedNodeType() === 'question') {
-                <div class="animate-fade-in text-center py-12">
-                  <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <lucide-icon name="pencil-ruler" [size]="28" class="text-indigo-600"></lucide-icon>
+                <div class="animate-fade-in">
+                  <h2 class="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <lucide-icon name="pencil-ruler" [size]="24" class="text-slate-400"></lucide-icon>
+                    Question Solution
+                  </h2>
+                  <p class="text-slate-500 text-sm mb-2">{{ store.activeQuestion()?.title }}</p>
+                  <div class="flex items-center gap-2 mb-6">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                          [class.bg-emerald-50]="store.activeQuestion()?.difficulty === 'Easy'"
+                          [class.text-emerald-700]="store.activeQuestion()?.difficulty === 'Easy'"
+                          [class.bg-amber-50]="store.activeQuestion()?.difficulty === 'Medium'"
+                          [class.text-amber-700]="store.activeQuestion()?.difficulty === 'Medium'"
+                          [class.bg-rose-50]="store.activeQuestion()?.difficulty === 'Hard'"
+                          [class.text-rose-700]="store.activeQuestion()?.difficulty === 'Hard'">
+                      {{ store.activeQuestion()?.difficulty }}
+                    </span>
+                    <span class="text-xs text-slate-400">{{ store.activeQuestion()?.category }}</span>
                   </div>
-                  <h3 class="text-xl font-bold text-slate-800 mb-2">Immersive Solution Editor</h3>
-                  <p class="text-slate-500 max-w-sm mx-auto mb-6">
-                    Editing a question's solution markdown requires the full-screen immersive editor.
-                  </p>
-                  <button (click)="openImmersiveEditor()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-colors">
+                  @if (store.activeQuestion()?.solutionMarkdown) {
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 font-mono text-xs text-slate-600 whitespace-pre-wrap max-h-48 overflow-y-auto scrollbar-premium">
+                      {{ store.activeQuestion()?.solutionMarkdown }}
+                    </div>
+                  } @else {
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-700">
+                      No solution written yet. Open the editor to write one.
+                    </div>
+                  }
+                  <button (click)="openImmersiveEditor()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition-colors">
+                    <lucide-icon name="pencil-ruler" [size]="18"></lucide-icon>
                     Open Immersive Editor
                   </button>
                 </div>
@@ -458,6 +519,18 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
                 }
               </div>
 
+              <!-- Valid Format Tip -->
+              <div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-4 mt-2">
+                <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <lucide-icon name="alert-circle" [size]="14"></lucide-icon>
+                  Valid Format Required
+                </h4>
+                <div class="text-xs text-indigo-700/80 space-y-2">
+                  <p><span class="font-bold text-indigo-900">CSV/Excel Columns:</span> <code class="bg-white px-1 py-0.5 rounded border border-indigo-100 text-[11px] font-mono">title</code>, <code class="bg-white px-1 py-0.5 rounded border border-indigo-100 text-[11px] font-mono">category</code>, <code class="bg-white px-1 py-0.5 rounded border border-indigo-100 text-[11px] font-mono">difficulty</code></p>
+                  <p><span class="font-bold text-indigo-900">JSON Format:</span> Array of objects matching the above keys.</p>
+                </div>
+              </div>
+
               <!-- Import Progress -->
               @if (bulkImporting()) {
                 <div class="bg-white border border-slate-200 rounded-xl p-4">
@@ -516,6 +589,15 @@ import { Company, Interview, Round, Question } from '../../../core/models/admin-
       }
 
     </div>
+
+    <!-- ═══ IMMERSIVE EDITOR OVERLAY ═══ -->
+    @if (showImmersiveEditor()) {
+      <app-immersive-editor
+        (onClose)="closeImmersiveEditor()"
+        (onSave)="saveQuestionSolution($event)">
+      </app-immersive-editor>
+    }
+
   `
 })
 export class AdminInterviewCanvasComponent implements OnInit, OnDestroy {
@@ -527,6 +609,21 @@ export class AdminInterviewCanvasComponent implements OnInit, OnDestroy {
   // ── Mode Signals ──
   isNewMode = signal(false);
   selectedNodeType = signal<'company' | 'interview' | 'round' | 'question'>('company');
+
+  // ── Edit Form Fields (local state, synced from store via effects) ──
+  editCompanyName = '';
+  editCompanyIndustry = '';
+  editInterviewRoleName = '';
+  editInterviewLevel = '';
+  editRoundFocusArea = '';
+
+  // ── Save Loading States ──
+  savingCompany = signal(false);
+  savingInterview = signal(false);
+  savingRound = signal(false);
+
+  // ── Immersive Editor ──
+  showImmersiveEditor = signal(false);
 
   // ── Add Question Slide-over ──
   showAddSlideover = signal(false);
@@ -566,6 +663,22 @@ export class AdminInterviewCanvasComponent implements OnInit, OnDestroy {
       default: return 'Add Item';
     }
   });
+
+  constructor() {
+    // Sync edit fields when active store nodes change
+    effect(() => {
+      const c = this.store.activeCompany();
+      if (c) { this.editCompanyName = c.name; this.editCompanyIndustry = c.industry; }
+    }, { allowSignalWrites: true });
+    effect(() => {
+      const i = this.store.activeInterview();
+      if (i) { this.editInterviewRoleName = i.roleName; this.editInterviewLevel = i.level; }
+    }, { allowSignalWrites: true });
+    effect(() => {
+      const r = this.store.activeRound();
+      if (r) { this.editRoundFocusArea = r.focusArea; }
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit() {
     // Reactively listen to route param changes (fixes component reuse on same route pattern)
@@ -613,6 +726,48 @@ export class AdminInterviewCanvasComponent implements OnInit, OnDestroy {
         this.openAddQuestionSlideover();
         break;
     }
+  }
+
+  // ── Save Existing Nodes ──
+  saveCompany() {
+    const id = this.store.activeCompany()?.id;
+    if (!id || !this.editCompanyName.trim()) return;
+    this.savingCompany.set(true);
+    this.store.updateCompany(id, { name: this.editCompanyName.trim(), industry: this.editCompanyIndustry.trim() });
+    setTimeout(() => this.savingCompany.set(false), 400);
+  }
+
+  saveInterview() {
+    const id = this.store.activeInterview()?.id;
+    if (!id || !this.editInterviewRoleName.trim()) return;
+    this.savingInterview.set(true);
+    this.store.updateInterview(id, { roleName: this.editInterviewRoleName.trim(), level: this.editInterviewLevel.trim() });
+    setTimeout(() => this.savingInterview.set(false), 400);
+  }
+
+  saveRound() {
+    const id = this.store.activeRound()?.id;
+    if (!id) return;
+    this.savingRound.set(true);
+    this.store.updateRound(id, { focusArea: this.editRoundFocusArea.trim() });
+    setTimeout(() => this.savingRound.set(false), 400);
+  }
+
+  // ── Immersive Editor ──
+  openImmersiveEditor() {
+    this.showImmersiveEditor.set(true);
+  }
+
+  closeImmersiveEditor() {
+    this.showImmersiveEditor.set(false);
+  }
+
+  saveQuestionSolution(markdown: string) {
+    const id = this.store.activeQuestion()?.id;
+    if (!id) return;
+    const round = this.store.activeQuestion()!;
+    this.store.updateQuestion(id, { solutionMarkdown: markdown, diagramJSON: round.diagramJSON });
+    this.showImmersiveEditor.set(false);
   }
 
   // ── Create Company ──
@@ -709,7 +864,4 @@ export class AdminInterviewCanvasComponent implements OnInit, OnDestroy {
     return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
-  openImmersiveEditor() {
-    console.log('Opening immersive editor route or overlay...');
-  }
 }

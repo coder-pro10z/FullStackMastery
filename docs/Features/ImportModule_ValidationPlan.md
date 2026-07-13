@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ImportQuestionPlan](../Workflows/ImportQuestionPlan.md) · [TDD_STRATEGY](../Architecture/TDD_STRATEGY.md)
+
 # Import Module — Comprehensive Validation Plan
 > **Scope:** `ExcelExtractionService` · `QuestionImportValidator` · `ImportBackgroundWorker`  
 > **Stack:** .NET 8 · ClosedXML · EF Core · xUnit · Channel-based async workers  

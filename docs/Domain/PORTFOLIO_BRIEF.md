@@ -1,3 +1,5 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+
 # FullStack Mastery — Portfolio Brief
 
 > **Role target:** Full Stack Engineer · .NET Backend · Angular Frontend\

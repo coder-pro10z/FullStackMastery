@@ -24,4 +24,5 @@ public class Question
     // Navigation
     public ICollection<UserProgress> UserProgresses { get; set; } = new List<UserProgress>();
     public ICollection<QuestionVersion> Versions { get; set; } = new List<QuestionVersion>();
+    public ICollection<InterviewRoundQuestion> InterviewRoundQuestions { get; set; } = new List<InterviewRoundQuestion>();
 }

@@ -11,7 +11,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class AdminInterviewService {
   private readonly http = inject(HttpClient);
-  // private readonly apiUrl = `${environment.apiUrl}/admin/interviews`; 
+  private readonly apiUrl = `${environment.apiUrl}/admin/interviews`; 
 
   // ==========================================
   // Adapter Shield Methods (Raw -> Strict)
@@ -64,69 +64,50 @@ export class AdminInterviewService {
   // Mock data for development phase (to allow UI testing before backend is ready)
   
   getCompanies(): Observable<Company[]> {
-    const mockData: ApiCompany[] = [
-      { id: '1', name: 'Meta', logo_url: 'from-blue-600 to-blue-400', industry_type: 'Social Media' },
-      { id: '2', name: 'Google', logo_url: 'from-red-500 to-yellow-500', industry_type: 'Search' }
-    ];
-    // return this.http.get<ApiCompany[]>(`${this.apiUrl}/companies`).pipe(
-    return of(mockData).pipe(
-      delay(400),
+    return this.http.get<ApiCompany[]>(`${this.apiUrl}/companies`).pipe(
       map(rawList => rawList.map(raw => this.mapToCompany(raw)))
     );
   }
 
   addCompany(data: Partial<Company>): Observable<Company> {
-    const mockResponse: ApiCompany = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: data.name || 'New Company',
+    const payload = {
+      name: data.name,
       logo_url: data.logo,
       industry_type: data.industry
     };
-    return of(mockResponse).pipe(
-      delay(300),
+    return this.http.post<ApiCompany>(`${this.apiUrl}/companies`, payload).pipe(
       map(raw => this.mapToCompany(raw))
     );
   }
 
   deleteCompany(companyId: string): Observable<void> {
-    return of(void 0).pipe(delay(300));
+    return this.http.delete<void>(`${this.apiUrl}/companies/${companyId}`);
   }
 
   getInterviews(companyId: string): Observable<Interview[]> {
-    const mockData: ApiInterview[] = [
-      { id: 'i1', company_id: companyId, role_name: 'Full Stack Developer', level_tier: 'L4', interview_date: '2025-11-15' },
-      { id: 'i2', company_id: companyId, role_name: 'Frontend Engineer', level_tier: 'E4', interview_date: '2025-10-10' }
-    ];
-    return of(mockData).pipe(
-      delay(300),
+    return this.http.get<ApiInterview[]>(`${this.apiUrl}/roles?companyId=${companyId}`).pipe(
       map(rawList => rawList.map(raw => this.mapToInterview(raw)))
     );
   }
 
   getRounds(interviewId: string): Observable<Round[]> {
-    const mockData: ApiRound[] = [
-      { id: 'r1', interview_id: interviewId, round_number: 1, focus_area: 'Technical' },
-      { id: 'r2', interview_id: interviewId, round_number: 2, focus_area: 'System Design' }
-    ];
-    return of(mockData).pipe(
-      delay(200),
+    return this.http.get<ApiRound[]>(`${this.apiUrl}/rounds?interviewId=${interviewId}`).pipe(
       map(rawList => rawList.map(raw => this.mapToRound(raw)))
     );
   }
 
   getQuestions(roundId: string): Observable<Question[]> {
-    const mockData: ApiQuestion[] = [
-      { id: 'q1', round_id: roundId, title: 'Explain Virtual DOM', difficulty_level: 'Medium', category_name: 'React', solution_md: '## Virtual DOM\nIt is a lightweight copy of the real DOM...' },
-      { id: 'q2', round_id: roundId, title: 'System Design: News Feed', difficulty_level: 'Hard', category_name: 'System Design', solution_md: '' }
-    ];
-    return of(mockData).pipe(
-      delay(200),
+    return this.http.get<ApiQuestion[]>(`${this.apiUrl}/rounds/${roundId}/questions`).pipe(
       map(rawList => rawList.map(raw => this.mapToQuestion(raw)))
     );
   }
 
   addQuestion(roundId: string, data: Partial<Question>): Observable<Question> {
-    const mockResponse: ApiQuestion = {
+    // Note: The UI is currently passing mock data. To properly implement this,
+    // we would create a new Question globally and then link it to the round, 
+    // or link an existing Question by ID.
+    // For now, this is a placeholder since the full "select existing question" UI isn't built yet.
+    return of(this.mapToQuestion({
       id: Math.random().toString(36).substr(2, 9),
       round_id: roundId,
       title: data.title || 'New Question',
@@ -134,42 +115,28 @@ export class AdminInterviewService {
       category_name: data.category || 'General',
       solution_md: data.solutionMarkdown || '',
       diagram_payload: data.diagramJSON || ''
-    };
-    
-    // In production:
-    // return this.http.post<ApiQuestion>(`${environment.apiUrl}/admin/rounds/${roundId}/questions`, data).pipe(
-    //   map(raw => this.mapToQuestion(raw))
-    // );
-    
-    return of(mockResponse).pipe(
-      delay(300),
-      map(raw => this.mapToQuestion(raw))
-    );
+    }));
   }
 
   addInterview(companyId: string, data: Partial<Interview>): Observable<Interview> {
-    const mockResponse: ApiInterview = {
-      id: Math.random().toString(36).substr(2, 9),
+    const payload = {
       company_id: companyId,
-      role_name: data.roleName || 'New Role',
-      level_tier: data.level || 'Mid-Level',
-      interview_date: data.date || new Date().toISOString().split('T')[0]
+      role_name: data.roleName,
+      level_tier: data.level,
+      interview_date: data.date
     };
-    return of(mockResponse).pipe(
-      delay(300),
+    return this.http.post<ApiInterview>(`${this.apiUrl}/roles`, payload).pipe(
       map(raw => this.mapToInterview(raw))
     );
   }
 
   addRound(interviewId: string, data: Partial<Round>): Observable<Round> {
-    const mockResponse: ApiRound = {
-      id: Math.random().toString(36).substr(2, 9),
+    const payload = {
       interview_id: interviewId,
       round_number: data.roundNumber ?? 1,
-      focus_area: data.focusArea || 'General'
+      focus_area: data.focusArea
     };
-    return of(mockResponse).pipe(
-      delay(200),
+    return this.http.post<ApiRound>(`${this.apiUrl}/rounds`, payload).pipe(
       map(raw => this.mapToRound(raw))
     );
   }
@@ -177,5 +144,64 @@ export class AdminInterviewService {
   bulkImportQuestions(roundId: string, file: File): Observable<{ imported: number; skipped: number; errors: string[] }> {
     // In production: return this.http.post(`${this.apiUrl}/rounds/${roundId}/bulk-import`, formData);
     return of({ imported: 5, skipped: 1, errors: [] }).pipe(delay(800));
+  }
+
+  updateCompany(id: string, patch: Partial<Company>): Observable<Company> {
+    const payload = {
+      name: patch.name,
+      logo_url: patch.logo,
+      industry_type: patch.industry
+    };
+    return this.http.put<ApiCompany>(`${this.apiUrl}/companies/${id}`, payload).pipe(
+      map(raw => this.mapToCompany(raw))
+    );
+  }
+
+  updateInterview(id: string, patch: Partial<Interview>): Observable<Interview> {
+    const payload = {
+      company_id: patch.companyId, // Might be undefined but handled by partial
+      role_name: patch.roleName,
+      level_tier: patch.level,
+      interview_date: patch.date
+    };
+    return this.http.put<ApiInterview>(`${this.apiUrl}/roles/${id}`, payload).pipe(
+      map(raw => this.mapToInterview(raw))
+    );
+  }
+
+  updateRound(id: string, patch: Partial<Round>): Observable<Round> {
+    const payload = {
+      interview_id: patch.interviewId,
+      round_number: patch.roundNumber,
+      focus_area: patch.focusArea
+    };
+    return this.http.put<ApiRound>(`${this.apiUrl}/rounds/${id}`, payload).pipe(
+      map(raw => this.mapToRound(raw))
+    );
+  }
+
+  updateQuestion(id: string, patch: Partial<Question>): Observable<Question> {
+    // Similar to addQuestion, this needs a global question edit implementation
+    return of(this.mapToQuestion({
+      id,
+      round_id: patch.roundId || '',
+      title: patch.title || 'Question',
+      difficulty_level: patch.difficulty,
+      category_name: patch.category,
+      solution_md: patch.solutionMarkdown,
+      diagram_payload: patch.diagramJSON
+    }));
+  }
+
+  deleteInterview(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/roles/${id}`);
+  }
+
+  deleteRound(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/rounds/${id}`);
+  }
+
+  deleteQuestion(roundId: string, questionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/rounds/${roundId}/questions/${questionId}`);
   }
 }

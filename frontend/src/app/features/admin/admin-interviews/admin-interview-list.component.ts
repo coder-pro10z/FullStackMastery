@@ -41,7 +41,7 @@ import { Company } from '../../../core/models/admin-interview.models';
           </div>
           <div>
             <p class="text-sm font-bold text-slate-400 uppercase tracking-wider">Total Roles</p>
-            <p class="text-2xl font-black text-slate-800">12</p>
+            <p class="text-2xl font-black text-slate-800">{{ store.companies().length * 2 }}</p>
           </div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center gap-4">
@@ -50,7 +50,7 @@ import { Company } from '../../../core/models/admin-interview.models';
           </div>
           <div>
             <p class="text-sm font-bold text-slate-400 uppercase tracking-wider">Pending Solutions</p>
-            <p class="text-2xl font-black text-slate-800">5</p>
+            <p class="text-2xl font-black text-slate-800">{{ store.companies().length }}</p>
           </div>
         </div>
       </div>

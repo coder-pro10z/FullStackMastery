@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ImportQuestionPlan](../Workflows/ImportQuestionPlan.md)
+
 # ADMIN.MD - Admin Workspace Implementation Reference
 
 > Version: 2.0 | Last Updated: March 2026

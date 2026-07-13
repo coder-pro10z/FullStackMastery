@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [TRD](../Architecture/TRD.md) · [APPLICATION_FLOW](../Workflows/APPLICATION_FLOW.md)
+
 # 📄 Product Requirements Document (PRD)
 
 **Product Name:** Full Stack .NET & Angular Interview Preparation Platform

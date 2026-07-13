@@ -1,3 +1,5 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+
 # Local SQL Server → Supabase (Postgres) migration guide (EF Core / .NET 8)
 
 This repo supports both SQL Server and Postgres via `DatabaseProvider`. This guide documents a clean “switch providers” flow and how to regenerate EF Core migrations for Supabase.

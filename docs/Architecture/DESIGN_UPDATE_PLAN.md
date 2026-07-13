@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [Improvements](../Improvements.md) · [TRACKER](../TRACKER.md)
+
 # PRD/TRD Realignment and Feature-Gate Plan
 
 ## Summary

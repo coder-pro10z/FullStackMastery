@@ -148,4 +148,48 @@ export class AdminInterviewStore {
     });
     return result$;
   }
+
+  updateCompany(id: string, patch: Partial<Company>): void {
+    const current = this.activeCompany();
+    const merged: Partial<Company> = { ...current, ...patch, id };
+    this.adminService.updateCompany(id, merged).subscribe({
+      next: (updated) => {
+        this.activeCompany.set(updated);
+        this.companies.update(list => list.map(c => c.id === id ? updated : c));
+      }
+    });
+  }
+
+  updateInterview(id: string, patch: Partial<Interview>): void {
+    const current = this.activeInterview();
+    const merged: Partial<Interview> = { ...current, ...patch, id };
+    this.adminService.updateInterview(id, merged).subscribe({
+      next: (updated) => {
+        this.activeInterview.set(updated);
+        this.companyInterviews.update(list => list.map(i => i.id === id ? updated : i));
+      }
+    });
+  }
+
+  updateRound(id: string, patch: Partial<Round>): void {
+    const current = this.activeRound();
+    const merged: Partial<Round> = { ...current, ...patch, id };
+    this.adminService.updateRound(id, merged).subscribe({
+      next: (updated) => {
+        this.activeRound.set(updated);
+        this.interviewRounds.update(list => list.map(r => r.id === id ? updated : r));
+      }
+    });
+  }
+
+  updateQuestion(id: string, patch: Partial<Question>): void {
+    const current = this.activeQuestion();
+    const merged: Partial<Question> = { ...current, ...patch, id };
+    this.adminService.updateQuestion(id, merged).subscribe({
+      next: (updated) => {
+        this.activeQuestion.set(updated);
+        this.roundQuestions.update(list => list.map(q => q.id === id ? updated : q));
+      }
+    });
+  }
 }

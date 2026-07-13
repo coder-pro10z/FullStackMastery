@@ -31,7 +31,11 @@ import {
   List,
   Code,
   Save,
-  FileCheck
+  FileCheck,
+  AlertCircle,
+  UserCircle,
+  Briefcase,
+  ListChecks
 } from 'lucide-angular';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
@@ -84,7 +88,11 @@ export const appConfig: ApplicationConfig = {
       List,
       Code,
       Save,
-      FileCheck
+      FileCheck,
+      AlertCircle,
+      UserCircle,
+      Briefcase,
+      ListChecks
     })),
 
     // ── Import Pipeline Providers ────────────────────────────────────────────

@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ENGINEERING_PLAYBOOK](ENGINEERING_PLAYBOOK.md) · [PRD](../Domain/PRD.md)
+
 # Technical Requirements Document (TRD)
 
 **Product Name:** Interview Preparation Platform

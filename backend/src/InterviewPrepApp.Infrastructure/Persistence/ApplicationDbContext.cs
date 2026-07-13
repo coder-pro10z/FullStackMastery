@@ -25,6 +25,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<StudyGuideSection> StudyGuideSections => Set<StudyGuideSection>();
     public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
 
+    // ── INTERVIEWS MODULE ─────────────────────────────────────
+    public DbSet<Company> Companies => Set<Company>();
+    public DbSet<CompanyInterview> CompanyInterviews => Set<CompanyInterview>();
+    public DbSet<InterviewRound> InterviewRounds => Set<InterviewRound>();
+    public DbSet<InterviewRoundQuestion> InterviewRoundQuestions => Set<InterviewRoundQuestion>();
+
     //Dashboard
 
     // ── NEW DB SETS (Migrated from EduDash) ─────────────────
@@ -146,6 +152,49 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany()
                   .HasForeignKey(q => q.CategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Interviews Module Configurations
+        builder.Entity<Company>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(150);
+        });
+
+        builder.Entity<CompanyInterview>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.RoleName).IsRequired().HasMaxLength(150);
+            
+            entity.HasOne(i => i.Company)
+                  .WithMany(c => c.Interviews)
+                  .HasForeignKey(i => i.CompanyId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<InterviewRound>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            
+            entity.HasOne(r => r.Interview)
+                  .WithMany(i => i.Rounds)
+                  .HasForeignKey(r => r.InterviewId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<InterviewRoundQuestion>(entity =>
+        {
+            entity.HasKey(q => new { q.RoundId, q.QuestionId });
+
+            entity.HasOne(q => q.Round)
+                  .WithMany(r => r.RoundQuestions)
+                  .HasForeignKey(q => q.RoundId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(q => q.Question)
+                  .WithMany(q => q.InterviewRoundQuestions)
+                  .HasForeignKey(q => q.QuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // StudyGuideSection configurations

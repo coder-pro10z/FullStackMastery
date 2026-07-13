@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [PRD](../Domain/PRD.md) · [TRD](../Architecture/TRD.md)
+
 # Quiz Feature Review And Project-Aligned Proposal
 
 This document replaces the earlier quiz draft with a version that matches the repository as it exists today.

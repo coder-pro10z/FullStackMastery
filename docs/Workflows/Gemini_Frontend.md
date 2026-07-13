@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ENGINEERING_PLAYBOOK](../Architecture/ENGINEERING_PLAYBOOK.md)
+
 Here is the ultimate "Mega-Prompt" for your Angular frontend. Just like the backend prompt, this acts as a strict Technical Requirements Document (TRD).
 
 It enforces a highly modular, component-driven architecture. By forcing the AI to build reusable "dumb" components first, you prevent it from writing massive, unmaintainable 2,000-line HTML files.

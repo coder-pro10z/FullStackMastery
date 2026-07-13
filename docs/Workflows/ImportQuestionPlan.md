@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [ImportModule_ValidationPlan](../Features/ImportModule_ValidationPlan.md)
+
 Here is a **clean, production-grade AGENT PROMPT** you can directly give to an AI/code agent.
 It is **strict, unambiguous, and execution-ready**.
 

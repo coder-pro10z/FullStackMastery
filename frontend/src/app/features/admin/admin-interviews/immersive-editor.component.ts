@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AdminInterviewStore } from '../../../core/state/admin-interview.store';
+import { Question } from '../../../core/models/admin-interview.models';
 
 @Component({
   selector: 'app-immersive-editor',
@@ -44,7 +45,7 @@ import { AdminInterviewStore } from '../../../core/state/admin-interview.store';
             Mermaid Diagram
           </button>
           <div class="w-px h-5 bg-slate-800 mx-2"></div>
-          <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
+          <button (click)="saveChanges()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold shadow-sm transition-colors flex items-center gap-2">
             <lucide-icon name="save" [size]="16"></lucide-icon>
             Save Changes
           </button>
@@ -104,17 +105,31 @@ import { AdminInterviewStore } from '../../../core/state/admin-interview.store';
     </div>
   `
 })
-export class ImmersiveEditorComponent {
+export class ImmersiveEditorComponent implements OnInit {
   store = inject(AdminInterviewStore);
   
+  @Output() onClose = new EventEmitter<void>();
+  @Output() onSave = new EventEmitter<string>();
+
   activeTab = signal<'markdown' | 'diagram'>('markdown');
   
   // Local state for editing
-  markdownContent = signal<string>('## Approach\nWe start by initializing two pointers...');
-  diagramContent = signal<string>('graph TD;\n    Client-->LoadBalancer;\n    LoadBalancer-->Server1;');
+  markdownContent = signal<string>('');
+  diagramContent = signal<string>('');
+
+  ngOnInit(): void {
+    const q = this.store.activeQuestion();
+    if (q) {
+      this.markdownContent.set(q.solutionMarkdown || '');
+      this.diagramContent.set(q.diagramJSON || '');
+    }
+  }
+
+  saveChanges() {
+    this.onSave.emit(this.markdownContent());
+  }
 
   closeEditor() {
-    // In a real app, this would route back or close the overlay
-    console.log('Closing editor');
+    this.onClose.emit();
   }
 }

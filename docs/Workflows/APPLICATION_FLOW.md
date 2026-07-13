@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [PRD](../Domain/PRD.md)
+
 # Interview Preparation Platform - Application Flow
 > **Version**: 1.0.0
 > **Date**: March 2026

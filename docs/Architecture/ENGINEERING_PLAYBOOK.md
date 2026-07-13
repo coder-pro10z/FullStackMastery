@@ -1,3 +1,6 @@
+> **Navigation:** [← Back to README](../../README.md) · [Architecture](../Architecture/) · [Domain](../Domain/) · [Features](../Features/) · [API](../API/) · [ADR](../ADR/)
+> **Related:** [TRD](TRD.md) · [TDD_STRATEGY](TDD_STRATEGY.md)
+
 # Engineering Playbook — FullStack Mastery Interview Preparation Platform
 
 > **Version:** 1.1 | **Established:** April 2026 | **Last Updated:**2 April 2026
