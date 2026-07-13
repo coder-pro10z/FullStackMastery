@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { map, delay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { 
@@ -119,6 +119,9 @@ export class AdminInterviewService {
   }
 
   addInterview(companyId: string, data: Partial<Interview>): Observable<Interview> {
+    if (companyId === '00000000-0000-0000-0000-000000000000') {
+      return throwError(() => new Error('Cannot add a role to a company with a ghost ID (00000000-0000-0000-0000-000000000000)'));
+    }
     const payload = {
       company_id: companyId,
       role_name: data.roleName,
@@ -131,6 +134,9 @@ export class AdminInterviewService {
   }
 
   addRound(interviewId: string, data: Partial<Round>): Observable<Round> {
+    if (interviewId === '00000000-0000-0000-0000-000000000000') {
+      return throwError(() => new Error('Cannot add a round to a role with a ghost ID (00000000-0000-0000-0000-000000000000)'));
+    }
     const payload = {
       interview_id: interviewId,
       round_number: data.roundNumber ?? 1,
@@ -147,6 +153,9 @@ export class AdminInterviewService {
   }
 
   updateCompany(id: string, patch: Partial<Company>): Observable<Company> {
+    if (id === '00000000-0000-0000-0000-000000000000') {
+      return throwError(() => new Error('Cannot update a company with a ghost ID (00000000-0000-0000-0000-000000000000)'));
+    }
     const payload = {
       name: patch.name,
       logo_url: patch.logo,
@@ -158,6 +167,9 @@ export class AdminInterviewService {
   }
 
   updateInterview(id: string, patch: Partial<Interview>): Observable<Interview> {
+    if (id === '00000000-0000-0000-0000-000000000000') {
+      return throwError(() => new Error('Cannot update a role with a ghost ID (00000000-0000-0000-0000-000000000000)'));
+    }
     const payload = {
       company_id: patch.companyId, // Might be undefined but handled by partial
       role_name: patch.roleName,
@@ -170,6 +182,9 @@ export class AdminInterviewService {
   }
 
   updateRound(id: string, patch: Partial<Round>): Observable<Round> {
+    if (id === '00000000-0000-0000-0000-000000000000') {
+      return throwError(() => new Error('Cannot update a round with a ghost ID (00000000-0000-0000-0000-000000000000)'));
+    }
     const payload = {
       interview_id: patch.interviewId,
       round_number: patch.roundNumber,

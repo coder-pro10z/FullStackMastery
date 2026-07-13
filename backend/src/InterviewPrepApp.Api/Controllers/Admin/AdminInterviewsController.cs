@@ -23,7 +23,9 @@ public class AdminInterviewsController : ControllerBase
     [HttpGet("companies")]
     public async Task<IActionResult> GetCompanies()
     {
-        var companies = await _db.Companies.ToListAsync();
+        var companies = await _db.Companies
+                                 .Where(c => c.Id != Guid.Empty)
+                                 .ToListAsync();
         return Ok(companies.Select(c => new CompanyDto
         {
             Id = c.Id,
@@ -91,6 +93,10 @@ public class AdminInterviewsController : ControllerBase
     [HttpPost("roles")]
     public async Task<IActionResult> CreateInterview([FromBody] CompanyInterviewDto dto)
     {
+        if (dto.CompanyId == Guid.Empty) 
+        {
+            return BadRequest(new { error = "CompanyId cannot be a ghost ID (00000000-0000-0000-0000-000000000000)" });
+        }
         try
         {
             var interview = new CompanyInterview
@@ -158,6 +164,10 @@ public class AdminInterviewsController : ControllerBase
     [HttpPost("rounds")]
     public async Task<IActionResult> CreateRound([FromBody] InterviewRoundDto dto)
     {
+        if (dto.InterviewId == Guid.Empty)
+        {
+            return BadRequest(new { error = "InterviewId cannot be a ghost ID (00000000-0000-0000-0000-000000000000)" });
+        }
         try
         {
             var round = new InterviewRound

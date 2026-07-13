@@ -84,7 +84,7 @@
 | `UserProgressController` — summary + toggles | ✅ | `[Authorize]` protected |
 | `AdminController` — import questions (legacy) | ✅ | Excel upload endpoint (direct entity insert) |
 | `AdminImportController` — unified import | ✅ | `.xlsx`, `.csv`, `.json` all flow through `ImportAsync` pipeline |
-| `AdminQuestionsController` — CRUD | ✅ | Create, update, soft-delete, restore |
+| `AdminQuestionsController` — CRUD | 🔄 | - [x] Fix UTC DateTime DbUpdateException for `InterviewDate` in AdminInterviewsController.<br>- [ ] Fix `00000000-0000-0000-0000-000000000000` (Guid.Empty) leaking into UI state causing 404/500 errors on PUT/POST requests. |
 | `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
 | `AdminDashboardController` — stats | ✅ | Dashboard analytics |
 | `ResourcesController` — cheat sheet read API | ✅ | Auth-protected category resource listing |
