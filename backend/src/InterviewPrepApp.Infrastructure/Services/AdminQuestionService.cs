@@ -94,9 +94,7 @@ public class AdminQuestionService : IAdminQuestionService
         {
             Title = dto.Title,
             QuestionText = dto.QuestionText,
-            AnswerText = dto.AnswerMarkdown,
             Difficulty = dto.Difficulty,
-            Role = dto.Role,
             CategoryId = dto.CategoryId,
             Status = dto.Status,
             CreatedAt = DateTime.UtcNow,
@@ -128,9 +126,8 @@ public class AdminQuestionService : IAdminQuestionService
             VersionNumber = nextVersion + 1,
             QuestionSnapshot = JsonSerializer.Serialize(new
             {
-                question.Title, question.QuestionText, question.Difficulty, question.Role, question.CategoryId
+                question.Title, question.QuestionText, question.Difficulty, question.CategoryId
             }),
-            AnswerSnapshot = question.AnswerText,
             EditedByUserId = userId,
             CreatedAt = DateTime.UtcNow
         });
@@ -139,9 +136,7 @@ public class AdminQuestionService : IAdminQuestionService
 
         question.Title = dto.Title;
         question.QuestionText = dto.QuestionText;
-        question.AnswerText = dto.AnswerMarkdown;
         question.Difficulty = dto.Difficulty;
-        question.Role = dto.Role;
         question.CategoryId = dto.CategoryId;
         question.Status = dto.Status;
         question.UpdatedAt = DateTime.UtcNow;
@@ -261,7 +256,6 @@ public class AdminQuestionService : IAdminQuestionService
                     ExternalId = rec.ExternalId,
                     Title = rec.Title,
                     QuestionText = rec.QuestionText,
-                    AnswerText = rec.AnswerMarkdown,
                     Difficulty = rec.Difficulty,
                     CategoryId = rec.CategoryId,
                     Status = QuestionStatus.Published,
@@ -334,7 +328,7 @@ public class AdminQuestionService : IAdminQuestionService
         ExternalId = q.ExternalId,
         Title = q.Title,
         QuestionText = q.QuestionText,
-        AnswerMarkdown = q.AnswerText,
+        AnswerMarkdown = q.Answer?.InterviewAnswer,
         Definition = q.Answer?.Definition,
         InterviewAnswer = q.Answer?.InterviewAnswer,
         StructuredContent = q.Answer?.Content != null ? JsonSerializer.Deserialize<AnswerContentDto>(q.Answer.Content, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }) : null,

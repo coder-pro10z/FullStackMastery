@@ -184,10 +184,8 @@ namespace InterviewPrepApp.Infrastructure.Services
                 questions.Add(new Question
                 {
                     QuestionText = questionText,
-                    Role = role,
                     Difficulty = difficulty,
-                    CategoryId = categoryId,
-                    AnswerText = answerText
+                    CategoryId = categoryId
                 });
             }
 

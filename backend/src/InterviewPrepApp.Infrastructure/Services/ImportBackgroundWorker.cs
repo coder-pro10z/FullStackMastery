@@ -184,7 +184,6 @@ public sealed class ImportBackgroundWorker : BackgroundService
                     {
                         ExternalId = record.ExternalId,
                         QuestionText = record.QuestionText,
-                        AnswerText = record.AnswerMarkdown,
                         Difficulty = record.Difficulty,
                         CategoryId = record.CategoryId
                         // Excel legacy imports don't configure Tags

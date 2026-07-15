@@ -38,9 +38,9 @@ import { LucideAngularModule } from 'lucide-angular';
             <option value="Hard">Hard</option>
           </select>
 
-          <select [(ngModel)]="role" name="role" class="bg-transparent border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-medium text-[#5F6368] hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1A73E8]/20 cursor-pointer max-w-[120px]">
-            <option value="">Role</option>
-            <option *ngFor="let roleOption of roles" [value]="roleOption">{{ roleOption }}</option>
+          <select [(ngModel)]="tag" name="tag" class="bg-transparent border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-medium text-[#5F6368] hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#1A73E8]/20 cursor-pointer max-w-[120px]">
+            <option value="">Tag</option>
+            <option *ngFor="let tagOption of tags" [value]="tagOption">{{ tagOption }}</option>
           </select>
           
           <button class="flex items-center gap-1.5 bg-transparent border border-[#1A73E8]/30 text-[#1A73E8] hover:bg-[#1A73E8] hover:text-white rounded-xl px-4 py-1.5 text-sm font-semibold transition-all duration-300 ml-1" type="button" (click)="apply()">
@@ -51,7 +51,7 @@ import { LucideAngularModule } from 'lucide-angular';
       </div>
 
       <!-- Active Filter Tags -->
-      @if (appliedSearch || appliedDifficulty || appliedRole) {
+      @if (appliedSearch || appliedDifficulty || appliedTag) {
         <div class="flex flex-wrap items-center gap-2 px-2 animate-fade-in">
           <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Active:</span>
           
@@ -69,10 +69,10 @@ import { LucideAngularModule } from 'lucide-angular';
             </span>
           }
 
-          @if (appliedRole) {
+          @if (appliedTag) {
             <span class="inline-flex items-center gap-1 bg-white text-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-200 shadow-sm">
-              Role: {{ appliedRole }}
-              <button (click)="removeFilter('role')" class="text-slate-400 hover:text-red-500 transition-colors"><lucide-icon name="x" [size]="12"></lucide-icon></button>
+              Tag: {{ appliedTag }}
+              <button (click)="removeFilter('tag')" class="text-slate-400 hover:text-red-500 transition-colors"><lucide-icon name="x" [size]="12"></lucide-icon></button>
             </span>
           }
 
@@ -84,48 +84,48 @@ import { LucideAngularModule } from 'lucide-angular';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FilterBarComponent implements OnChanges {
-  @Input() roles: string[] = [];
+  @Input() tags: string[] = [];
   @Input() searchTerm = '';
   @Input() difficulty: Difficulty | '' = '';
-  @Input() role = '';
+  @Input() tag = '';
   @Output() filtersChanged = new EventEmitter<QuestionQueryParams>();
 
   appliedSearch = '';
   appliedDifficulty: Difficulty | '' = '';
-  appliedRole = '';
+  appliedTag = '';
 
   ngOnChanges() {
     this.appliedSearch = this.searchTerm;
     this.appliedDifficulty = this.difficulty;
-    this.appliedRole = this.role;
+    this.appliedTag = this.tag;
   }
 
   apply() {
     this.appliedSearch = this.searchTerm.trim();
     this.appliedDifficulty = this.difficulty;
-    this.appliedRole = this.role;
+    this.appliedTag = this.tag;
     
     this.filtersChanged.emit({
       ...(this.appliedSearch ? { searchTerm: this.appliedSearch } : {}),
       ...(this.appliedDifficulty ? { difficulty: this.appliedDifficulty } : {}),
-      ...(this.appliedRole ? { role: this.appliedRole } : {})
+      ...(this.appliedTag ? { role: this.appliedTag } : {}) // keep emitting role to match backend query string
     });
   }
 
-  removeFilter(type: 'search' | 'difficulty' | 'role') {
+  removeFilter(type: 'search' | 'difficulty' | 'tag') {
     if (type === 'search') { this.searchTerm = ''; this.appliedSearch = ''; }
     if (type === 'difficulty') { this.difficulty = ''; this.appliedDifficulty = ''; }
-    if (type === 'role') { this.role = ''; this.appliedRole = ''; }
+    if (type === 'tag') { this.tag = ''; this.appliedTag = ''; }
     this.apply();
   }
 
   reset() {
     this.searchTerm = '';
     this.difficulty = '';
-    this.role = '';
+    this.tag = '';
     this.appliedSearch = '';
     this.appliedDifficulty = '';
-    this.appliedRole = '';
+    this.appliedTag = '';
     this.filtersChanged.emit({});
   }
 }

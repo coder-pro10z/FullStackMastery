@@ -230,7 +230,7 @@ public class AdminInterviewsController : ControllerBase
                 Title = rq.Question.Title,
                 DifficultyLevel = rq.Question.Difficulty.ToString(),
                 CategoryName = rq.Question.Category.Name,
-                SolutionMd = rq.Question.AnswerText, // Mapping AnswerText to SolutionMd for now
+                SolutionMd = rq.Question.Answer.InterviewAnswer, // Mapping Answer.InterviewAnswer to SolutionMd for now
                 DiagramPayload = ""
             })
             .ToListAsync();

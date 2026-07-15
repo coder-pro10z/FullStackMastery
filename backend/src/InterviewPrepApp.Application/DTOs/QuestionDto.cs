@@ -12,7 +12,6 @@ public class QuestionDto
 
     public string? ExternalId { get; set; }
 
-    public string? AnswerText { get; set; }
     public string? Definition { get; set; }
     public string? InterviewAnswer { get; set; }
     public AnswerContentDto? StructuredContent { get; set; }

@@ -15,13 +15,7 @@ public class Question
     public string? Title { get; set; }
     public string QuestionText { get; set; } = string.Empty;
 
-    /// <summary>Legacy flat answer string. Kept for backwards compatibility; superseded by Answer entity.</summary>
-    public string? AnswerText { get; set; }
-
     public Difficulty Difficulty { get; set; }
-
-    /// <summary>Legacy free-text role field. Superseded by the Tag M:N system via QuestionTags.</summary>
-    public string Role { get; set; } = string.Empty;
 
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;

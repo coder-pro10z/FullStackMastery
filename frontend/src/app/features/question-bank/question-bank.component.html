@@ -20,10 +20,10 @@
     <div class="sticky top-4 z-30">
         <app-filter-bar 
             class="block"
-            [roles]="vm.roles"
+            [tags]="vm.roles"
             [searchTerm]="activeFilters.searchTerm ?? ''"
             [difficulty]="activeFilters.difficulty ?? ''"
-            [role]="activeFilters.role ?? ''"
+            [tag]="activeFilters.role ?? ''"
             (filtersChanged)="updateFilters($event)">
         </app-filter-bar>
     </div>

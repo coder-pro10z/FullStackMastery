@@ -39,8 +39,7 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
             var normalizedSearchTerm = searchTerm.Trim();
             query = query.Where(question =>
                 question.QuestionText.Contains(normalizedSearchTerm) ||
-                (question.Title != null && question.Title.Contains(normalizedSearchTerm)) ||
-                (question.AnswerText != null && question.AnswerText.Contains(normalizedSearchTerm)));
+                (question.Title != null && question.Title.Contains(normalizedSearchTerm)));
         }
 
         if (difficulty.HasValue)
@@ -74,7 +73,6 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
             ExternalId = question.ExternalId,
             Title = question.Title,
             QuestionText = question.QuestionText,
-            AnswerText = question.AnswerText,
             Definition = question.Answer?.Definition,
             InterviewAnswer = question.Answer?.InterviewAnswer,
             StructuredContent = question.Answer?.Content != null ? System.Text.Json.JsonSerializer.Deserialize<AnswerContentDto>(question.Answer.Content, jsonOptions) : null,

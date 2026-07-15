@@ -10,7 +10,7 @@ public class CreateQuestionDto
     public string QuestionText { get; set; } = string.Empty;
     public string? AnswerMarkdown { get; set; }
     public Difficulty Difficulty { get; set; }
-    public string Role { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
     public int CategoryId { get; set; }
     public QuestionStatus Status { get; set; } = QuestionStatus.Published;
 }
@@ -21,7 +21,7 @@ public class UpdateQuestionDto
     public string QuestionText { get; set; } = string.Empty;
     public string? AnswerMarkdown { get; set; }
     public Difficulty Difficulty { get; set; }
-    public string Role { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
     public int CategoryId { get; set; }
     public QuestionStatus Status { get; set; }
 }

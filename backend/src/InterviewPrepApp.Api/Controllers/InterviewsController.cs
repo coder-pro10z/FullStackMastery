@@ -73,7 +73,7 @@ public class InterviewsController : ControllerBase
                         Title = rq.Question.Title,
                         DifficultyLevel = rq.Question.Difficulty.ToString(),
                         CategoryName = rq.Question.Category?.Name,
-                        SolutionMd = rq.Question.AnswerText // or SolutionMarkdown equivalent
+                        SolutionMd = rq.Question.Answer.InterviewAnswer // or SolutionMarkdown equivalent
                     })
                 })
             })
