@@ -319,7 +319,8 @@ public class AdminQuestionService : IAdminQuestionService
                 "Questions",
                 newValues: JsonSerializer.Serialize(new
                 {
-                    Imported = imported,
+                    Imported = inserted,
+                    Updated = updated,
                     Failed = validation.Failed,
                     Skipped = validation.Skipped
                 }),
@@ -334,8 +335,8 @@ public class AdminQuestionService : IAdminQuestionService
             IsDryRun = dryRun,
             Status = validation.Failed == 0 ? ImportLogStatus.Completed : ImportLogStatus.PartiallyCompleted,
             TotalRows = rows.Count(),
-            Inserted = imported,
-            Updated = 0, // Questions import currently only inserts or skips
+            Inserted = inserted,
+            Updated = updated, // Changed to support UPSERT
             Skipped = validation.Skipped,
             Warned = validation.Warnings.Count,
             Failed = validation.Failed,

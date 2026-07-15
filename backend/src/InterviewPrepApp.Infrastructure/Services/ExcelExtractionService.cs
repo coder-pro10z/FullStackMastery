@@ -41,7 +41,11 @@ namespace InterviewPrepApp.Infrastructure.Services
             if (questionColIndex == -1 || roleColIndex == -1 || difficultyColIndex == -1)
                 return Result<List<Question>>.Failure("Missing required columns: Question (or Question Title), Role, or Difficulty.");
 
-            var rows = worksheet.RangeUsed().RowsUsed().Skip(1).ToList(); // skip header
+            var rangeUsed = worksheet.RangeUsed();
+            if (rangeUsed == null)
+                return Result<List<Question>>.Failure("Worksheet is empty.");
+
+            var rows = rangeUsed.RowsUsed().Skip(1).ToList(); // skip header
             var questions = new List<Question>();
             var errors = new List<string>();
 
