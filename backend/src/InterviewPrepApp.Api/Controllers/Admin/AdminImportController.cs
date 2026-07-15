@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace InterviewPrepApp.Api.Controllers.Admin;
 
@@ -109,7 +110,18 @@ public class AdminImportController : ControllerBase
         var doc = JsonSerializer.Deserialize<JsonImportDocument>(json,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return doc?.Questions ?? [];
+        if (doc?.Questions == null) return [];
+
+        return doc.Questions.Select(q => new ImportQuestionRowDto
+        {
+            ExternalId = q.QuestionId ?? q.ExternalId,
+            Title = q.Title,
+            QuestionText = !string.IsNullOrWhiteSpace(q.Question) ? q.Question : q.QuestionText ?? string.Empty,
+            Difficulty = q.Difficulty ?? "Medium",
+            CategorySlug = q.Category ?? q.CategorySlug ?? string.Empty,
+            Tags = q.Tags ?? [],
+            AnswerMarkdown = q.AnswerMarkdown
+        });
     }
 
     private static IEnumerable<ImportQuestionRowDto> ParseCsv(string csv)
@@ -225,4 +237,31 @@ public class AdminImportController : ControllerBase
 }
 
 public class JsonImportBody { public IReadOnlyList<ImportQuestionRowDto> Questions { get; set; } = []; }
-public class JsonImportDocument { public IReadOnlyList<ImportQuestionRowDto>? Questions { get; set; } }
+
+public class JsonImportDocument { public IReadOnlyList<QuestionSchemaDto>? Questions { get; set; } }
+
+public class QuestionSchemaDto
+{
+    // New JSON schema fields
+    [JsonPropertyName("question_id")]
+    public string? QuestionId { get; set; }
+
+    [JsonPropertyName("question")]
+    public string? Question { get; set; }
+
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
+
+    [JsonPropertyName("difficulty")]
+    public string? Difficulty { get; set; }
+
+    [JsonPropertyName("tags")]
+    public List<string>? Tags { get; set; }
+
+    // Internal legacy fields
+    public string? ExternalId { get; set; }
+    public string? Title { get; set; }
+    public string? QuestionText { get; set; }
+    public string? CategorySlug { get; set; }
+    public string? AnswerMarkdown { get; set; }
+}

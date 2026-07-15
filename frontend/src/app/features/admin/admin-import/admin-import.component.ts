@@ -34,10 +34,9 @@ import {
 
       <!-- Page Header -->
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight text-[#202124]">Import Questions</h1>
+        <h1 class="text-2xl font-semibold tracking-tight text-[#202124]">Import Data</h1>
         <p class="text-sm text-[#5F6368] mt-1">
-          Bulk-upload questions from
-          <code>.xlsx</code>, <code>.csv</code>, or <code>.json</code>.
+          Bulk-upload Questions or Answers. First, upload Questions to create entries, then upload Answers linking to the <code>ExternalId</code>.
           Use <strong class="font-semibold text-[#202124]">Dry Run</strong> to validate without saving.
         </p>
       </div>
@@ -55,21 +54,42 @@ import {
             </h2>
 
             <div class="space-y-4">
-              <!-- Category Picker -->
+              <!-- Mode Toggle -->
               <div>
-                <label class="edudash-label" for="import-category">Default Category *</label>
-                @if (catsLoading()) {
-                  <div class="h-10 bg-slate-200 rounded-lg animate-pulse"></div>
-                } @else {
-                  <select id="import-category" [(ngModel)]="categoryId" class="edudash-input">
-                    <option [ngValue]="0" disabled>Select a category…</option>
-                    @for (cat of flatCategories(); track cat.id) {
-                      <option [ngValue]="cat.id">{{ cat.indent }}{{ cat.name }}</option>
-                    }
-                  </select>
-                  <p class="text-xs text-[#5F6368] mt-1">Used when a row doesn't specify its own category.</p>
-                }
+                <label class="edudash-label mb-2">Import Type</label>
+                <div class="flex p-1 bg-slate-100 rounded-lg">
+                  <button
+                    (click)="importMode.set('questions'); file.set(null); result.set(null)"
+                    [class]="importMode() === 'questions' ? 'bg-white text-blue-700 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-800'"
+                    class="flex-1 py-1.5 text-sm rounded-md transition-all">
+                    Questions
+                  </button>
+                  <button
+                    (click)="importMode.set('answers'); file.set(null); result.set(null)"
+                    [class]="importMode() === 'answers' ? 'bg-white text-violet-700 shadow-sm font-semibold' : 'text-slate-600 hover:text-slate-800'"
+                    class="flex-1 py-1.5 text-sm rounded-md transition-all">
+                    Answers (JSON)
+                  </button>
+                </div>
               </div>
+
+              <!-- Category Picker (Questions Only) -->
+              @if (importMode() === 'questions') {
+                <div>
+                  <label class="edudash-label" for="import-category">Default Category *</label>
+                  @if (catsLoading()) {
+                    <div class="h-10 bg-slate-200 rounded-lg animate-pulse"></div>
+                  } @else {
+                    <select id="import-category" [(ngModel)]="categoryId" class="edudash-input">
+                      <option [ngValue]="0" disabled>Select a category…</option>
+                      @for (cat of flatCategories(); track cat.id) {
+                        <option [ngValue]="cat.id">{{ cat.indent }}{{ cat.name }}</option>
+                      }
+                    </select>
+                    <p class="text-xs text-[#5F6368] mt-1">Used when a row doesn't specify its own category.</p>
+                  }
+                </div>
+              }
 
               <!-- Dry Run Toggle -->
               <div class="flex items-center justify-between py-3 border-t border-[#E0E0E0]">
@@ -103,7 +123,7 @@ import {
                 #fileInput
                 id="import-file-input"
                 type="file"
-                accept=".xlsx,.xls,.json,.csv"
+                [accept]="importMode() === 'questions' ? '.xlsx,.xls,.json,.csv' : '.json'"
                 class="hidden"
                 (change)="onFileChange($event)" />
 
@@ -129,7 +149,13 @@ import {
                     <p class="text-sm text-[#202124]">
                       <span class="font-semibold text-[#1A73E8]">Click to upload</span> or drag & drop
                     </p>
-                    <p class="text-xs text-[#5F6368] mt-1">.xlsx &nbsp;·&nbsp; .csv &nbsp;·&nbsp; .json</p>
+                    <p class="text-xs text-[#5F6368] mt-1">
+                      @if (importMode() === 'questions') {
+                        .xlsx &nbsp;·&nbsp; .csv &nbsp;·&nbsp; .json
+                      } @else {
+                        .json only
+                      }
+                    </p>
                   </div>
                 </div>
               }
@@ -200,18 +226,18 @@ import {
           <button
             id="import-submit-btn"
             (click)="runImport()"
-            [disabled]="!file() || uploading() || !categoryId"
+            [disabled]="!file() || uploading() || (importMode() === 'questions' && !categoryId)"
             class="btn btn-primary w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-40">
             @if (uploading()) {
               <lucide-icon name="loader" [size]="16" class="animate-spin" />
               Processing…
             } @else {
               <lucide-icon name="upload" [size]="16" />
-              {{ dryRun ? 'Validate File (Dry Run)' : 'Import Questions' }}
+              {{ dryRun ? 'Validate File (Dry Run)' : (importMode() === 'questions' ? 'Import Questions' : 'Import Answers') }}
             }
           </button>
 
-          @if (!categoryId && !uploading()) {
+          @if (importMode() === 'questions' && !categoryId && !uploading()) {
             <p class="text-center text-xs text-amber-600 flex items-center justify-center gap-1">
               <lucide-icon name="alert-triangle" [size]="13" />
               Select a default category before importing.
@@ -221,54 +247,57 @@ import {
 
         <!-- ── Right: Format Guide ── -->
         <div class="space-y-4">
-          <h2 class="text-xs font-semibold text-[#5F6368] uppercase tracking-wider">Supported Formats</h2>
+          <h2 class="text-xs font-semibold text-[#5F6368] uppercase tracking-wider">
+            Supported Formats ({{ importMode() === 'questions' ? 'Questions' : 'Answers' }})
+          </h2>
 
-          <div class="edudash-card">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <lucide-icon name="table" [size]="18" class="text-emerald-600" />
+          @if (importMode() === 'questions') {
+            <div class="edudash-card">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                  <lucide-icon name="table" [size]="18" class="text-emerald-600" />
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#202124]">.xlsx / .xls</p>
+                  <p class="text-xs text-[#5F6368]">Excel spreadsheet</p>
+                </div>
               </div>
-              <div>
-                <p class="text-sm font-semibold text-[#202124]">.xlsx / .xls</p>
-                <p class="text-xs text-[#5F6368]">Excel spreadsheet</p>
-              </div>
+              <p class="text-xs text-[#5F6368] leading-relaxed">
+                Columns: <code>ExternalId</code>, <code>Title</code>, <code>QuestionText</code>, <code>Difficulty</code>,
+                <code>CategorySlug</code>
+              </p>
             </div>
-            <p class="text-xs text-[#5F6368] leading-relaxed">
-              Columns: <code>Title</code>, <code>QuestionText</code>, <code>Difficulty</code>,
-              <code>CategorySlug</code>, <code>AnswerMarkdown</code>
-            </p>
-          </div>
 
-          <div class="edudash-card">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <lucide-icon name="file-text" [size]="18" class="text-blue-600" />
+            <div class="edudash-card">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <lucide-icon name="file-text" [size]="18" class="text-blue-600" />
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#202124]">.csv</p>
+                  <p class="text-xs text-[#5F6368]">Comma-separated values</p>
+                </div>
               </div>
-              <div>
-                <p class="text-sm font-semibold text-[#202124]">.csv</p>
-                <p class="text-xs text-[#5F6368]">Comma-separated values</p>
-              </div>
+              <p class="text-xs text-[#5F6368] leading-relaxed">
+                Same headers as .xlsx. Quoted fields and embedded newlines are supported.
+              </p>
             </div>
-            <p class="text-xs text-[#5F6368] leading-relaxed">
-              Same headers as .xlsx. Quoted fields and embedded newlines are supported.
-            </p>
-          </div>
-
-          <div class="edudash-card">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
-                <lucide-icon name="braces" [size]="18" class="text-violet-600" />
+          } @else {
+            <div class="edudash-card">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
+                  <lucide-icon name="braces" [size]="18" class="text-violet-600" />
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#202124]">.json</p>
+                  <p class="text-xs text-[#5F6368]">JSON structured answers</p>
+                </div>
               </div>
-              <div>
-                <p class="text-sm font-semibold text-[#202124]">.json</p>
-                <p class="text-xs text-[#5F6368]">JSON array</p>
-              </div>
+              <p class="text-xs text-[#5F6368] leading-relaxed">
+                Provide an array under <code>"answers"</code> key. Each object must contain <code>externalId</code> to link back to a Question. Include fields like <code>technicalExplanation</code>, <code>codeSnippets</code>, etc.
+              </p>
             </div>
-            <p class="text-xs text-[#5F6368] leading-relaxed">
-              Array under <code>"questions"</code> key. Each object: <code>questionText</code>,
-              <code>difficulty</code>, <code>categorySlug</code>.
-            </p>
-          </div>
+          }
 
           <!-- Tip -->
           <div class="edudash-card bg-blue-50 border-blue-100">
@@ -338,6 +367,7 @@ export class AdminImportComponent implements OnInit {
   // ── Import state ──────────────────────────────────────────────────────────
   categoryId = 0;
   dryRun = false;
+  readonly importMode = signal<'questions' | 'answers'>('questions');
   readonly showDryRunSuccessSnackbar = signal(false);
 
   readonly file = signal<File | null>(null);
@@ -395,11 +425,18 @@ export class AdminImportComponent implements OnInit {
   runImport(): void {
     const f = this.file();
     if (!f || this.uploading()) return;
+    if (this.importMode() === 'questions' && !this.categoryId) return;
+    
     this.uploading.set(true);
     this.result.set(null);
     this.errorMsg.set('');
     this.showDryRunSuccessSnackbar.set(false);
-    this.api.importFile(f, this.categoryId || 1, this.dryRun).subscribe({
+
+    const request$ = this.importMode() === 'questions'
+      ? this.api.importFile(f, this.categoryId || 1, this.dryRun)
+      : this.api.importAnswers(f, this.dryRun);
+
+    request$.subscribe({
       next: r => {
         this.result.set(r);
         this.uploading.set(false);
