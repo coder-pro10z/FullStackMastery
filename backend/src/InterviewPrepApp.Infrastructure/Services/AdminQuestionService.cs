@@ -219,9 +219,10 @@ public class AdminQuestionService : IAdminQuestionService
         var validation = await _importValidator.ValidateAsync(rowList, defaultCategoryId, existingFingerprints, ct);
 
         // ── Insert valid records ──
-        int imported = validation.ValidRecords.Count;
+        int inserted = validation.ValidRecords.Count(r => !r.IsUpdate);
+        int updated = validation.ValidRecords.Count(r => r.IsUpdate);
 
-        if (!dryRun && imported > 0)
+        if (!dryRun && (inserted > 0 || updated > 0))
         {
             // Resolve Tags before inserting Questions
             var uniqueTagNames = validation.ValidRecords
@@ -249,28 +250,65 @@ public class AdminQuestionService : IAdminQuestionService
                 }
             }
 
+            var existingQuestions = new Dictionary<string, Question>(StringComparer.Ordinal);
+            if (updated > 0)
+            {
+                var dbQuestions = await _db.Questions.Include(q => q.QuestionTags).ToListAsync(ct);
+                foreach (var q in dbQuestions)
+                {
+                    var key = !string.IsNullOrWhiteSpace(q.ExternalId)
+                        ? q.ExternalId
+                        : QuestionImportValidator.ComputeFingerprint(q.QuestionText);
+                    existingQuestions[key] = q;
+                }
+            }
+
             foreach (var rec in validation.ValidRecords)
             {
-                var question = new Question
-                {
-                    ExternalId = rec.ExternalId,
-                    Title = rec.Title,
-                    QuestionText = rec.QuestionText,
-                    Difficulty = rec.Difficulty,
-                    CategoryId = rec.CategoryId,
-                    Status = QuestionStatus.Published,
-                    CreatedAt = DateTime.UtcNow
-                };
+                var key = !string.IsNullOrWhiteSpace(rec.ExternalId) 
+                    ? rec.ExternalId.Trim() 
+                    : QuestionImportValidator.ComputeFingerprint(rec.QuestionText);
 
-                foreach (var tag in rec.Tags)
+                if (rec.IsUpdate && existingQuestions.TryGetValue(key, out var question))
                 {
-                    if (existingTags.TryGetValue(tag.Trim().ToLower(), out var existingTag))
+                    question.Title = rec.Title;
+                    question.QuestionText = rec.QuestionText;
+                    question.Difficulty = rec.Difficulty;
+                    question.CategoryId = rec.CategoryId;
+
+                    // Reconcile tags
+                    question.QuestionTags.Clear();
+                    foreach (var tag in rec.Tags)
                     {
-                        question.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+                        if (existingTags.TryGetValue(tag.Trim().ToLower(), out var existingTag))
+                        {
+                            question.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+                        }
                     }
                 }
+                else
+                {
+                    var newQuestion = new Question
+                    {
+                        ExternalId = rec.ExternalId,
+                        Title = rec.Title,
+                        QuestionText = rec.QuestionText,
+                        Difficulty = rec.Difficulty,
+                        CategoryId = rec.CategoryId,
+                        Status = QuestionStatus.Published,
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                _db.Questions.Add(question);
+                    foreach (var tag in rec.Tags)
+                    {
+                        if (existingTags.TryGetValue(tag.Trim().ToLower(), out var existingTag))
+                        {
+                            newQuestion.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+                        }
+                    }
+
+                    _db.Questions.Add(newQuestion);
+                }
             }
 
             await _db.SaveChangesAsync(ct);
@@ -313,9 +351,10 @@ public class AdminQuestionService : IAdminQuestionService
 
         return new BulkImportResultDto
         {
-            Imported = imported,
-            Skipped = validation.Skipped,
+            Imported = inserted,
+            Updated = updated,
             Failed = validation.Failed,
+            Skipped = validation.Skipped,
             IsDryRun = dryRun,
             Errors = validation.Errors,
             Warnings = validation.Warnings

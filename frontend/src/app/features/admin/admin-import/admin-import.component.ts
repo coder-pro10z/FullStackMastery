@@ -186,7 +186,10 @@ import {
                 @if (result()!.isDryRun) {
                   <span class="badge badge-primary">🔍 Dry Run</span>
                 }
-                <span class="badge badge-success">✓ {{ result()!.imported }} imported</span>
+                <span class="badge badge-success">✓ {{ result()!.imported }} inserted</span>
+                @if (result()!.updated) {
+                  <span class="badge badge-primary">↺ {{ result()!.updated }} updated</span>
+                }
                 @if (result()!.skipped) {
                   <span class="badge badge-warning">⚠ {{ result()!.skipped }} skipped</span>
                 }
@@ -343,6 +346,41 @@ import {
           </div>
         </div>
       }
+
+      <!-- Confirmation Modal -->
+      @if (pendingImportStats()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div class="glass-panel-interactive p-6 w-full max-w-md mx-4 animate-slide-up relative shadow-2xl border border-white/50">
+            
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600 shadow-inner">
+                <lucide-icon name="alert-circle" [size]="20" />
+              </div>
+              <h3 class="text-lg font-bold text-slate-800">Confirm Import</h3>
+            </div>
+            
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+              You are about to insert <strong class="text-emerald-600">{{ pendingImportStats()!.imported }} new</strong> records
+              and update <strong class="text-blue-600">{{ pendingImportStats()!.updated }} existing</strong> records.
+              This action cannot be undone. Do you want to proceed?
+            </p>
+
+            <div class="flex items-center justify-end gap-3">
+              <button 
+                class="btn btn-outline py-2 px-4 text-sm font-medium"
+                (click)="pendingImportStats.set(null)">
+                Cancel
+              </button>
+              <button 
+                class="btn btn-primary py-2 px-4 text-sm font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+                (click)="confirmImport()">
+                <lucide-icon name="check" [size]="16" />
+                Confirm Update
+              </button>
+            </div>
+          </div>
+        </div>
+      }
   `
 })
 export class AdminImportComponent implements OnInit {
@@ -369,6 +407,7 @@ export class AdminImportComponent implements OnInit {
   dryRun = false;
   readonly importMode = signal<'questions' | 'answers'>('questions');
   readonly showDryRunSuccessSnackbar = signal(false);
+  readonly pendingImportStats = signal<BulkImportResultDto | null>(null);
 
   readonly file = signal<File | null>(null);
   readonly dragging = signal(false);
@@ -432,23 +471,55 @@ export class AdminImportComponent implements OnInit {
     this.errorMsg.set('');
     this.showDryRunSuccessSnackbar.set(false);
 
+    const isIntercept = !this.dryRun;
+
     const request$ = this.importMode() === 'questions'
-      ? this.api.importFile(f, this.categoryId || 1, this.dryRun)
-      : this.api.importAnswers(f, this.dryRun);
+      ? this.api.importFile(f, this.categoryId || 1, isIntercept ? true : this.dryRun)
+      : this.api.importAnswers(f, isIntercept ? true : this.dryRun);
 
     request$.subscribe({
       next: r => {
-        this.result.set(r);
         this.uploading.set(false);
-        if (this.dryRun && r.failed === 0 && r.imported > 0) {
-          this.showDryRunSuccessSnackbar.set(true);
+        if (isIntercept && (r.updated > 0 || r.imported > 0)) {
+            this.pendingImportStats.set(r);
+        } else {
+            this.result.set(r);
+            if (this.dryRun && r.failed === 0 && r.imported > 0) {
+              this.showDryRunSuccessSnackbar.set(true);
+            }
         }
       },
       error: err => {
         const msg = err?.error?.error ?? err?.error?.title ?? err?.message ?? 'Upload failed. Please try again.';
         this.errorMsg.set(msg);
         this.uploading.set(false);
+      }
+    });
+  }
+
+  confirmImport(): void {
+    const f = this.file();
+    if (!f || this.uploading()) return;
+    
+    this.pendingImportStats.set(null);
+    this.uploading.set(true);
+    this.result.set(null);
+    this.errorMsg.set('');
+
+    const request$ = this.importMode() === 'questions'
+      ? this.api.importFile(f, this.categoryId || 1, false)
+      : this.api.importAnswers(f, false);
+
+    request$.subscribe({
+      next: r => {
+        this.uploading.set(false);
+        this.result.set(r);
       },
+      error: err => {
+        const msg = err?.error?.error ?? err?.error?.title ?? err?.message ?? 'Upload failed. Please try again.';
+        this.errorMsg.set(msg);
+        this.uploading.set(false);
+      }
     });
   }
 

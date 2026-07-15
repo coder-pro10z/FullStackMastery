@@ -161,3 +161,30 @@ This plan details how we will clean up the legacy `Q <DOMAIN> <TOPIC>?` format c
 3. Perform a Dry Run import to ensure the Title and Tags successfully pass into the database payload.
 
 ---
+
+## Plan 6: UPSERT Import & Premium Confirmation Modal
+*Date: 2026-07-16*
+
+This plan outlines how to modify the bulk import pipeline to support UPSERTs (updating existing questions instead of skipping them) and seamlessly integrating a Premium Confirmation Modal in the Angular Admin UI to warn the user before overwriting existing data.
+
+### Proposed Changes
+
+#### 1. Backend: Validation Logic Update
+- **File**: `backend/src/InterviewPrepApp.Application/Validators/IQuestionImportValidator.cs` & `backend/src/InterviewPrepApp.Infrastructure/Services/QuestionImportValidator.cs`
+- **Action**: Add `IsUpdate` to the `ValidatedQuestionRecord`. Do not skip database duplicates; instead, flag them as updates.
+
+#### 2. Backend: Question Service UPSERT Engine
+- **File**: `backend/src/InterviewPrepApp.Infrastructure/Services/AdminQuestionService.cs`
+- **Action**: Update `ImportAsync()` to separate Inserts and Updates. Fetch existing DB questions for updates, map the new title/text/category/difficulty, sync tags in memory, and increment the `Updated` count within the result payload.
+
+#### 3. Frontend: Interactive Confirmation Modal
+- **File**: `frontend/src/app/features/admin/admin-import/admin-import.component.ts`
+- **Action**: Intercept non-Dry Run clicks. Execute a silent background Dry Run. If updates or inserts are detected, spawn a premium glass-morphism confirmation modal to request explicit user approval before executing the true DB import.
+
+### Verification Plan
+1. Re-run an import of `questions.json` using the Admin UI.
+2. Verify the background Dry Run perfectly detects Updates.
+3. Confirm the Premium Modal appears with accurate insertion and update metrics.
+4. Accept the modal and verify the database syncs without duplicate collisions.
+
+---

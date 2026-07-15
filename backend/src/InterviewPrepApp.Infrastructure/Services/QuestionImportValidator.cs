@@ -58,13 +58,11 @@ public class QuestionImportValidator : IQuestionImportValidator
                 result.Skipped++;
                 continue;
             }
+            var isUpdate = false;
             if (existingFingerprints.Contains(dedupeKey))
             {
-                // Note: For Questions import, we skip if it exists. We do not do a full upsert of Question fields yet.
-                // That might change later, but for now we maintain existing behavior: skip duplicates.
-                result.Warnings.Add($"Row {rowNum}: Duplicate — question already exists in database. Skipped.");
-                result.Skipped++;
-                continue;
+                // Question already exists in database. We will UPSERT it.
+                isUpdate = true;
             }
 
             // ── Difficulty parsing ──
@@ -102,7 +100,8 @@ public class QuestionImportValidator : IQuestionImportValidator
                 AnswerMarkdown = row.AnswerMarkdown,
                 Difficulty = difficulty,
                 CategoryId = categoryId,
-                Tags = row.Tags ?? []
+                Tags = row.Tags ?? [],
+                IsUpdate = isUpdate
             });
 
             // Also add to dedupe set so subsequent rows in this batch deduplicate correctly

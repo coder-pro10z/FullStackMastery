@@ -93,6 +93,7 @@ public class AuditLogDto
 public class BulkImportResultDto
 {
     public int Imported { get; set; }
+    public int Updated { get; set; }
     public int Skipped { get; set; }
     public int Failed { get; set; }
     public bool IsDryRun { get; set; }

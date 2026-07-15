@@ -31,6 +31,7 @@ public class ValidatedQuestionRecord
     public Difficulty Difficulty { get; set; }
     public int CategoryId { get; set; }
     public List<string> Tags { get; set; } = [];
+    public bool IsUpdate { get; set; }
 }
 
 /// <summary>

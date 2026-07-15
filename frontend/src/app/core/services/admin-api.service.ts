@@ -79,6 +79,7 @@ export interface CategoryManageDto {
 
 export interface BulkImportResultDto {
     imported: number;
+    updated: number;
     skipped: number;
     failed: number;
     isDryRun: boolean;
