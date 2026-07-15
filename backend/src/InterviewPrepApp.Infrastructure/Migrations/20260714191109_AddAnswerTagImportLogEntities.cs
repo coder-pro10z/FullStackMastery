@@ -132,7 +132,7 @@ namespace InterviewPrepApp.Infrastructure.Migrations
                 table: "Questions",
                 column: "ExternalId",
                 unique: true,
-                filter: "[ExternalId] IS NOT NULL");
+                filter: "\"ExternalId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Answers_QuestionId",

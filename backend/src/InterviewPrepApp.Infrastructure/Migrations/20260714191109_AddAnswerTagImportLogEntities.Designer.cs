@@ -1091,7 +1091,7 @@ namespace InterviewPrepApp.Infrastructure.Migrations
 
                     b.HasIndex("ExternalId")
                         .IsUnique()
-                        .HasFilter("[ExternalId] IS NOT NULL");
+                        .HasFilter("\"ExternalId\" IS NOT NULL");
 
                     b.ToTable("Questions");
                 });

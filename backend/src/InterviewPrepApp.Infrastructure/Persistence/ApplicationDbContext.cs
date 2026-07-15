@@ -94,7 +94,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             // ExternalId: nullable but unique when set (sparse unique index)
             entity.HasIndex(q => q.ExternalId)
                   .IsUnique()
-                  .HasFilter("[ExternalId] IS NOT NULL");
+                  .HasFilter("\"ExternalId\" IS NOT NULL");
             entity.Property(q => q.ExternalId).HasMaxLength(200);
         });
 

@@ -39,6 +39,7 @@
 | Database seeding (categories) | ✅ | Dictionary-based hierarchical seeder |
 | Migrations (`InitialCreate` + `AddAdminTables`) | ✅ | Applied |
 | EF Postgres Fix | ✅ | Fixed `nvarchar(max)` migration generation failure by using `jsonb` for Postgres compatibility |
+| EF Postgres Fix | ✅ | Fixed syntax error in unique index filter `[ExternalId]` by replacing with Postgres-compatible `\"ExternalId\"` |
 | `ExcelExtractionService` | ✅ | Merged cells, Category column, Role fallback, DTO-based `ExtractImportRows` with per-row `ExcelRowDiagnostic` |
 | `CategoryService` | ✅ | Tree + flat queries |
 | `QuestionService` | ✅ | Paginated, filtered, subtree-aware |
