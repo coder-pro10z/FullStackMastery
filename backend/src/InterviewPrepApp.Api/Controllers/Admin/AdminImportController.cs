@@ -31,7 +31,7 @@ public class AdminImportController : ControllerBase
         [FromForm] bool dryRun = false,
         CancellationToken ct = default)
     {
-        if (file is null || file.Length == 0)
+        if (file.Length == 0)
             return BadRequest(new { error = "No file uploaded." });
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -42,7 +42,7 @@ public class AdminImportController : ControllerBase
         {
             if (ext == ".xlsx")
             {
-                using var stream = file.OpenReadStream();
+                await using var stream = file.OpenReadStream();
                 var extractResult = _excelExtractor.ExtractImportRows(stream);
                 if (extractResult.IsFatalError)
                     return BadRequest(new { error = $"Excel parse error: {extractResult.FatalErrorMessage}" });
@@ -135,8 +135,8 @@ public class AdminImportController : ControllerBase
         for (int h = 0; h < headerParts.Length; h++)
         {
             var name = headerParts[h].Trim();
-            if (!string.IsNullOrEmpty(name) && !headerMap.ContainsKey(name))
-                headerMap[name] = h;
+            if (!string.IsNullOrEmpty(name))
+                headerMap.TryAdd(name, h);
         }
 
         string GetCol(string[] parts, params string[] names)
@@ -263,7 +263,6 @@ public class QuestionSchemaDto
 
     // Internal legacy fields
     public string? ExternalId { get; set; }
-    public string? Title { get; set; }
     public string? QuestionText { get; set; }
     public string? CategorySlug { get; set; }
     public string? AnswerMarkdown { get; set; }
