@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -34,7 +34,7 @@ namespace InterviewPrepApp.Infrastructure.Migrations
                     QuestionId = table.Column<int>(type: "integer", nullable: false),
                     Definition = table.Column<string>(type: "text", nullable: true),
                     InterviewAnswer = table.Column<string>(type: "text", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "{}"),
+                    Content = table.Column<string>(type: "jsonb", nullable: false, defaultValue: "{}"),
                     SourceSlideId = table.Column<string>(type: "text", nullable: true),
                     ContentHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

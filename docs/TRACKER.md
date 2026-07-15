@@ -38,6 +38,7 @@
 | Soft-delete query filters | ✅ | `Question.IsDeleted` global filter |
 | Database seeding (categories) | ✅ | Dictionary-based hierarchical seeder |
 | Migrations (`InitialCreate` + `AddAdminTables`) | ✅ | Applied |
+| EF Postgres Fix | ✅ | Fixed `nvarchar(max)` migration generation failure by using `jsonb` for Postgres compatibility |
 | `ExcelExtractionService` | ✅ | Merged cells, Category column, Role fallback, DTO-based `ExtractImportRows` with per-row `ExcelRowDiagnostic` |
 | `CategoryService` | ✅ | Tree + flat queries |
 | `QuestionService` | ✅ | Paginated, filtered, subtree-aware |

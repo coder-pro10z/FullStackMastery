@@ -108,7 +108,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(a => a.QuestionId).IsUnique();
             entity.Property(a => a.Content)
-                  .HasColumnType("nvarchar(max)")
+                  .HasColumnType("jsonb")
                   .IsRequired()
                   .HasDefaultValue("{}");
             entity.Property(a => a.ContentHash).HasMaxLength(64);
