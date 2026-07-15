@@ -246,6 +246,9 @@ public class QuestionSchemaDto
     [JsonPropertyName("question_id")]
     public string? QuestionId { get; set; }
 
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
+
     [JsonPropertyName("question")]
     public string? Question { get; set; }
 

@@ -65,9 +65,9 @@ import { HttpErrorResponse } from '@angular/common/http';
                     </td>
                     <td class="px-6 py-4">
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold"
-                            [ngClass]="log.jobType === 'Question' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'">
-                        <lucide-icon [name]="log.jobType === 'Question' ? 'help-circle' : 'message-square'" [size]="14"></lucide-icon>
-                        {{ log.jobType }}s
+                            [ngClass]="log.type === 'Question' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'">
+                        <lucide-icon [name]="log.type === 'Question' ? 'circle-help' : 'message-square'" [size]="14"></lucide-icon>
+                        {{ log.type }}s
                       </span>
                     </td>
                     <td class="px-6 py-4">
@@ -99,8 +99,8 @@ import { HttpErrorResponse } from '@angular/common/http';
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
                         <span class="flex items-center gap-1 text-emerald-600" title="Imported">
-                          <lucide-icon name="check-circle-2" [size]="14"></lucide-icon>
-                          {{ log.imported }}
+                          <lucide-icon name="circle-check" [size]="14"></lucide-icon>
+                          {{ log.inserted }}
                         </span>
                         @if (log.skipped > 0) {
                           <span class="flex items-center gap-1 text-amber-600" title="Skipped">
@@ -110,14 +110,14 @@ import { HttpErrorResponse } from '@angular/common/http';
                         }
                         @if (log.failed > 0) {
                           <span class="flex items-center gap-1 text-red-600" title="Failed">
-                            <lucide-icon name="x-circle" [size]="14"></lucide-icon>
+                            <lucide-icon name="circle-x" [size]="14"></lucide-icon>
                             {{ log.failed }}
                           </span>
                         }
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      @if (log.completenessReport || log.errorMessage || log.errorDetails) {
+                      @if (log.contentCompletenessSummaryJson || log.errorSummaryJson || log.warningSummaryJson) {
                         <button (click)="viewDetails(log)" class="text-[#1A73E8] hover:text-blue-800 font-medium text-xs flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
                           View details
                           <lucide-icon name="chevron-right" [size]="14"></lucide-icon>
@@ -162,26 +162,26 @@ import { HttpErrorResponse } from '@angular/common/http';
           </div>
           
           <div class="p-6 overflow-y-auto flex-1 space-y-6 text-sm">
-            @if (selectedLog()?.errorMessage) {
+            @if (selectedLog()?.errorSummaryJson) {
               <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
                 <h4 class="font-semibold text-red-800 mb-1 flex items-center gap-2">
                   <lucide-icon name="alert-triangle" [size]="16"></lucide-icon> Error Message
                 </h4>
-                <p class="text-red-700 whitespace-pre-wrap">{{ selectedLog()?.errorMessage }}</p>
+                <p class="text-red-700 whitespace-pre-wrap">{{ formatJson(selectedLog()?.errorSummaryJson) }}</p>
               </div>
             }
 
-            @if (selectedLog()?.errorDetails) {
+            @if (selectedLog()?.warningSummaryJson) {
               <div>
-                <h4 class="font-semibold text-[#202124] mb-2 uppercase tracking-wider text-xs">Error Details</h4>
-                <pre class="bg-slate-900 text-slate-300 p-4 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap font-mono">{{ formatJson(selectedLog()?.errorDetails) }}</pre>
+                <h4 class="font-semibold text-[#202124] mb-2 uppercase tracking-wider text-xs">Warnings</h4>
+                <pre class="bg-slate-900 text-slate-300 p-4 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap font-mono">{{ formatJson(selectedLog()?.warningSummaryJson) }}</pre>
               </div>
             }
 
-            @if (selectedLog()?.completenessReport) {
+            @if (selectedLog()?.contentCompletenessSummaryJson) {
               <div>
                 <h4 class="font-semibold text-[#202124] mb-2 uppercase tracking-wider text-xs">Completeness Report</h4>
-                <pre class="bg-slate-50 border border-slate-200 text-[#3C4043] p-4 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap font-mono">{{ formatJson(selectedLog()?.completenessReport) }}</pre>
+                <pre class="bg-slate-50 border border-slate-200 text-[#3C4043] p-4 rounded-xl text-xs overflow-x-auto whitespace-pre-wrap font-mono">{{ formatJson(selectedLog()?.contentCompletenessSummaryJson) }}</pre>
               </div>
             }
           </div>

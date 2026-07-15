@@ -88,18 +88,25 @@ export interface BulkImportResultDto {
 
 export interface ImportLogDto {
     id: number;
-    jobType: string;
-    status: string;
+    type: string;
     fileName: string;
-    imported: number;
+    isDryRun: boolean;
+    status: string;
+    totalRows: number;
+    inserted: number;
+    updated: number;
     skipped: number;
+    warned: number;
     failed: number;
+    orphanedQuestionIdsJson: string | null;
+    fieldChangeSummaryJson: string | null;
+    contentCompletenessSummaryJson: string | null;
+    missingFieldsPerAnswerJson: string | null;
+    errorSummaryJson: string | null;
+    warningSummaryJson: string | null;
+    importedByEmail: string;
     startedAt: string;
     completedAt: string | null;
-    importedByEmail: string;
-    errorMessage: string | null;
-    errorDetails: string | null;
-    completenessReport: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

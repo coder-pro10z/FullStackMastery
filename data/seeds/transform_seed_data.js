@@ -25,6 +25,12 @@ const categoryMap = {
     'SYSTEM_DESIGN': 'system-design'
 };
 
+const difficultyMap = {
+    'Beginner': 'Easy',
+    'Intermediate': 'Medium',
+    'Advanced': 'Hard'
+};
+
 // 2. Group Questions by primary_slide_id
 const slideGroups = {};
 for (const q of data.questions) {
@@ -40,13 +46,58 @@ let modifiedCount = 0;
 
 // 3. Transform
 for (const q of data.questions) {
+    // --- Map Difficulty ---
+    if (q.difficulty && difficultyMap[q.difficulty]) {
+        q.difficulty = difficultyMap[q.difficulty];
+    }
+
     // --- Map Category ---
     const domain = q.domain_id ? q.domain_id.toUpperCase() : '';
     const newCategory = categoryMap[domain] || 'fundamentals'; // fallback
     
-    // Only map if it's currently "Core" or empty
     if (q.category === 'Core' || !q.category) {
         q.category = newCategory;
+    }
+
+    // --- Parse Legacy Title & Inject Tags ---
+    const legacyMatch = q.question.match(/^Q\s+([a-zA-Z0-9_]+)\s+(.*?)\??$/);
+    if (legacyMatch) {
+        const prefix = legacyMatch[1].toUpperCase();
+        let coreText = legacyMatch[2];
+
+        // Title Case formatting
+        coreText = coreText.toLowerCase().split(' ').map(word => {
+            if (word === 'vs') return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+
+        q.title = coreText;
+        q.question = `${coreText}?`;
+
+        // Tag Mapping
+        const tagMap = {
+            'SQL': 'SQL',
+            'NG': 'Angular',
+            'CSHARP': 'C#',
+            'DOTNET': '.NET',
+            'NODE': 'Node.js',
+            'JS': 'JavaScript',
+            'CSS': 'CSS',
+            'HTML': 'HTML',
+            'REACT': 'React',
+            'VUE': 'Vue',
+            'AZURE': 'Azure',
+            'AWS': 'AWS',
+            'GIT': 'Git',
+            'DOCKER': 'Docker',
+            'K8S': 'Kubernetes'
+        };
+
+        const tag = tagMap[prefix] || prefix;
+        if (!q.tags) q.tags = [];
+        if (!q.tags.includes(tag)) {
+            q.tags.push(tag);
+        }
     }
 
     // --- Populate Related Questions ---

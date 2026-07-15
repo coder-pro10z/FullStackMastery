@@ -29,7 +29,7 @@ import { QuestionBadgeComponent } from '../../../../shared/components/question-b
 
             <!-- Badges -->
             <div class="flex items-center gap-1.5 flex-shrink-0">
-              <app-question-badge [label]="question.role" variant="Role" />
+              <app-question-badge *ngIf="question.tags?.length" [label]="question.tags[0]" variant="Role" />
               <app-question-badge
                 [label]="difficultyLabel(question.difficulty)"
                 [variant]="difficultyLabel(question.difficulty)" />

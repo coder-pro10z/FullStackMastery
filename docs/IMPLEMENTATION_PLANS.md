@@ -97,3 +97,67 @@ We will create a Node.js utility script (`scripts/transform_seed_data.js`) to pa
 3. Perform a Dry Run import in the Admin UI.
 
 ---
+
+## Plan 4: Standardize Difficulty Terminology in Bulk Import
+*Date: 2026-07-15*
+
+This plan outlines how to resolve the Dry Run warnings caused by a mismatch in difficulty terminology between the JSON seed file and the C# backend.
+
+### The Issue
+
+The C# backend expects `Difficulty.cs` enum values: `Easy`, `Medium`, `Hard`.
+The `questions.json` file uses: `Beginner`, `Intermediate`, `Advanced`.
+
+### Proposed Changes
+
+We will modify the Node.js transformation script to map and overwrite the legacy difficulty strings directly inside the `questions.json` file.
+
+#### 1. Update Schema Definition
+- **File**: `data/schemas/question.schema.json`
+- **Action**: Update the `difficulty` enum from `["Beginner", "Intermediate", "Advanced"]` to `["Easy", "Medium", "Hard"]`.
+
+#### 2. Update Transformation Script
+- **File**: `data/seeds/transform_seed_data.js`
+- **Action**: Add a difficulty mapping object:
+  - `Beginner` -> `Easy`
+  - `Intermediate` -> `Medium`
+  - `Advanced` -> `Hard`
+- Apply the mapping to every question before saving.
+
+### Verification Plan
+1. Re-run `node transform_seed_data.js`.
+2. Do another Dry Run import in the Angular Admin UI.
+3. Verify that the Dry Run passes with zero warnings about unknown difficulty.
+
+---
+
+## Plan 5: Standardize Question Titles and Text
+*Date: 2026-07-16*
+
+This plan details how we will clean up the legacy `Q <DOMAIN> <TOPIC>?` format currently polluting the question fields in our `questions.json` seed data, utilizing UI tags and Title Case formatting.
+
+### Proposed Changes
+
+#### 1. Update Schema Definition
+- **File**: `data/schemas/question.schema.json`
+- **Action**: Add a new `"title"` property to the schema representing the short label for the UI.
+
+#### 2. Update Transformation Script
+- **File**: `data/seeds/transform_seed_data.js`
+- **Action**:
+  - Add a Tag Mapping dictionary (e.g. `SQL` -> `SQL`, `NG` -> `Angular`, `CSHARP` -> `C#`).
+  - Inject a Regex parser (`/^Q\s+([A-Z0-9]+)\s+(.*?)\??$/i`) to extract the domain prefix and the core text.
+  - Apply Title Case formatting to the core text, ensuring the word `"vs"` is properly lowercased.
+  - Overwrite `question` with `[Title]?`.
+  - Push the mapped tag into the question's `"tags"` array.
+
+#### 3. Update Backend Mapping
+- **File**: `backend/src/InterviewPrepApp.Api/Controllers/Admin/AdminImportController.cs`
+- **Action**: Add `[JsonPropertyName("title")]` to `QuestionSchemaDto.Title`.
+
+### Verification Plan
+1. Re-run `node transform_seed_data.js`.
+2. Inspect the JSON file to ensure "vs" is lowercased, tags are added, and titles are separated.
+3. Perform a Dry Run import to ensure the Title and Tags successfully pass into the database payload.
+
+---

@@ -21,7 +21,12 @@
     "difficulty": {
       "type": "string",
       "description": "Difficulty level of the question.",
-      "enum": ["Beginner", "Intermediate", "Advanced"]
+      "enum": ["Easy", "Medium", "Hard"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Short, UI-friendly title for the question.",
+      "minLength": 3
     },
     "question": {
       "type": "string",
