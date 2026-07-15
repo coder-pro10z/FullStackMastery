@@ -228,10 +228,11 @@ export class SidebarComponent {
 
   // ── Admin nav items (only rendered when isAdmin() === true) ───────────
   readonly adminManagementItems: NavItem[] = [
-    { path: '/admin/dashboard', label: 'Dashboard',        icon: 'layout-dashboard' },
-    { path: '/admin/import',    label: 'Import Questions', icon: 'upload' },
-    { path: '/admin/import-logs', label: 'Import Logs',    icon: 'history' },
-    { path: '/admin/question-bank', label: 'Question Bank', icon: 'database' },
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+    { path: '/admin/questions', label: 'Questions', icon: 'database' },
+    { path: '/admin/categories', label: 'Categories', icon: 'folder-tree' },
+    { path: '/admin/import', label: 'Import', icon: 'upload' },
+    { path: '/admin/import-logs', label: 'Import Logs', icon: 'history' },
     { path: '/admin/interviews', label: 'Interviews', icon: 'building-2' },
   ];
 
