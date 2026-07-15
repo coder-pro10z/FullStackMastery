@@ -86,6 +86,22 @@ export interface BulkImportResultDto {
     warnings: string[];
 }
 
+export interface ImportLogDto {
+    id: number;
+    jobType: string;
+    status: string;
+    fileName: string;
+    imported: number;
+    skipped: number;
+    failed: number;
+    startedAt: string;
+    completedAt: string | null;
+    importedByEmail: string;
+    errorMessage: string | null;
+    errorDetails: string | null;
+    completenessReport: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
     private readonly http = inject(HttpClient);
@@ -139,6 +155,18 @@ export class AdminApiService {
         form.append('defaultCategoryId', String(defaultCategoryId));
         form.append('dryRun', String(dryRun));
         return this.http.post<BulkImportResultDto>(`${this.base}/import`, form);
+    }
+
+    importAnswers(file: File, dryRun = false): Observable<BulkImportResultDto> {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('dryRun', String(dryRun));
+        return this.http.post<BulkImportResultDto>(`${this.base}/import/answers`, form);
+    }
+
+    getImportLogs(page = 1, pageSize = 20): Observable<PagedAdminResult<ImportLogDto>> {
+        let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+        return this.http.get<PagedAdminResult<ImportLogDto>>(`${this.base}/import-logs`, { params });
     }
 
     // ── Categories ─────────────────────────────────────────────────────────────

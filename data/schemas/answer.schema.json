@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "answer.schema.json",
+  "title": "Answer",
+  "description": "Schema for a single structured answer entry in the FullStackMastery Question Bank. Each answer maps to a question via question_id.",
+  "type": "object",
+  "required": ["question_id", "definition", "interview_answer"],
+  "additionalProperties": false,
+  "properties": {
+    "question_id": {
+      "type": "string",
+      "description": "Foreign key linking this answer to its question in questions.json. Must match an existing question_id.",
+      "pattern": "^Q_[A-Z0-9_]+$",
+      "examples": ["Q_CSHARP_VAR_VS_DYNAMIC"]
+    },
+    "_captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of when this answer was captured or generated."
+    },
+    "_source_slide": {
+      "type": "string",
+      "description": "Optional. The source slide or lesson reference for this answer.",
+      "examples": ["SLIDE_04_SOLID"]
+    },
+    "definition": {
+      "type": "string",
+      "description": "A concise one-to-two sentence definition. Shown as the lead paragraph in the answer modal.",
+      "minLength": 20
+    },
+    "interview_answer": {
+      "type": "string",
+      "description": "The concise, well-structured answer to deliver in an interview. Shown prominently as the 'What to say' card.",
+      "minLength": 30
+    },
+    "technical_explanation": {
+      "type": "string",
+      "description": "A full in-depth technical breakdown of the concept. Supports multi-line text and inline code references."
+    },
+    "best_practice": {
+      "type": "string",
+      "description": "Best practices, do's and don'ts, and production-ready guidance."
+    },
+    "real_project_example": {
+      "type": "string",
+      "description": "A real-world story-style example from a production project demonstrating the concept."
+    },
+    "code_snippets": {
+      "type": "array",
+      "description": "One or more illustrative code examples for this answer.",
+      "items": {
+        "type": "object",
+        "required": ["language", "code"],
+        "additionalProperties": false,
+        "properties": {
+          "language": {
+            "type": "string",
+            "description": "Programming language for syntax highlighting.",
+            "examples": ["csharp", "typescript", "sql", "bash", "json", "yaml"]
+          },
+          "label": {
+            "type": "string",
+            "description": "Optional caption shown above the code block.",
+            "examples": ["var vs dynamic — C# Example"]
+          },
+          "code": {
+            "type": "string",
+            "description": "The raw code string.",
+            "minLength": 1
+          },
+          "highlight_lines": {
+            "type": "array",
+            "description": "Optional. Line numbers to visually emphasize in the rendered code block.",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "architecture_note": {
+      "type": "object",
+      "description": "An architecture-level explanation, optionally accompanied by a Mermaid diagram.",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Prose description of the architectural concept."
+        },
+        "mermaid_graph": {
+          "type": "string",
+          "description": "A valid Mermaid diagram string (graph TD, sequenceDiagram, etc.)."
+        }
+      }
+    },
+    "differentiator": {
+      "type": "object",
+      "description": "A side-by-side comparison block, used when the question is about comparing two concepts.",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Summary of the key difference."
+        },
+        "comparison_table": {
+          "type": "string",
+          "description": "A markdown-formatted comparison table (| Feature | A | B | format)."
+        }
+      }
+    },
+    "troubleshooting": {
+      "type": "object",
+      "description": "Common issues, causes, and fixes related to this concept.",
+      "required": ["description"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Overview of common troubleshooting scenarios."
+        },
+        "table": {
+          "type": "string",
+          "description": "A markdown-formatted table with columns: Issue | Cause | Resolution."
+        }
+      }
+    },
+    "follow_up_questions": {
+      "type": "array",
+      "description": "A list of follow-up interview questions that a technical interviewer might ask after this one.",
+      "items": {
+        "type": "string",
+        "minLength": 5
+      }
+    },
+    "validation_metadata": {
+      "type": "object",
+      "description": "Auto-generated validation flags from the answer processing pipeline.",
+      "additionalProperties": false,
+      "properties": {
+        "has_mermaid": { "type": "boolean" },
+        "has_table": { "type": "boolean" },
+        "has_valid_table": { "type": "boolean" },
+        "is_complete": { "type": "boolean" },
+        "mermaid_syntax_valid": { "type": "boolean" },
+        "missing_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

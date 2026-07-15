@@ -105,6 +105,21 @@ import { TopNavComponent } from '../components/top-nav/top-nav.component';
             Import
           </a>
 
+          <!-- 📜 Import Logs -->
+          <a
+            id="admin-nav-import-logs"
+            routerLink="/admin/import-logs"
+            routerLinkActive="bg-violet-50 text-violet-700 font-semibold border-l-2 border-violet-600"
+            [routerLinkActiveOptions]="{ exact: false }"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                   text-slate-600 border-l-2 border-transparent
+                   hover:bg-slate-100 hover:text-slate-900
+                   transition-colors duration-150"
+          >
+            <lucide-icon name="history" [size]="16" class="flex-shrink-0" />
+            Import Logs
+          </a>
+
           <!-- 🏢 Interviews -->
           <a
             id="admin-nav-interviews"

@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "question.schema.json",
+  "title": "Question",
+  "description": "Schema for a single question entry in the FullStackMastery Question Bank.",
+  "type": "object",
+  "required": ["question_id", "domain_id", "difficulty", "question", "category", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "question_id": {
+      "type": "string",
+      "description": "Unique stable identifier for the question. Used as the join key with answers.json. Format: Q_<DOMAIN>_<CONCEPT>.",
+      "pattern": "^Q_[A-Z0-9_]+$",
+      "examples": ["Q_CSHARP_VAR_VS_DYNAMIC", "Q_AUTH_403_FORBIDDEN"]
+    },
+    "domain_id": {
+      "type": "string",
+      "description": "The technical domain this question belongs to.",
+      "enum": ["DOTNET", "AUTH", "SQL", "DEVOPS", "FRONTEND", "FULLSTACK", "CLOUD", "SECURITY", "SYSTEM_DESIGN"]
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Difficulty level of the question.",
+      "enum": ["Beginner", "Intermediate", "Advanced"]
+    },
+    "question": {
+      "type": "string",
+      "description": "The full question text shown to the user.",
+      "minLength": 10
+    },
+    "primary_slide_id": {
+      "type": "string",
+      "description": "Optional. Reference to the source slide/lesson this question originates from.",
+      "examples": ["SLIDE_01_CSHARP_FUNDAMENTALS"]
+    },
+    "category": {
+      "type": "string",
+      "description": "The sub-category or topic within the domain. Resolved to a Category slug in the database.",
+      "examples": ["Core", "SOLID", "Authentication", "Performance"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Publish status of the question.",
+      "enum": ["active", "draft", "archived"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional. List of tag slugs for cross-feature filtering (e.g. role, technology, concept).",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "related_concepts": {
+      "type": "array",
+      "description": "Optional. List of related concept IDs or labels.",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "related_questions": {
+      "type": "array",
+      "description": "Optional. List of related question_ids that users should explore after this one.",
+      "items": {
+        "type": "string",
+        "pattern": "^Q_[A-Z0-9_]+$"
+      },
+      "default": []
+    }
+  }
+}

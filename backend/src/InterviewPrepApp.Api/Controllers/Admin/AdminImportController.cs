@@ -143,7 +143,7 @@ public class AdminImportController : ControllerBase
                 Title = NullIfEmpty(GetCol(parts, "Title")),
                 QuestionText = GetCol(parts, "QuestionText", "Question", "Question Title"),
                 Difficulty = NullCoalesce(GetCol(parts, "Difficulty"), "Medium"),
-                Role = NullCoalesce(GetCol(parts, "Role"), "General"),
+                Tags = string.IsNullOrWhiteSpace(GetCol(parts, "Role")) ? [] : [GetCol(parts, "Role")],
                 CategorySlug = GetCol(parts, "CategorySlug", "Category"),
                 AnswerMarkdown = NullIfEmpty(GetCol(parts, "AnswerMarkdown", "AnswerText", "Answer"))
             };

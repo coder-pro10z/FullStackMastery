@@ -1,3 +1,4 @@
+using InterviewPrepApp.Application.DTOs;
 using InterviewPrepApp.Application.DTOs.Admin;
 using InterviewPrepApp.Application.Interfaces;
 using InterviewPrepApp.Application.Validators;
@@ -27,6 +28,9 @@ public class AdminQuestionService : IAdminQuestionService
     {
         var query = _db.Questions
             .Include(q => q.Category)
+            .Include(q => q.Answer)
+            .Include(q => q.QuestionTags)
+            .ThenInclude(qt => qt.Tag)
             .AsNoTracking();
 
         // If including deleted, bypass global filter (we don't use global filter here — manual filter)
@@ -43,7 +47,10 @@ public class AdminQuestionService : IAdminQuestionService
             query = query.Where(q => q.Difficulty == diff);
 
         if (!string.IsNullOrWhiteSpace(filter.Role))
-            query = query.Where(q => q.Role == filter.Role);
+        {
+            var searchRole = filter.Role.ToLower();
+            query = query.Where(q => q.QuestionTags.Any(qt => qt.Tag.Name.ToLower() == searchRole));
+        }
 
         if (filter.CategoryId.HasValue)
             query = query.Where(q => q.CategoryId == filter.CategoryId.Value);
@@ -70,7 +77,12 @@ public class AdminQuestionService : IAdminQuestionService
 
     public async Task<QuestionAdminDto?> GetByIdAsync(int id, bool includeDeleted = false, CancellationToken ct = default)
     {
-        var query = _db.Questions.Include(q => q.Category).AsNoTracking();
+        var query = _db.Questions
+            .Include(q => q.Category)
+            .Include(q => q.Answer)
+            .Include(q => q.QuestionTags)
+            .ThenInclude(qt => qt.Tag)
+            .AsNoTracking();
         if (!includeDeleted) query = query.Where(q => !q.IsDeleted);
         var q = await query.FirstOrDefaultAsync(x => x.Id == id, ct);
         return q is null ? null : ToDto(q);
@@ -197,11 +209,14 @@ public class AdminQuestionService : IAdminQuestionService
         int? defaultCategoryId, bool dryRun, string userId, string userEmail, CancellationToken ct = default)
     {
         // ── Build dedup fingerprint set from existing DB questions ──
+        // We use ExternalId if available, falling back to QuestionText fingerprint
         var existingFingerprints = (await _db.Questions
             .AsNoTracking()
-            .Select(q => new { q.QuestionText, q.Role })
+            .Select(q => new { q.ExternalId, q.QuestionText })
             .ToListAsync(ct))
-            .Select(q => QuestionImportValidator.ComputeFingerprint(q.QuestionText, q.Role))
+            .Select(q => !string.IsNullOrWhiteSpace(q.ExternalId)
+                ? q.ExternalId
+                : QuestionImportValidator.ComputeFingerprint(q.QuestionText))
             .ToHashSet(StringComparer.Ordinal);
 
         // ── Validate all rows ──
@@ -213,19 +228,55 @@ public class AdminQuestionService : IAdminQuestionService
 
         if (!dryRun && imported > 0)
         {
+            // Resolve Tags before inserting Questions
+            var uniqueTagNames = validation.ValidRecords
+                .SelectMany(r => r.Tags)
+                .Select(t => t.Trim())
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var existingTags = await _db.Tags
+                .Where(t => uniqueTagNames.Contains(t.Name))
+                .ToDictionaryAsync(t => t.Name.ToLower(), t => t, ct);
+
+            foreach (var tagName in uniqueTagNames)
+            {
+                if (!existingTags.ContainsKey(tagName.ToLower()))
+                {
+                    var newTag = new Tag
+                    {
+                        Name = tagName,
+                        Slug = tagName.ToLower().Replace(" ", "-").Replace(".", "")
+                    };
+                    _db.Tags.Add(newTag);
+                    existingTags[tagName.ToLower()] = newTag;
+                }
+            }
+
             foreach (var rec in validation.ValidRecords)
             {
-                _db.Questions.Add(new Question
+                var question = new Question
                 {
+                    ExternalId = rec.ExternalId,
                     Title = rec.Title,
                     QuestionText = rec.QuestionText,
                     AnswerText = rec.AnswerMarkdown,
                     Difficulty = rec.Difficulty,
-                    Role = rec.Role,
                     CategoryId = rec.CategoryId,
                     Status = QuestionStatus.Published,
                     CreatedAt = DateTime.UtcNow
-                });
+                };
+
+                foreach (var tag in rec.Tags)
+                {
+                    if (existingTags.TryGetValue(tag.Trim().ToLower(), out var existingTag))
+                    {
+                        question.QuestionTags.Add(new QuestionTag { Tag = existingTag });
+                    }
+                }
+
+                _db.Questions.Add(question);
             }
 
             await _db.SaveChangesAsync(ct);
@@ -243,6 +294,29 @@ public class AdminQuestionService : IAdminQuestionService
                 ct: ct);
         }
 
+        // ── Persist ImportLog ──
+        var importLog = new ImportLog
+        {
+            Type = ImportJobType.Question,
+            FileName = "questions.json",
+            IsDryRun = dryRun,
+            Status = validation.Failed == 0 ? ImportLogStatus.Completed : ImportLogStatus.PartiallyCompleted,
+            TotalRows = rows.Count(),
+            Inserted = imported,
+            Updated = 0, // Questions import currently only inserts or skips
+            Skipped = validation.Skipped,
+            Warned = validation.Warnings.Count,
+            Failed = validation.Failed,
+            ErrorSummaryJson = validation.Errors.Count > 0 ? JsonSerializer.Serialize(validation.Errors) : null,
+            WarningSummaryJson = validation.Warnings.Count > 0 ? JsonSerializer.Serialize(validation.Warnings) : null,
+            ImportedByUserId = userId,
+            ImportedByEmail = userEmail,
+            StartedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow
+        };
+        _db.ImportLogs.Add(importLog);
+        await _db.SaveChangesAsync(ct);
+
         return new BulkImportResultDto
         {
             Imported = imported,
@@ -257,11 +331,15 @@ public class AdminQuestionService : IAdminQuestionService
     private static QuestionAdminDto ToDto(Question q) => new()
     {
         Id = q.Id,
+        ExternalId = q.ExternalId,
         Title = q.Title,
         QuestionText = q.QuestionText,
         AnswerMarkdown = q.AnswerText,
+        Definition = q.Answer?.Definition,
+        InterviewAnswer = q.Answer?.InterviewAnswer,
+        StructuredContent = q.Answer?.Content != null ? JsonSerializer.Deserialize<AnswerContentDto>(q.Answer.Content, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }) : null,
         Difficulty = q.Difficulty.ToString(),
-        Role = q.Role,
+        Tags = q.QuestionTags.Select(qt => qt.Tag.Name).ToList(),
         CategoryId = q.CategoryId,
         CategoryName = q.Category?.Name ?? string.Empty,
         Status = q.Status.ToString(),

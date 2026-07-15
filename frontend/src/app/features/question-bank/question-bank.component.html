@@ -19,7 +19,7 @@
     <!-- FILTER BAR: Glassmorphism -->
     <div class="sticky top-4 z-30">
         <app-filter-bar 
-            class="glass-panel block"
+            class="block"
             [roles]="vm.roles"
             [searchTerm]="activeFilters.searchTerm ?? ''"
             [difficulty]="activeFilters.difficulty ?? ''"
@@ -54,11 +54,8 @@
             </div>
         } @else {
             @for (question of vm.questions; track question.id) {
-                <article @listAnimation class="premium-card group transition-all duration-500" 
-                         [class.opacity-40]="expandedQuestionId && expandedQuestionId !== question.id"
-                         [class.shadow-2xl]="expandedQuestionId === question.id"
-                         [class.-translate-y-1]="expandedQuestionId === question.id"
-                         [class.is-expanded]="expandedQuestionId === question.id">
+                <article @listAnimation class="premium-card group transition-all duration-500"
+                         [style.view-transition-name]="transitioningCardId() === question.id && expandedQuestion()?.id !== question.id ? 'active-card' : ''">
                     <!-- Top Badges -->
                     <div class="flex items-start justify-between">
                         <div class="flex gap-2">
@@ -88,10 +85,12 @@
                         }
                     </div>
 
-                    <div class="mt-4">
-                        <span class="text-[11px] font-medium text-[#5F6368] bg-slate-100 px-2 py-0.5 rounded-full">
-                            {{ question.role }}
-                        </span>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @for (tag of question.tags; track tag) {
+                            <span class="text-[11px] font-medium text-[#5F6368] bg-slate-100 px-2 py-0.5 rounded-full">
+                                {{ tag }}
+                            </span>
+                        }
                     </div>
 
                     <!-- Action Bar -->
@@ -101,27 +100,15 @@
                             <app-action-toggle label="Revision" icon="bookmark" [active]="question.isRevision" (toggled)="toggleRevision(question.id)"></app-action-toggle>
                         </div>
 
-                        @if (question.answerText) {
-                            <button (click)="toggleAnswer(question.id)" class="reveal-btn">
-                                {{ expandedQuestionId === question.id ? 'Hide Solution' : 'View Solution' }}
-                                <lucide-icon [name]="expandedQuestionId === question.id ? 'chevron-up' : 'chevron-down'" [size]="14"></lucide-icon>
+                        @if (question.answerText || question.structuredContent || question.definition) {
+                            <button (click)="openSolution(question)" class="reveal-btn hover:text-[#1A73E8] transition-colors">
+                                View Solution
+                                <lucide-icon name="external-link" [size]="14"></lucide-icon>
                             </button>
                         }
                     </div>
 
-                    <!-- ANIMATED ANSWER SECTION -->
-                    @if (question.answerText) {
-                        <div [@expandCollapse]="expandedQuestionId === question.id ? 'expanded' : 'collapsed'" 
-                             class="answer-box">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Official Guidance</span>
-                            </div>
-                            <p class="text-[14px] text-[#3C4043] leading-[1.625] whitespace-pre-line">
-                                {{ question.answerText }}
-                            </p>
-                        </div>
-                    }
+
                 </article>
             }
         }
@@ -164,5 +151,178 @@
                 </div>
             </div>
         </section>
+    }
+
+    <!-- FULL-SCREEN MODAL OVERLAY -->
+    @if (expandedQuestion(); as q) {
+        <div class="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[100px] pb-6 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+            <article style="view-transition-name: active-card" class="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-[var(--shadow-level-3)] flex flex-col overflow-hidden animate-slide-down border border-white/50">
+                <!-- Modal Header -->
+                <header class="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                    <div class="flex gap-2">
+                        <app-question-badge [label]="q.categoryName" variant="Role"></app-question-badge>
+                        <app-question-badge [label]="q.difficulty" [variant]="q.difficulty"></app-question-badge>
+                    </div>
+                    <button (click)="closeSolution()" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors" title="Close (Esc)">
+                        <lucide-icon name="x" [size]="20"></lucide-icon>
+                    </button>
+                </header>
+
+                <!-- Modal Scrollable Body -->
+                <main class="flex-1 overflow-y-auto p-6 sm:p-8">
+                    <!-- Question Title/Text -->
+                    <div class="mb-8">
+                        @if (q.title) {
+                            <h2 class="text-2xl sm:text-3xl font-bold text-[#202124] tracking-tight mb-4 leading-snug">{{ q.title }}</h2>
+                            <p class="text-base sm:text-lg text-[#5F6368] leading-relaxed">{{ q.questionText }}</p>
+                        } @else {
+                            <h2 class="text-2xl sm:text-3xl font-bold text-[#202124] tracking-tight mb-4 leading-snug">{{ q.questionText }}</h2>
+                        }
+                    </div>
+
+                    <!-- Answer Section -->
+                    @if (q.definition || q.answerText || q.interviewAnswer || q.structuredContent) {
+                        <section class="bg-slate-50 rounded-xl p-6 sm:p-8 border border-slate-100 space-y-8">
+                            
+                            @if (q.definition) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div class="h-2 w-2 rounded-full bg-[#1A73E8]"></div>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-[#1A73E8]">Definition</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line">{{ q.definition }}</p>
+                                </div>
+                            }
+
+                            @if (q.interviewAnswer) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div class="h-2 w-2 rounded-full bg-emerald-500"></div>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600">Interview Answer</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line italic bg-emerald-50/50 p-4 rounded-lg border border-emerald-100/50">{{ q.interviewAnswer }}</p>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.technicalExplanation) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="book-open" [size]="16" class="text-indigo-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600">Technical Deep Dive</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line">{{ q.structuredContent?.technicalExplanation }}</p>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.codeSnippets?.length) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="code" [size]="16" class="text-slate-700"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Code Examples</h3>
+                                    </div>
+                                    <div class="space-y-4">
+                                        @for (snippet of q.structuredContent?.codeSnippets; track snippet.code) {
+                                            <div class="rounded-lg overflow-hidden border border-slate-200 bg-slate-800">
+                                                @if (snippet.label) {
+                                                    <div class="bg-slate-900 px-4 py-2 text-xs font-mono text-slate-400 border-b border-slate-700 flex justify-between">
+                                                        <span>{{ snippet.label }}</span>
+                                                        <span class="uppercase">{{ snippet.language }}</span>
+                                                    </div>
+                                                }
+                                                <pre class="p-4 overflow-x-auto text-sm font-mono text-slate-200"><code>{{ snippet.code }}</code></pre>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.differentiator?.description) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="git-branch" [size]="16" class="text-purple-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-purple-600">Key Differentiators</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.differentiator?.description }}</p>
+                                    @if (q.structuredContent?.differentiator?.comparisonTable) {
+                                        <div class="overflow-x-auto rounded-lg border border-slate-200">
+                                            <div class="p-4 bg-white text-sm whitespace-pre-line" [innerHTML]="q.structuredContent?.differentiator?.comparisonTable"></div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.architectureNote?.description) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="layout-template" [size]="16" class="text-cyan-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-600">Architecture & Design</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.architectureNote?.description }}</p>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.realProjectExample) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="briefcase" [size]="16" class="text-amber-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Real Project Example</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line">{{ q.structuredContent?.realProjectExample }}</p>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.bestPractice) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="check-circle" [size]="16" class="text-teal-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-teal-600">Best Practice</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line">{{ q.structuredContent?.bestPractice }}</p>
+                                </div>
+                            }
+
+                            @if (q.structuredContent?.troubleshooting?.description) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <lucide-icon name="alert-triangle" [size]="16" class="text-rose-500"></lucide-icon>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600">Troubleshooting</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.troubleshooting?.description }}</p>
+                                    @if (q.structuredContent?.troubleshooting?.table) {
+                                        <div class="overflow-x-auto rounded-lg border border-slate-200">
+                                            <div class="p-4 bg-white text-sm whitespace-pre-line" [innerHTML]="q.structuredContent?.troubleshooting?.table"></div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Fallback for Legacy AnswerText -->
+                            @if (!q.definition && !q.interviewAnswer && q.answerText) {
+                                <div>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <div class="h-2 w-2 rounded-full bg-[#1A73E8]"></div>
+                                        <h3 class="text-xs font-bold uppercase tracking-wider text-[#1A73E8]">Official Guidance</h3>
+                                    </div>
+                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line">{{ q.answerText }}</p>
+                                </div>
+                            }
+
+                        </section>
+                    }
+                </main>
+                
+                <!-- Modal Footer -->
+                <footer class="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-white">
+                    <div class="flex gap-2">
+                        @for (tag of q.tags; track tag) {
+                            <div class="text-[11px] font-medium text-[#5F6368] bg-slate-100 px-3 py-1 rounded-full">
+                                {{ tag }}
+                            </div>
+                        }
+                    </div>
+                    <button (click)="closeSolution()" class="btn btn-secondary text-sm">Close</button>
+                </footer>
+            </article>
+        </div>
     }
 </main>

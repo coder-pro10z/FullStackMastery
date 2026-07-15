@@ -4,7 +4,8 @@ public enum ImportJobType
 {
     Question = 1,
     Quiz = 2,
-    StudyGuide = 3
+    StudyGuide = 3,
+    Answer = 4
 }
 
 public enum ImportJobStatus
@@ -14,6 +15,17 @@ public enum ImportJobStatus
     Completed = 2,
     PartiallyCompleted = 3,
     Failed = 4
+}
+
+/// <summary>
+/// Status for the lightweight synchronous ImportLog (Question + Answer imports).
+/// Distinct from ImportJobStatus which is used by the async ImportJob pipeline.
+/// </summary>
+public enum ImportLogStatus
+{
+    Completed = 1,
+    PartiallyCompleted = 2,
+    Failed = 3
 }
 
 public enum QuizQuestionDifficulty

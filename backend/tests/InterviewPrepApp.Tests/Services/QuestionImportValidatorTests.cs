@@ -44,7 +44,7 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "What is polymorphism?",
-                    Role = "Backend",
+                    Tags = ["Backend"],
                     Difficulty = "Hard",
                     CategorySlug = "csharp"
                 }
@@ -76,7 +76,7 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "", // Missing
-                    Role = "Backend",
+                    Tags = ["Backend"]
                 }
             };
 
@@ -103,13 +103,13 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "Duplicate Question",
-                    Role = "Backend",
+                    Tags = ["Backend"],
                     CategorySlug = "csharp"
                 },
                 new ImportQuestionRowDto
                 {
                     QuestionText = "Duplicate Question",
-                    Role = "Backend",
+                    Tags = ["Backend"],
                     CategorySlug = "csharp"
                 }
             };
@@ -132,7 +132,7 @@ namespace InterviewPrepApp.Tests.Services
             using var dbContext = GetInMemoryContext();
             var validator = new QuestionImportValidator(dbContext);
 
-            var duplicateFingerprint = QuestionImportValidator.ComputeFingerprint("Existing Question", "FullStack");
+            var duplicateFingerprint = QuestionImportValidator.ComputeFingerprint("Existing Question");
             var existingFingerprints = new HashSet<string> { duplicateFingerprint };
 
             var rows = new List<ImportQuestionRowDto>
@@ -140,7 +140,7 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "Existing Question",
-                    Role = "FullStack", // Matches fingerprint
+                    Tags = ["FullStack"], // Matches fingerprint
                     CategorySlug = "csharp"
                 }
             };
@@ -166,7 +166,7 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "Valid",
-                    Role = "Backend",
+                    Tags = ["Backend"],
                     CategorySlug = "unknown-slug"
                 }
             };
@@ -195,7 +195,7 @@ namespace InterviewPrepApp.Tests.Services
                 new ImportQuestionRowDto
                 {
                     QuestionText = "Valid",
-                    Role = "Backend",
+                    Tags = ["Backend"],
                     CategorySlug = "unknown-slug"
                 }
             };

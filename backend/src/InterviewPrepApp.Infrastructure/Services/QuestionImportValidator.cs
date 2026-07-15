@@ -46,20 +46,22 @@ public class QuestionImportValidator : IQuestionImportValidator
                 continue;
             }
 
-            // ── Role normalisation ──
-            var role = string.IsNullOrWhiteSpace(row.Role) ? "General" : row.Role;
-
             // ── Deduplication ──
-            var fingerprint = ComputeFingerprint(row.QuestionText, role);
+            // If ExternalId is present, use it as primary uniqueness check.
+            // If missing, fall back to QuestionText fingerprinting.
+            var hasExternalId = !string.IsNullOrWhiteSpace(row.ExternalId);
+            var dedupeKey = hasExternalId ? row.ExternalId!.Trim() : ComputeFingerprint(row.QuestionText);
 
-            if (!fileFingerprints.Add(fingerprint))
+            if (!fileFingerprints.Add(dedupeKey))
             {
                 result.Warnings.Add($"Row {rowNum}: Duplicate — same question appears earlier in this file. Skipped.");
                 result.Skipped++;
                 continue;
             }
-            if (existingFingerprints.Contains(fingerprint))
+            if (existingFingerprints.Contains(dedupeKey))
             {
+                // Note: For Questions import, we skip if it exists. We do not do a full upsert of Question fields yet.
+                // That might change later, but for now we maintain existing behavior: skip duplicates.
                 result.Warnings.Add($"Row {rowNum}: Duplicate — question already exists in database. Skipped.");
                 result.Skipped++;
                 continue;
@@ -94,27 +96,29 @@ public class QuestionImportValidator : IQuestionImportValidator
             // ── Valid record ──
             result.ValidRecords.Add(new ValidatedQuestionRecord
             {
+                ExternalId = row.ExternalId,
                 Title = row.Title,
                 QuestionText = row.QuestionText,
                 AnswerMarkdown = row.AnswerMarkdown,
                 Difficulty = difficulty,
-                Role = role,
-                CategoryId = categoryId
+                CategoryId = categoryId,
+                Tags = row.Tags ?? []
             });
 
-            // Also add to fingerprint set so subsequent rows in this batch deduplicate correctly
-            existingFingerprints.Add(fingerprint);
+            // Also add to dedupe set so subsequent rows in this batch deduplicate correctly
+            existingFingerprints.Add(dedupeKey);
         }
 
         return result;
     }
 
     /// <summary>
-    /// Deterministic fingerprint: SHA-256(upper(QuestionText)|upper(Role)), truncated to 16 hex chars.
+    /// Deterministic fingerprint: SHA-256(upper(QuestionText)), truncated to 16 hex chars.
+    /// Used as fallback when ExternalId is not provided.
     /// </summary>
-    public static string ComputeFingerprint(string questionText, string role)
+    public static string ComputeFingerprint(string questionText)
     {
-        var input = $"{questionText.Trim().ToUpperInvariant()}|{role.Trim().ToUpperInvariant()}";
+        var input = questionText.Trim().ToUpperInvariant();
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(hash)[..16];
     }

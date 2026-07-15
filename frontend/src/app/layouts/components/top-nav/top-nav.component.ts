@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, signal, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { GlobalSearchComponent } from '../global-search/global-search.component';
@@ -18,9 +21,9 @@ import { GlobalSearchComponent } from '../global-search/global-search.component'
         </button>
 
         <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500">
-          <span class="hover:text-slate-800 cursor-pointer transition-colors">Dashboard</span>
+          <span class="hover:text-slate-800 cursor-pointer transition-colors">{{ breadcrumbs().parent }}</span>
           <lucide-icon name="chevron-right" class="text-slate-400" [size]="14"></lucide-icon>
-          <span class="text-slate-800">Current Page</span>
+          <span class="text-slate-800">{{ breadcrumbs().current }}</span>
         </div>
       </div>
 
@@ -88,6 +91,35 @@ import { GlobalSearchComponent } from '../global-search/global-search.component'
 export class TopNavComponent {
   @Output() menuClick = new EventEmitter<void>();
   readonly isSearchOpen = signal(false);
+
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
+  breadcrumbs = toSignal(
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      map(() => this.buildBreadcrumbs(this.activatedRoute.root))
+    ),
+    { initialValue: { parent: 'Dashboard', current: 'Overview' } }
+  );
+
+  private buildBreadcrumbs(route: ActivatedRoute): {parent: string, current: string} {
+    let parent = 'Dashboard';
+    let current = 'Overview';
+    let currentRoute = route;
+
+    while (currentRoute.firstChild) {
+      currentRoute = currentRoute.firstChild;
+      if (currentRoute.snapshot.url.length > 0) {
+          const path = currentRoute.snapshot.url[0].path;
+          if (path === 'admin') parent = 'Admin';
+      }
+      if (currentRoute.snapshot.data['title']) {
+         current = currentRoute.snapshot.data['title'];
+      }
+    }
+    return { parent, current };
+  }
 
   toggleSearch(): void {
     this.isSearchOpen.update(v => !v);

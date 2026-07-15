@@ -24,12 +24,13 @@ public interface IQuestionImportValidator
 /// </summary>
 public class ValidatedQuestionRecord
 {
+    public string? ExternalId { get; set; }
     public string? Title { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string? AnswerMarkdown { get; set; }
     public Difficulty Difficulty { get; set; }
-    public string Role { get; set; } = string.Empty;
     public int CategoryId { get; set; }
+    public List<string> Tags { get; set; } = [];
 }
 
 /// <summary>

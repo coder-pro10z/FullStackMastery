@@ -33,9 +33,13 @@ public class QuestionAdminDto
     public int Id { get; set; }
     public string? Title { get; set; }
     public string QuestionText { get; set; } = string.Empty;
+    public string? ExternalId { get; set; }
     public string? AnswerMarkdown { get; set; }
+    public string? Definition { get; set; }
+    public string? InterviewAnswer { get; set; }
+    public AnswerContentDto? StructuredContent { get; set; }
     public string Difficulty { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -98,10 +102,11 @@ public class BulkImportResultDto
 
 public class ImportQuestionRowDto
 {
+    public string? ExternalId { get; set; }
     public string? Title { get; set; }
     public string QuestionText { get; set; } = string.Empty;
     public string? AnswerMarkdown { get; set; }
     public string Difficulty { get; set; } = "Medium";
-    public string Role { get; set; } = string.Empty;
     public string CategorySlug { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
 }

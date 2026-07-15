@@ -10,11 +10,16 @@ public class QuestionDto
 
     public string QuestionText { get; set; } = string.Empty;
 
+    public string? ExternalId { get; set; }
+
     public string? AnswerText { get; set; }
+    public string? Definition { get; set; }
+    public string? InterviewAnswer { get; set; }
+    public AnswerContentDto? StructuredContent { get; set; }
 
     public Difficulty Difficulty { get; set; }
 
-    public string Role { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
 
     public int CategoryId { get; set; }
 

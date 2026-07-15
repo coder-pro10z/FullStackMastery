@@ -139,13 +139,13 @@ namespace InterviewPrepApp.Tests.Services
 
             // Row 1
             result.Rows[0].QuestionText.Should().Be("What is LINQ?");
-            result.Rows[0].Role.Should().Be("Backend");
+            result.Rows[0].Tags.Should().Contain("Backend");
             result.Rows[0].AnswerMarkdown.Should().Be("Language Integrated Query");
             result.Rows[0].Difficulty.Should().Be("Medium"); // default
 
             // Row 3
             result.Rows[1].QuestionText.Should().Be("Entity Framework Core");
-            result.Rows[1].Role.Should().Be("General"); // Role defaulted
+            result.Rows[1].Tags.Should().BeEmpty(); // Role defaulted to empty tags
             result.Rows[1].Difficulty.Should().Be("Medium"); // default
 
             // Diagnostics should warn about empty role and difficulty

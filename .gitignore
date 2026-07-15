@@ -1,3 +1,8 @@
 old-frontend/.
 old-frontend/.editorconfig
 old-frontend/*
+
+# ── Data Directory ───────────────────────────────────────
+# data/schemas/ and data/seeds/ ARE committed (source of truth)
+data/exports/
+data/temp/

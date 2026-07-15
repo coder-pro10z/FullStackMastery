@@ -18,7 +18,7 @@
 | `Difficulty` enum | ✅ | Easy, Medium, Hard |
 | `Category` entity | ✅ | Self-referencing tree with `ParentId` |
 | `Question` entity | ✅ | All properties, soft delete, versioning |
-| `Answer` entity | ✅ | 1:1 with Question, Markdown content |
+| `Answer` entity | ✅ | M:N Tags, Structured JSON Content |
 | `ApplicationUser` (IdentityUser) | ✅ | Includes `UserProgresses` |
 | `UserProgress` entity | ✅ | Composite key `(UserId, QuestionId)` |
 | `Result<T>` class | ✅ | In `Domain.Shared` |
@@ -52,7 +52,7 @@
 | Component | Status | Notes |
 |-----------|--------|-------|
 | `CategoryTreeDto` / `CategoryFlatDto` | ✅ | Hierarchical + flat responses |
-| `QuestionDto` / `QuestionAdminDto` | ✅ | User-facing + admin DTOs |
+| `QuestionDto` / `QuestionAdminDto` | ✅ | Includes `AnswerContentDto` and `Tags` |
 | `CreateQuestionDto` / `UpdateQuestionDto` | ✅ | Admin CRUD DTOs |
 | `ImportQuestionDto` | ✅ | Bulk import DTO |
 | `DashboardStatsDto` | ✅ | Admin dashboard statistics |
@@ -83,7 +83,8 @@
 | `QuestionsController` — filtered + paged | ✅ | `[FromQuery]` params |
 | `UserProgressController` — summary + toggles | ✅ | `[Authorize]` protected |
 | `AdminController` — import questions (legacy) | ✅ | Excel upload endpoint (direct entity insert) |
-| `AdminImportController` — unified import | ✅ | `.xlsx`, `.csv`, `.json` all flow through `ImportAsync` pipeline |
+| `AdminImportController` — unified import | ✅ | Supports `.xlsx`, `.csv`, `.json` for Questions and Answers. Dry Run. |
+| `AdminImportLogsController` | ✅ | Tracks import job status, errors, and completeness |
 | `AdminQuestionsController` — CRUD | 🔄 | - [x] Fix UTC DateTime DbUpdateException for `InterviewDate` in AdminInterviewsController.<br>- [ ] Fix `00000000-0000-0000-0000-000000000000` (Guid.Empty) leaking into UI state causing 404/500 errors on PUT/POST requests. |
 | `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
 | `AdminDashboardController` — stats | ✅ | Dashboard analytics |
@@ -138,7 +139,8 @@
 | `AdminDashboardComponent` | ✅ | Drag-drop upload, stats, question CRUD |
 | Pagination UI controls | 🔄 | Dashboard now uses `PagedResponse` metadata with previous/next controls and page-size switching; remaining closeout is browser validation on desktop and mobile |
 | Revision-only filter mode | ⏳ | Toggle exists, workflow not operationalized |
-| Answer expand/collapse UX | ✅ | Accordion toggle implemented in question cards |
+| Answer expand/collapse UX | ✅ | Accordion toggle replaced by Full-Screen Modal Overlay |
+| Rich Answer Rendering | ✅ | Renders Technical Deep Dives, Differentiators, Code Examples from `StructuredContent` |
 | Quiz Dashboard Component | ✅ | Quiz setup flow under `/quiz/new` |
 | Quiz Player Component | ✅ | Attempt flow under `/quiz/:id` |
 | Quiz Review Component | ✅ | Review flow under `/quiz/:id/review` |

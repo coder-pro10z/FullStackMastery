@@ -50,29 +50,39 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
 
         if (!string.IsNullOrWhiteSpace(role))
         {
-            var normalizedRole = role.Trim();
-            query = query.Where(question => question.Role == normalizedRole);
+            var normalizedRole = role.Trim().ToLower();
+            query = query.Where(question => question.QuestionTags.Any(qt => qt.Tag.Name.ToLower() == normalizedRole));
         }
 
         var totalRecords = await query.CountAsync(cancellationToken);
 
-        var questions = await query
+        var dbQuestions = await query
+            .Include(q => q.Answer)
+            .Include(q => q.QuestionTags)
+            .ThenInclude(qt => qt.Tag)
             .OrderBy(question => question.Category.Name)
             .ThenBy(question => question.Title ?? question.QuestionText)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(question => new QuestionDto
-            {
-                Id = question.Id,
-                Title = question.Title,
-                QuestionText = question.QuestionText,
-                AnswerText = question.AnswerText,
-                Difficulty = question.Difficulty,
-                Role = question.Role,
-                CategoryId = question.CategoryId,
-                CategoryName = question.Category.Name
-            })
             .ToListAsync(cancellationToken);
+
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+
+        var questions = dbQuestions.Select(question => new QuestionDto
+        {
+            Id = question.Id,
+            ExternalId = question.ExternalId,
+            Title = question.Title,
+            QuestionText = question.QuestionText,
+            AnswerText = question.AnswerText,
+            Definition = question.Answer?.Definition,
+            InterviewAnswer = question.Answer?.InterviewAnswer,
+            StructuredContent = question.Answer?.Content != null ? System.Text.Json.JsonSerializer.Deserialize<AnswerContentDto>(question.Answer.Content, jsonOptions) : null,
+            Difficulty = question.Difficulty,
+            Tags = question.QuestionTags.Select(qt => qt.Tag.Name).ToList(),
+            CategoryId = question.CategoryId,
+            CategoryName = question.Category.Name
+        }).ToList();
 
         if (!string.IsNullOrWhiteSpace(userId) && questions.Count > 0)
         {

@@ -397,8 +397,8 @@ namespace InterviewPrepApp.Infrastructure.Services
                     QuestionText = questionText,
                     AnswerMarkdown = answerText,
                     Difficulty = difficulty,
-                    Role = role,
-                    CategorySlug = category
+                    CategorySlug = category,
+                    Tags = string.IsNullOrWhiteSpace(role) ? [] : [role]
                 });
             }
 

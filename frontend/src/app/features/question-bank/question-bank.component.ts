@@ -1,5 +1,5 @@
 import { AsyncPipe, NgClass, NgIf, SlicePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, HostListener, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ActivatedRoute } from '@angular/router';
@@ -48,6 +48,7 @@ export class QuestionBankComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly questionService = inject(QuestionService);
   private readonly progressService = inject(ProgressService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   activeFilters: QuestionQueryParams = {};
   readonly loading = signal(true);
@@ -59,7 +60,8 @@ export class QuestionBankComponent {
     pageSize: 12
   });
 
-  expandedQuestionId: number | null = null;
+  readonly expandedQuestion = signal<QuestionDto | null>(null);
+  readonly transitioningCardId = signal<number | null>(null);
 
   private readonly selectedCategoryId$ = this.route.queryParamMap.pipe(
     map(queryParams => {
@@ -99,7 +101,7 @@ export class QuestionBankComponent {
         pageSize: questionPage?.pageSize ?? this.pagination$.value.pageSize,
         totalPages: questionPage?.totalPages ?? 0,
         selectedCategoryId,
-        roles: [...new Set(questions.map(q => q.role))].sort()
+        roles: [...new Set(questions.flatMap(q => q.tags || []))].sort()
       };
     })
   );
@@ -196,8 +198,40 @@ export class QuestionBankComponent {
       });
   }
 
-  toggleAnswer(questionId: number) {
-    this.expandedQuestionId = this.expandedQuestionId === questionId ? null : questionId;
+  openSolution(question: QuestionDto) {
+    if ('startViewTransition' in document) {
+      this.transitioningCardId.set(question.id);
+      this.cdr.detectChanges();
+
+      (document as any).startViewTransition(() => {
+        this.expandedQuestion.set(question);
+        this.cdr.detectChanges();
+      });
+    } else {
+      this.expandedQuestion.set(question);
+    }
+  }
+
+  closeSolution() {
+    if ('startViewTransition' in document) {
+      const transition = (document as any).startViewTransition(() => {
+        this.expandedQuestion.set(null);
+        this.cdr.detectChanges();
+      });
+      transition.finished.finally(() => {
+        this.transitioningCardId.set(null);
+        this.cdr.detectChanges();
+      });
+    } else {
+      this.expandedQuestion.set(null);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.expandedQuestion()) {
+      this.closeSolution();
+    }
   }
 
   private updateQuestion(questionId: number, updater: (q: QuestionDto) => QuestionDto) {

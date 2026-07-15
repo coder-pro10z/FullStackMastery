@@ -46,8 +46,8 @@ namespace InterviewPrepApp.Tests.Services
                         QuestionText = "Mock Question",
                         AnswerMarkdown = "Mock Answer",
                         Difficulty = InterviewPrepApp.Domain.Enums.Difficulty.Medium,
-                        Role = "Backend",
-                        CategoryId = 1
+                        CategoryId = 1,
+                        Tags = new List<string> { "Backend" }
                     }
                 },
                 Failed = 1,
@@ -110,7 +110,7 @@ namespace InterviewPrepApp.Tests.Services
                     new ValidatedQuestionRecord
                     {
                         QuestionText = "Mock Question",
-                        Role = "Backend"
+                        Tags = ["Backend"]
                     }
                 }
             };

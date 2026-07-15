@@ -17,6 +17,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<QuestionVersion> QuestionVersions => Set<QuestionVersion>();
 
+    // ── Question Bank: Rich Answer & Tag System ──────────────────────────────
+    public DbSet<Answer> Answers => Set<Answer>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<QuestionTag> QuestionTags => Set<QuestionTag>();
+
+    // ── Import ───────────────────────────────────────────────────────────────
+    public DbSet<ImportLog> ImportLogs => Set<ImportLog>();
+
     public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
     public DbSet<QuizAttemptQuestion> QuizAttemptQuestions => Set<QuizAttemptQuestion>();
     public DbSet<QuizAttemptResponse> QuizAttemptResponses => Set<QuizAttemptResponse>();
@@ -82,6 +90,65 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.Property(q => q.Status).HasConversion<int>();
             entity.Property(q => q.Difficulty).HasConversion<int>();
+
+            // ExternalId: nullable but unique when set (sparse unique index)
+            entity.HasIndex(q => q.ExternalId)
+                  .IsUnique()
+                  .HasFilter("[ExternalId] IS NOT NULL");
+            entity.Property(q => q.ExternalId).HasMaxLength(200);
+        });
+
+        // ── Answer (1:1 with Question) ────────────────────────────────────────
+        builder.Entity<Answer>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.HasOne(a => a.Question)
+                  .WithOne(q => q.Answer)
+                  .HasForeignKey<Answer>(a => a.QuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(a => a.QuestionId).IsUnique();
+            entity.Property(a => a.Content)
+                  .HasColumnType("nvarchar(max)")
+                  .IsRequired()
+                  .HasDefaultValue("{}");
+            entity.Property(a => a.ContentHash).HasMaxLength(64);
+        });
+
+        // ── Tag ───────────────────────────────────────────────────────────────
+        builder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Name).HasMaxLength(100).IsRequired();
+            entity.Property(t => t.Slug).HasMaxLength(100).IsRequired();
+            entity.Property(t => t.TagGroup).HasMaxLength(50);
+            entity.HasIndex(t => t.Slug).IsUnique();
+        });
+
+        // ── QuestionTag (M:N Bridge) ───────────────────────────────────────────
+        builder.Entity<QuestionTag>(entity =>
+        {
+            entity.HasKey(qt => new { qt.QuestionId, qt.TagId });
+            entity.HasOne(qt => qt.Question)
+                  .WithMany(q => q.QuestionTags)
+                  .HasForeignKey(qt => qt.QuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(qt => qt.Tag)
+                  .WithMany(t => t.QuestionTags)
+                  .HasForeignKey(qt => qt.TagId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── ImportLog ─────────────────────────────────────────────────────────
+        builder.Entity<ImportLog>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Type).HasConversion<int>();
+            entity.Property(l => l.Status).HasConversion<int>();
+            entity.Property(l => l.FileName).HasMaxLength(500).IsRequired();
+            entity.Property(l => l.ImportedByUserId).HasMaxLength(450).IsRequired();
+            entity.Property(l => l.ImportedByEmail).HasMaxLength(256).IsRequired();
+            entity.HasIndex(l => l.StartedAt);
+            entity.HasIndex(l => new { l.Type, l.Status });
         });
 
         builder.Entity<QuestionVersion>(entity =>
@@ -151,6 +218,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(q => q.Category)
                   .WithMany()
                   .HasForeignKey(q => q.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            // Optional reusability bridge back to the Question Bank
+            entity.HasOne(q => q.OriginQuestion)
+                  .WithMany()
+                  .HasForeignKey(q => q.OriginQuestionId)
                   .OnDelete(DeleteBehavior.SetNull);
         });
 

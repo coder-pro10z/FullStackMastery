@@ -155,11 +155,12 @@ public sealed class ImportBackgroundWorker : BackgroundService
         job.TotalRows = extractResult.Rows.Count;
         var existingFingerprints = new HashSet<string>(StringComparer.Ordinal);
         
-        // Load existing fingerprints (we need QuestionText and Role to match computation)
-        var allQuestions = await db.Questions.AsNoTracking().Select(q => new { q.QuestionText, q.Role }).ToListAsync(ct);
+        // Load existing fingerprints
+        var allQuestions = await db.Questions.AsNoTracking().Select(q => new { q.ExternalId, q.QuestionText }).ToListAsync(ct);
         foreach (var q in allQuestions)
         {
-            existingFingerprints.Add(QuestionImportValidator.ComputeFingerprint(q.QuestionText, q.Role));
+            var key = !string.IsNullOrWhiteSpace(q.ExternalId) ? q.ExternalId : QuestionImportValidator.ComputeFingerprint(q.QuestionText);
+            existingFingerprints.Add(key);
         }
 
         foreach (var batch in extractResult.Rows.Chunk(BatchSize))
@@ -181,11 +182,12 @@ public sealed class ImportBackgroundWorker : BackgroundService
                 {
                     db.Questions.Add(new Question
                     {
+                        ExternalId = record.ExternalId,
                         QuestionText = record.QuestionText,
                         AnswerText = record.AnswerMarkdown,
                         Difficulty = record.Difficulty,
-                        Role = record.Role,
                         CategoryId = record.CategoryId
+                        // Excel legacy imports don't configure Tags
                     });
                     batchProcessed++;
                 }

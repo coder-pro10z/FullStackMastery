@@ -37,5 +37,13 @@ public class QuizQuestion
     public bool IsDeleted { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
+
+    /// <summary>
+    /// Optional link back to the full Question Bank entry.
+    /// When set, the UI can show a "Deep Dive" link from quiz results to the structured answer modal.
+    /// SetNull on Question delete to preserve quiz history.
+    /// </summary>
+    public int? OriginQuestionId { get; set; }
+    public Question? OriginQuestion { get; set; }
 }
 
