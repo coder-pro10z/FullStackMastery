@@ -63,10 +63,19 @@
             "description": "Optional caption shown above the code block.",
             "examples": ["var vs dynamic — C# Example"]
           },
+          "file_name": {
+            "type": "string",
+            "description": "Optional source file name for context (e.g., Program.cs, Startup.cs)",
+            "examples": ["Program.cs", "OrderService.cs", "middleware.ts"]
+          },
           "code": {
             "type": "string",
             "description": "The raw code string.",
             "minLength": 1
+          },
+          "inject_after": {
+            "type": "string",
+            "description": "A short text anchor from the answer's technical_explanation indicating where this snippet should be rendered."
           },
           "highlight_lines": {
             "type": "array",

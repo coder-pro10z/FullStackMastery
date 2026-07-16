@@ -21,7 +21,9 @@ public class CodeSnippetDto
 {
     public string Language { get; set; } = string.Empty;
     public string? Label { get; set; }
+    public string? FileName { get; set; }
     public string Code { get; set; } = string.Empty;
+    public string? InjectAfter { get; set; }
     public int[]? HighlightLines { get; set; }
 }
 

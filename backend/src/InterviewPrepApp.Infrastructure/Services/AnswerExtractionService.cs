@@ -20,6 +20,7 @@ public class AnswerExtractionService : IAnswerExtractionService
         }
 
         using var stream = file.OpenReadStream();
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
         
         var options = new JsonSerializerOptions
         {
@@ -27,8 +28,22 @@ public class AnswerExtractionService : IAnswerExtractionService
             AllowTrailingCommas = true
         };
 
-        var rows = await JsonSerializer.DeserializeAsync<List<ImportAnswerRowDto>>(stream, options, ct);
+        JsonElement root = document.RootElement;
         
-        return rows ?? [];
+        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("answers", out JsonElement answersElement))
+        {
+            if (answersElement.ValueKind == JsonValueKind.Array)
+            {
+                var rows = answersElement.Deserialize<List<ImportAnswerRowDto>>(options);
+                return rows ?? [];
+            }
+        }
+        else if (root.ValueKind == JsonValueKind.Array)
+        {
+            var rows = root.Deserialize<List<ImportAnswerRowDto>>(options);
+            return rows ?? [];
+        }
+
+        throw new ArgumentException("Invalid JSON format. Expected a JSON array at the root or an object with an 'answers' array.");
     }
 }
