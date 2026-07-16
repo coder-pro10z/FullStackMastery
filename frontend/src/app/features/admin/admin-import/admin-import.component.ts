@@ -14,11 +14,12 @@ import {
   BulkImportResultDto,
   CategoryManageDto,
 } from '../../../core/services/admin-api.service';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-admin-import',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ConfirmationDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes slideUp {
@@ -325,7 +326,7 @@ import {
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-100">Dry Run Validation Passed!</p>
                 <p class="text-[11px] text-slate-400 mt-0.5 truncate">
-                  {{ result()?.imported || (result() as any)?.inserted || 0 }} valid records. Ready for live database upload.
+                  {{ result()?.imported || result()?.inserted || 0 }} valid records. Ready for live database upload.
                 </p>
               </div>
             </div>
@@ -349,37 +350,20 @@ import {
 
       <!-- Confirmation Modal -->
       @if (pendingImportStats()) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div class="glass-panel-interactive p-6 w-full max-w-md mx-4 animate-slide-up relative shadow-2xl border border-white/50">
-            
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600 shadow-inner">
-                <lucide-icon name="alert-circle" [size]="20" />
-              </div>
-              <h3 class="text-lg font-bold text-slate-800">Confirm Import</h3>
-            </div>
-            
-            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-              You are about to insert <strong class="text-emerald-600">{{ pendingImportStats()!.imported || (pendingImportStats() as any)!.inserted || 0 }} new</strong> records
-              and update <strong class="text-blue-600">{{ pendingImportStats()!.updated || 0 }} existing</strong> records.
-              This action cannot be undone. Do you want to proceed?
-            </p>
-
-            <div class="flex items-center justify-end gap-3">
-              <button 
-                class="btn btn-outline py-2 px-4 text-sm font-medium"
-                (click)="pendingImportStats.set(null)">
-                Cancel
-              </button>
-              <button 
-                class="btn btn-primary py-2 px-4 text-sm font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
-                (click)="confirmImport()">
-                <lucide-icon name="check" [size]="16" />
-                Confirm Update
-              </button>
-            </div>
-          </div>
-        </div>
+        <app-confirmation-dialog
+          title="Ready to Import?"
+          cancelText="Cancel"
+          confirmText="Confirm"
+          iconName="cloud-upload"
+          iconBgClass="bg-blue-50"
+          iconColorClass="text-[#1A73E8]"
+          confirmIconName="check-circle"
+          confirmBtnClass="bg-[#1A73E8] hover:bg-[#174EA6] shadow-blue-500/30 hover:shadow-blue-500/50"
+          (canceled)="pendingImportStats.set(null)"
+          (confirmed)="confirmImport()">
+          You are about to insert <strong class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md">{{ pendingImportStats()!.imported || pendingImportStats()!.inserted || 0 }} new</strong> records
+          and update <strong class="text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded-md">{{ pendingImportStats()!.updated || 0 }} existing</strong> records.
+        </app-confirmation-dialog>
       }
   `
 })
@@ -480,7 +464,7 @@ export class AdminImportComponent implements OnInit {
     request$.subscribe({
       next: r => {
         this.uploading.set(false);
-        const importedCount = r.imported || (r as any).inserted || 0;
+        const importedCount = r.imported || r.inserted || 0;
         const updatedCount = r.updated || 0;
         
         if (isIntercept && (updatedCount > 0 || importedCount > 0)) {
