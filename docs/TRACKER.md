@@ -697,3 +697,12 @@ export class AdminDashboardComponent implements OnInit {
 - Keep code aligned with Clean Architecture (no MediatR, `Result<T>`, DTO-based APIs).
 - Use Angular standalone components for all new frontend work.
 - Reference `tests/fixtures/import-fixtures.json` for all test data — no inline magic strings.
+
+---
+
+## 📝 Backlog & Known Issues
+
+| ID | Area | Issue Description | Status | Notes |
+|---|---|---|---|---|
+| BKL-01 | **Imports** | `ExternalId` missing on legacy question imports. Questions imported before the JSON mapping fix have `null` ExternalIds, causing Answer imports to fail lookup (e.g. `Row question_id ... not found in database`). | 🔄 **Action Required** | The UPSERT logic is fixed. **Admin action required**: Must re-import `questions.json` to backfill missing `ExternalIds` before running answer imports. |
+| BKL-02 | **UI** | Breadcrumbs show duplication ("Dashboard > Dashboard") and parent clicks don't reliably redirect to `/dashboard`. | ⏳ **Pending** | Needs `admin-layout.component.ts` routing adjustments. |

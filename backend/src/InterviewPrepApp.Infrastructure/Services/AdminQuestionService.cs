@@ -271,6 +271,10 @@ public class AdminQuestionService : IAdminQuestionService
 
                 if (rec.IsUpdate && existingQuestions.TryGetValue(key, out var question))
                 {
+                    if (string.IsNullOrWhiteSpace(question.ExternalId) && !string.IsNullOrWhiteSpace(rec.ExternalId))
+                    {
+                        question.ExternalId = rec.ExternalId.Trim();
+                    }
                     question.Title = rec.Title;
                     question.QuestionText = rec.QuestionText;
                     question.Difficulty = rec.Difficulty;
