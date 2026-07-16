@@ -186,7 +186,7 @@ import {
                 @if (result()!.isDryRun) {
                   <span class="badge badge-primary">🔍 Dry Run</span>
                 }
-                <span class="badge badge-success">✓ {{ result()!.imported }} inserted</span>
+                <span class="badge badge-success">✓ {{ result()!.imported || result()!.inserted || 0 }} inserted</span>
                 @if (result()!.updated) {
                   <span class="badge badge-primary">↺ {{ result()!.updated }} updated</span>
                 }
@@ -198,7 +198,7 @@ import {
                 }
               </div>
 
-              @if (result()!.warnings.length) {
+              @if (result()!.warnings?.length) {
                 <div class="space-y-1 mb-3">
                   <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Warnings</p>
                   @for (w of result()!.warnings; track $index) {
@@ -206,7 +206,7 @@ import {
                   }
                 </div>
               }
-              @if (result()!.errors.length) {
+              @if (result()!.errors?.length) {
                 <div class="space-y-1">
                   <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">Errors</p>
                   @for (e of result()!.errors; track $index) {

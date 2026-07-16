@@ -168,7 +168,7 @@ export class QuestionBankComponent {
   paginationSummary(vm: { totalRecords: number; questions: QuestionDto[]; pageNumber: number; pageSize: number }): string {
     if (vm.totalRecords === 0) return '0 questions';
     const start = (vm.pageNumber - 1) * vm.pageSize + 1;
-    const end = start + vm.questions.length - 1;
+    const end = start + (vm.questions?.length || 0) - 1;
     return `${start}-${end} of ${vm.totalRecords} questions`;
   }
 
