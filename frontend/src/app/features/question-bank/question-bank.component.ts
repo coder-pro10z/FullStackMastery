@@ -15,13 +15,14 @@ import { ActionToggleComponent } from '../../shared/components/action-toggle/act
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
 import { QuestionBadgeComponent } from '../../shared/components/question-badge/question-badge.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-question-bank',
   standalone: true,
   imports: [
     AsyncPipe, NgClass, NgIf, SlicePipe, LucideAngularModule,
-    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent
+    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent, MarkdownPipe
   ],
   animations: [
     trigger('expandCollapse', [
