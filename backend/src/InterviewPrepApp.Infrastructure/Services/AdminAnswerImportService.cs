@@ -179,11 +179,11 @@ public class AdminAnswerImportService : IAdminAnswerImportService
 
         importLog.CompletedAt = DateTime.UtcNow;
 
+        _db.ImportLogs.Add(importLog);
+        await _db.SaveChangesAsync(ct);
+
         if (!dryRun)
         {
-            _db.ImportLogs.Add(importLog);
-            await _db.SaveChangesAsync(ct);
-
             await _audit.LogAsync(userId, userEmail, "IMPORTED", "Answers", 
                 newValues: JsonSerializer.Serialize(new { 
                     importLog.Inserted, importLog.Updated, importLog.Skipped, importLog.Warned 
