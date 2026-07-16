@@ -325,7 +325,7 @@ import {
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-100">Dry Run Validation Passed!</p>
                 <p class="text-[11px] text-slate-400 mt-0.5 truncate">
-                  {{ result()?.imported }} questions are valid. Ready for live database upload.
+                  {{ result()?.imported || (result() as any)?.inserted || 0 }} valid records. Ready for live database upload.
                 </p>
               </div>
             </div>
@@ -360,8 +360,8 @@ import {
             </div>
             
             <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-              You are about to insert <strong class="text-emerald-600">{{ pendingImportStats()!.imported }} new</strong> records
-              and update <strong class="text-blue-600">{{ pendingImportStats()!.updated }} existing</strong> records.
+              You are about to insert <strong class="text-emerald-600">{{ pendingImportStats()!.imported || (pendingImportStats() as any)!.inserted || 0 }} new</strong> records
+              and update <strong class="text-blue-600">{{ pendingImportStats()!.updated || 0 }} existing</strong> records.
               This action cannot be undone. Do you want to proceed?
             </p>
 
@@ -480,11 +480,14 @@ export class AdminImportComponent implements OnInit {
     request$.subscribe({
       next: r => {
         this.uploading.set(false);
-        if (isIntercept && (r.updated > 0 || r.imported > 0)) {
+        const importedCount = r.imported || (r as any).inserted || 0;
+        const updatedCount = r.updated || 0;
+        
+        if (isIntercept && (updatedCount > 0 || importedCount > 0)) {
             this.pendingImportStats.set(r);
         } else {
             this.result.set(r);
-            if (this.dryRun && r.failed === 0 && r.imported > 0) {
+            if (this.dryRun && r.failed === 0 && importedCount > 0) {
               this.showDryRunSuccessSnackbar.set(true);
             }
         }

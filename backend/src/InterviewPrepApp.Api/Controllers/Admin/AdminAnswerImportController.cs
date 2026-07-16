@@ -27,7 +27,7 @@ public class AdminAnswerImportController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> ImportAnswers(
         IFormFile file,
-        [FromQuery] bool dryRun = true,
+        [FromForm] bool dryRun = false,
         CancellationToken ct = default)
     {
         if (file == null || file.Length == 0)
