@@ -34,4 +34,5 @@ public interface IAdminCategoryService
     Task<DTOs.Admin.CategoryManageDto> CreateAsync(DTOs.Admin.CreateCategoryDto dto, CancellationToken ct = default);
     Task<DTOs.Admin.CategoryManageDto?> UpdateAsync(int id, DTOs.Admin.UpdateCategoryDto dto, CancellationToken ct = default);
     Task<bool> DeleteAsync(int id, CancellationToken ct = default);
+    Task<int> AutoCategorizeExistingAsync(CancellationToken ct = default);
 }

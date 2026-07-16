@@ -21,9 +21,11 @@ import { GlobalSearchComponent } from '../global-search/global-search.component'
         </button>
 
         <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500">
-          <span class="hover:text-slate-800 cursor-pointer transition-colors">{{ breadcrumbs().parent }}</span>
-          <lucide-icon name="chevron-right" class="text-slate-400" [size]="14"></lucide-icon>
-          <span class="text-slate-800">{{ breadcrumbs().current }}</span>
+          <span class="hover:text-slate-800 cursor-pointer transition-colors" (click)="navigateParent(breadcrumbs().parent)">{{ breadcrumbs().parent }}</span>
+          @if (breadcrumbs().parent !== breadcrumbs().current) {
+            <lucide-icon name="chevron-right" class="text-slate-400" [size]="14"></lucide-icon>
+            <span class="text-slate-800">{{ breadcrumbs().current }}</span>
+          }
         </div>
       </div>
 
@@ -123,6 +125,14 @@ export class TopNavComponent {
 
   toggleSearch(): void {
     this.isSearchOpen.update(v => !v);
+  }
+
+  navigateParent(parent: string): void {
+    if (parent === 'Admin') {
+      this.router.navigate(['/admin/dashboard']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onMenuClick(): void {

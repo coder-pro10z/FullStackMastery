@@ -1,88 +1,115 @@
-import { NgClass, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [NgIf, NgClass],
+  imports: [LucideAngularModule, NgClass],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex items-center justify-between px-4 py-3 sm:px-6">
-      <div class="flex flex-1 justify-between sm:hidden">
-        <button
-          [disabled]="pageNumber <= 1"
-          (click)="onPageChange(pageNumber - 1)"
-          class="relative inline-flex items-center rounded-md border border-slate-700 bg-dark-surface px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Previous
-        </button>
-        <button
-          [disabled]="pageNumber >= totalPages"
-          (click)="onPageChange(pageNumber + 1)"
-          class="relative ml-3 inline-flex items-center rounded-md border border-slate-700 bg-dark-surface px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Next
-        </button>
-      </div>
-      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p class="text-sm text-slate-400">
-            Showing
-            <span class="font-medium text-slate-200">{{ Math.min((pageNumber - 1) * pageSize + 1, totalRecords) }}</span>
-            to
-            <span class="font-medium text-slate-200">{{ Math.min(pageNumber * pageSize, totalRecords) }}</span>
-            of
-            <span class="font-medium text-slate-200">{{ totalRecords }}</span>
-            results
-          </p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-white border rounded-xl border-[#E2E8F0]">
+      <span class="text-sm text-[#5F6368]">{{ paginationSummary }}</span>
+      
+      <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+        
+        <!-- Page Size Options -->
+        <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wider text-[#5F6368]">Per Page</span>
+            @for (size of pageSizeOptions; track size) {
+                <button type="button"
+                    class="px-2.5 py-1 rounded-md text-xs border transition-colors"
+                    [ngClass]="{
+                        'bg-[#1A73E8]/10 text-[#1A73E8] border-[#1A73E8]/30 font-semibold': pageSize === size,
+                        'text-[#5F6368] border-[#E0E0E0] hover:bg-slate-50': pageSize !== size
+                    }"
+                    (click)="onPageSizeChange(size)">
+                    {{ size }}
+                </button>
+            }
         </div>
-        <div>
-          <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <button
-              [disabled]="pageNumber <= 1"
-              (click)="onPageChange(pageNumber - 1)"
-              class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-700 hover:bg-slate-800 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="sr-only">Previous</span>
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
-              </svg>
-            </button>
 
-            <!-- Quick jump text info -->
-            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-inset ring-slate-700 focus:z-20 focus:outline-offset-0">
-              Page {{ pageNumber }} of {{ totalPages }}
-            </span>
+        <!-- Page Jump Input & Nav Buttons -->
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-sm font-medium">
+            <span class="text-slate-500">Page</span>
+            <input type="number" 
+                    class="w-14 h-8 text-center text-sm font-semibold border border-slate-200 rounded-md focus:ring-2 focus:ring-[#1A73E8]/30 focus:border-[#1A73E8] outline-none transition-all"
+                    [value]="currentPage"
+                    (keyup.enter)="onPageJump($event)"
+                    min="1"
+                    [max]="totalPages">
+            <span class="text-slate-400">of {{ totalPages }}</span>
+            </div>
 
-            <button
-              [disabled]="pageNumber >= totalPages"
-              (click)="onPageChange(pageNumber + 1)"
-              class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-700 hover:bg-slate-800 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span class="sr-only">Next</span>
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-              </svg>
+            <div class="flex gap-2">
+            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-800 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                    [disabled]="currentPage <= 1"
+                    (click)="onPrev()">
+                <lucide-icon name="chevron-left" [size]="18"></lucide-icon>
             </button>
-          </nav>
+            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-800 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                    [disabled]="currentPage >= totalPages"
+                    (click)="onNext()">
+                <lucide-icon name="chevron-right" [size]="18"></lucide-icon>
+            </button>
+            </div>
         </div>
       </div>
     </div>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  `
 })
 export class PaginationComponent {
-  Math = Math;
+  @Input({ required: true }) totalItems = 0;
+  @Input({ required: true }) pageSize = 12;
+  @Input({ required: true }) currentPage = 1;
+  @Input({ required: true }) totalPages = 1;
+  @Input() pageSizeOptions: number[] = [12, 24, 48];
 
-  @Input() pageNumber = 1;
-  @Input() pageSize = 10;
-  @Input() totalRecords = 0;
-  @Input() totalPages = 1;
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
 
-  @Output() pageChanged = new EventEmitter<number>();
+  get paginationSummary(): string {
+    if (this.totalItems === 0) return '0 items';
+    const start = (this.currentPage - 1) * this.pageSize + 1;
+    const end = Math.min(start + this.pageSize - 1, this.totalItems);
+    return `${start}-${end} of ${this.totalItems} items`;
+  }
 
-  onPageChange(newPage: number) {
-    if (newPage >= 1 && newPage <= this.totalPages && newPage !== this.pageNumber) {
-      this.pageChanged.emit(newPage);
+  onPageJump(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let page = parseInt(input.value, 10);
+    
+    if (isNaN(page)) {
+      input.value = this.currentPage.toString();
+      return;
+    }
+    
+    if (page < 1) page = 1;
+    if (page > this.totalPages) page = this.totalPages;
+    
+    input.value = page.toString();
+    
+    if (page !== this.currentPage) {
+      this.pageChange.emit(page);
+    }
+  }
+
+  onPrev() {
+    if (this.currentPage > 1) {
+      this.pageChange.emit(this.currentPage - 1);
+    }
+  }
+
+  onNext() {
+    if (this.currentPage < this.totalPages) {
+      this.pageChange.emit(this.currentPage + 1);
+    }
+  }
+
+  onPageSizeChange(size: number) {
+    if (size !== this.pageSize) {
+      this.pageSizeChange.emit(size);
     }
   }
 }

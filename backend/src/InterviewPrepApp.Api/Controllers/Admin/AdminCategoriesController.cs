@@ -43,4 +43,11 @@ public class AdminCategoriesController : ControllerBase
             ? NoContent()
             : BadRequest(new { error = "Cannot delete category with existing questions." });
     }
+
+    [HttpPost("auto-categorize")]
+    public async Task<IActionResult> AutoCategorize(CancellationToken ct)
+    {
+        var updatedCount = await _service.AutoCategorizeExistingAsync(ct);
+        return Ok(new { message = $"Successfully auto-categorized {updatedCount} questions based on tags.", updatedCount });
+    }
 }

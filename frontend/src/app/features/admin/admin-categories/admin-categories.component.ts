@@ -27,10 +27,20 @@ import {
           <h1 class="text-2xl font-semibold tracking-tight text-[#202124]">Categories</h1>
           <p class="text-sm text-[#5F6368] mt-1">Manage the hierarchical question taxonomy</p>
         </div>
-        <button id="cat-new-btn" (click)="showForm.set(!showForm())" class="btn btn-primary flex items-center gap-2">
-          <lucide-icon name="plus" [size]="16" />
-          New Category
-        </button>
+        <div class="flex items-center gap-3">
+          <button id="cat-auto-btn" (click)="autoCategorize()" [disabled]="autoCategorizing()" class="btn btn-outline flex items-center gap-2">
+            @if (autoCategorizing()) {
+              <lucide-icon name="loader" [size]="16" class="animate-spin" />
+            } @else {
+              <lucide-icon name="wand-2" [size]="16" />
+            }
+            Auto-Categorize
+          </button>
+          <button id="cat-new-btn" (click)="showForm.set(!showForm())" class="btn btn-primary flex items-center gap-2">
+            <lucide-icon name="plus" [size]="16" />
+            New Category
+          </button>
+        </div>
       </div>
 
       <!-- Inline Create Form -->
@@ -140,6 +150,7 @@ export class AdminCategoriesComponent implements OnInit {
   readonly categories = signal<CategoryManageDto[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
+  readonly autoCategorizing = signal(false);
   readonly showForm = signal(false);
 
   newName = '';
@@ -189,9 +200,27 @@ export class AdminCategoriesComponent implements OnInit {
   }
 
   cancelForm(): void {
+    this.showForm.set(false);
     this.newName = '';
     this.newSlug = '';
     this.newParentId = null;
-    this.showForm.set(false);
+  }
+
+  autoCategorize(): void {
+    if (!confirm('This will scan all questions and assign them to the deepest matching category based on their tags. Continue?')) return;
+    
+    this.autoCategorizing.set(true);
+    this.api.autoCategorizeExisting().subscribe({
+      next: (res: any) => {
+        alert(res.message);
+        this.load();
+        this.autoCategorizing.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Failed to auto-categorize. Check console for details.');
+        this.autoCategorizing.set(false);
+      }
+    });
   }
 }

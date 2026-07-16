@@ -14,13 +14,14 @@ import { QuestionService } from '../../core/services/question.service';
 import { ActionToggleComponent } from '../../shared/components/action-toggle/action-toggle.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
 import { QuestionBadgeComponent } from '../../shared/components/question-badge/question-badge.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-question-bank',
   standalone: true,
   imports: [
     AsyncPipe, NgClass, NgIf, SlicePipe, LucideAngularModule,
-    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent
+    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent
   ],
   animations: [
     trigger('expandCollapse', [
@@ -145,6 +146,14 @@ export class QuestionBankComponent {
     this.pagination$.next({
       ...this.pagination$.value,
       pageNumber: currentPage + 1
+    });
+  }
+
+  goToPage(page: number) {
+    if (page < 1) return;
+    this.pagination$.next({
+      ...this.pagination$.value,
+      pageNumber: page
     });
   }
 

@@ -36,7 +36,8 @@ import {
   UserCircle,
   Briefcase,
   ListChecks,
-  RefreshCw
+  RefreshCw,
+  Wand2
 } from 'lucide-angular';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
@@ -94,7 +95,8 @@ export const appConfig: ApplicationConfig = {
       UserCircle,
       Briefcase,
       ListChecks,
-      RefreshCw
+      RefreshCw,
+      Wand2
     })),
 
     // ── Import Pipeline Providers ────────────────────────────────────────────

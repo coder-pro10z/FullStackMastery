@@ -161,13 +161,62 @@ public class AdminCategoryService : IAdminCategoryService
         return true;
     }
 
-    private static CategoryManageDto ToDto(Domain.Entities.Category c, IReadOnlyList<Domain.Entities.Category> all) => new()
+    public async Task<int> AutoCategorizeExistingAsync(CancellationToken ct = default)
     {
-        Id = c.Id,
-        Name = c.Name,
-        Slug = c.Slug,
-        ParentId = c.ParentId,
-        QuestionCount = c.Questions.Count,
-        SubCategories = all.Where(x => x.ParentId == c.Id).Select(x => ToDto(x, all)).ToList()
-    };
+        var categories = await _db.Categories.ToListAsync(ct);
+        var categoryMap = categories.ToDictionary(c => c.Slug.ToLower(), c => c.Id);
+        
+        var questions = await _db.Questions
+            .Include(q => q.QuestionTags)
+            .ThenInclude(qt => qt.Tag)
+            .ToListAsync(ct);
+
+        int updatedCount = 0;
+
+        foreach (var q in questions)
+        {
+            if (q.QuestionTags == null || !q.QuestionTags.Any()) continue;
+
+            bool tagMatched = false;
+            foreach (var qt in q.QuestionTags)
+            {
+                var tag = qt.Tag?.Name;
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+
+                var tagKey = tag.ToLower().Replace(" ", "-");
+                if (categoryMap.TryGetValue(tagKey, out var matchedId) ||
+                    categoryMap.TryGetValue(tag.ToLower(), out matchedId))
+                {
+                    if (q.CategoryId != matchedId)
+                    {
+                        q.CategoryId = matchedId;
+                        updatedCount++;
+                    }
+                    tagMatched = true;
+                    break;
+                }
+            }
+        }
+
+        if (updatedCount > 0)
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+
+        return updatedCount;
+    }
+
+    private static CategoryManageDto ToDto(Domain.Entities.Category c, IReadOnlyList<Domain.Entities.Category> all) 
+    {
+        var subCategories = all.Where(x => x.ParentId == c.Id).Select(x => ToDto(x, all)).ToList();
+        return new CategoryManageDto
+        {
+            Id = c.Id,
+            Name = c.Name,
+            Slug = c.Slug,
+            ParentId = c.ParentId,
+            QuestionCount = c.Questions.Count + subCategories.Sum(s => s.QuestionCount),
+            SubCategories = subCategories
+        };
+    }
 }

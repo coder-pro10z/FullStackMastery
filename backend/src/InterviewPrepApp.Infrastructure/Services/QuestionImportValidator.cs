@@ -73,22 +73,42 @@ public class QuestionImportValidator : IQuestionImportValidator
             }
 
             // ── Category resolution ──
-            int categoryId;
+            int categoryId = 0;
             if (!string.IsNullOrWhiteSpace(row.CategorySlug) &&
                 categoryMap.TryGetValue(row.CategorySlug.ToLower(), out var catId))
             {
                 categoryId = catId;
             }
-            else if (defaultCategoryId.HasValue)
-            {
-                result.Warnings.Add($"Row {rowNum}: Category '{row.CategorySlug}' not found — using default.");
-                categoryId = defaultCategoryId.Value;
-            }
             else
             {
-                result.Errors.Add($"Row {rowNum}: Category '{row.CategorySlug}' not found and no default set — skipped.");
-                result.Failed++;
-                continue;
+                // Try to resolve using tags
+                bool tagMatched = false;
+                foreach (var tag in row.Tags)
+                {
+                    var tagKey = tag.ToLower().Replace(" ", "-");
+                    if (categoryMap.TryGetValue(tagKey, out var matchedId) ||
+                        categoryMap.TryGetValue(tag.ToLower(), out matchedId))
+                    {
+                        categoryId = matchedId;
+                        tagMatched = true;
+                        break;
+                    }
+                }
+
+                if (!tagMatched)
+                {
+                    if (defaultCategoryId.HasValue)
+                    {
+                        result.Warnings.Add($"Row {rowNum}: Category '{row.CategorySlug}' and tags not found — using default.");
+                        categoryId = defaultCategoryId.Value;
+                    }
+                    else
+                    {
+                        result.Errors.Add($"Row {rowNum}: Category '{row.CategorySlug}' and tags not found and no default set — skipped.");
+                        result.Failed++;
+                        continue;
+                    }
+                }
             }
 
             // ── Valid record ──

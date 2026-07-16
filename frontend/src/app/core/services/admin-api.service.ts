@@ -194,6 +194,10 @@ export class AdminApiService {
         return this.http.delete<void>(`${this.base}/categories/${id}`);
     }
 
+    autoCategorizeExisting(): Observable<{ message: string; updatedCount: number }> {
+        return this.http.post<{ message: string; updatedCount: number }>(`${this.base}/categories/auto-categorize`, {});
+    }
+
     // ── Public categories (for existing dropdowns) ─────────────────────────────
     getCategoriesForDropdown(): Observable<{ id: number; name: string }[]> {
         return this.http.get<{ id: number; name: string }[]>(`${environment.apiUrl}/categories`);
