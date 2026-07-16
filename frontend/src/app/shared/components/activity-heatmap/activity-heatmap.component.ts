@@ -40,8 +40,9 @@ export class ActivityHeatmapComponent implements OnInit, OnChanges {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       
-      const dateString = date.toISOString().split('T')[0];
-      const count = this.config.data[dateString] || 0;
+    const d = new Date(date);
+    const dateString = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const count = this.config.data[dateString] || 0;
       
       this.cells.push({
         date: date,

@@ -102,6 +102,12 @@ import { HttpErrorResponse } from '@angular/common/http';
                           <lucide-icon name="circle-check" [size]="14"></lucide-icon>
                           {{ log.inserted }}
                         </span>
+                        @if (log.updated > 0) {
+                          <span class="flex items-center gap-1 text-blue-600" title="Updated">
+                            <lucide-icon name="refresh-cw" [size]="14"></lucide-icon>
+                            {{ log.updated }}
+                          </span>
+                        }
                         @if (log.skipped > 0) {
                           <span class="flex items-center gap-1 text-amber-600" title="Skipped">
                             <lucide-icon name="skip-forward" [size]="14"></lucide-icon>
@@ -117,12 +123,17 @@ import { HttpErrorResponse } from '@angular/common/http';
                       </div>
                     </td>
                     <td class="px-6 py-4 text-right">
-                      @if (log.contentCompletenessSummaryJson || log.errorSummaryJson || log.warningSummaryJson) {
-                        <button (click)="viewDetails(log)" class="text-[#1A73E8] hover:text-blue-800 font-medium text-xs flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                          View details
-                          <lucide-icon name="chevron-right" [size]="14"></lucide-icon>
-                        </button>
-                      }
+                        @if (log.contentCompletenessSummaryJson || log.errorSummaryJson || log.warningSummaryJson) {
+                          <button (click)="viewDetails(log)" class="text-[#1A73E8] hover:text-blue-800 font-medium text-xs flex items-center gap-1 ml-auto transition-colors">
+                            View details
+                            <lucide-icon name="chevron-right" [size]="14"></lucide-icon>
+                          </button>
+                        } @else {
+                          <button disabled class="text-slate-400 font-medium text-xs flex items-center gap-1 ml-auto cursor-not-allowed">
+                            View details
+                            <lucide-icon name="chevron-right" [size]="14"></lucide-icon>
+                          </button>
+                        }
                     </td>
                   </tr>
                 }
@@ -162,6 +173,26 @@ import { HttpErrorResponse } from '@angular/common/http';
           </div>
           
           <div class="p-6 overflow-y-auto flex-1 space-y-6 text-sm">
+            @if (!selectedLog()?.errorSummaryJson && !selectedLog()?.warningSummaryJson) {
+              <div class="p-5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600 mt-0.5">
+                  <lucide-icon name="check-circle" [size]="16"></lucide-icon>
+                </div>
+                <div>
+                  <h4 class="font-bold text-emerald-800 mb-1">Clean Import Run</h4>
+                  <p class="text-emerald-700 leading-relaxed">
+                    Successfully processed all rows without any warnings or errors.
+                    <br><br>
+                    <strong>Breakdown:</strong><br>
+                    • Inserted: {{ selectedLog()?.inserted }} new records<br>
+                    • Updated: {{ selectedLog()?.updated }} existing records<br>
+                    • Skipped: {{ selectedLog()?.skipped }} records<br>
+                    <br>
+                    Total Rows: {{ selectedLog()?.totalRows }}
+                  </p>
+                </div>
+              </div>
+            }
             @if (selectedLog()?.errorSummaryJson) {
               <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
                 <h4 class="font-semibold text-red-800 mb-1 flex items-center gap-2">

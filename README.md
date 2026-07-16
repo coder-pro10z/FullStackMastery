@@ -32,7 +32,7 @@ FullStack Mastery is a comprehensive, production-ready Full Stack application (A
 - [ADMIN.md](docs/Features/ADMIN.md) — Admin subsystem details, legacy vs new controllers, and import paths.
 - [CheatSheet.md](docs/Features/CheatSheet.md) — Specification for the CheatSheet Hub (metadata + file upload).
 - [QUIZ.md](docs/Features/QUIZ.md) — Specification for the self-assessed quiz MVP (Practice and Assessment modes).
-- [ImportModule_ValidationPlan.md](docs/Features/ImportModule_ValidationPlan.md) — Deep dive into the 6-stage validation pipeline for imports.
+- [ImportModule_ValidationPlan.md](docs/Features/ImportModule_ValidationPlan.md) — Deep dive into the 6-stage validation pipeline for imports (now featuring Intelligent UPSERT logic and Dry Run Modal Intercepts).
 
 ## 7. Where the workflows live
 - [APPLICATION_FLOW.md](docs/Workflows/APPLICATION_FLOW.md) — End-to-end user journeys (auth, study, content management).

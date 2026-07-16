@@ -36,4 +36,16 @@ public class DashboardController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Returns live dynamic dashboard stats (e.g., Q&A pair count).
+    /// GET api/dashboard/stats
+    /// </summary>
+    [HttpGet("stats")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDashboardStats(CancellationToken cancellationToken)
+    {
+        var result = await _dashboardService.GetDashboardStatsAsync(cancellationToken);
+        return Ok(result);
+    }
 }

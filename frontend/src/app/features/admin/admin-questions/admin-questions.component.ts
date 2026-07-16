@@ -150,20 +150,36 @@ import { QuestionModalComponent } from './components/question-modal/question-mod
           <!-- Pagination -->
           @if (result()!.totalPages > 1) {
             <div class="flex items-center justify-between px-6 py-3 border-t border-[#E0E0E0] bg-[#F8F9FA]">
+              <!-- Left: Total Records Info -->
               <span class="text-xs text-[#5F6368]">
-                Page {{ result()!.pageNumber }} of {{ result()!.totalPages }} &middot; {{ result()!.totalRecords }} total
+                {{ result()!.totalRecords }} total questions
               </span>
-              <div class="flex gap-2">
+
+              <!-- Right: Interactive Pagination Cluster -->
+              <div class="flex items-center gap-3">
                 <button
                   (click)="page(result()!.pageNumber - 1)"
                   [disabled]="result()!.pageNumber <= 1"
-                  class="btn btn-secondary px-3 py-1.5 text-xs disabled:opacity-40">
+                  class="btn btn-secondary px-3 py-1 text-xs disabled:opacity-40">
                   ← Prev
                 </button>
+                
+                <div class="flex items-center gap-2 text-xs text-[#5F6368] font-medium">
+                  <span>Page</span>
+                  <input type="number" 
+                         [value]="result()!.pageNumber"
+                         (change)="onPageInputChange($event)"
+                         (keyup.enter)="onPageInputChange($event)"
+                         min="1" 
+                         [max]="result()!.totalPages"
+                         class="w-12 text-center border border-slate-300 rounded py-1 px-1 focus:outline-none focus:ring-2 focus:ring-[#1A73E8]" />
+                  <span>of {{ result()!.totalPages }}</span>
+                </div>
+
                 <button
                   (click)="page(result()!.pageNumber + 1)"
                   [disabled]="result()!.pageNumber >= result()!.totalPages"
-                  class="btn btn-secondary px-3 py-1.5 text-xs disabled:opacity-40">
+                  class="btn btn-secondary px-3 py-1 text-xs disabled:opacity-40">
                   Next →
                 </button>
               </div>
@@ -199,7 +215,7 @@ export class AdminQuestionsComponent implements OnInit {
   readonly showModal = signal(false);
   readonly editingQuestion = signal<QuestionAdminDto | null>(null);
 
-  filter: AdminQuestionFilter = { page: 1, pageSize: 20 };
+  filter: AdminQuestionFilter = { page: 1, pageSize: 20, difficulty: '', status: '' };
 
   ngOnInit(): void {
     this.loadQuestions();
@@ -228,6 +244,24 @@ export class AdminQuestionsComponent implements OnInit {
   page(p: number): void {
     this.filter.page = p;
     this.loadQuestions();
+  }
+
+  onPageInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let targetPage = parseInt(input.value, 10);
+    const total = this.result()?.totalPages || 1;
+
+    if (isNaN(targetPage) || targetPage < 1) {
+      targetPage = 1;
+      input.value = '1';
+    } else if (targetPage > total) {
+      targetPage = total;
+      input.value = total.toString();
+    }
+
+    if (targetPage !== this.result()?.pageNumber) {
+      this.page(targetPage);
+    }
   }
 
   openCreate(): void {

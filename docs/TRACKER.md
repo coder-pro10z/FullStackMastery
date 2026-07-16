@@ -85,8 +85,8 @@
 | `QuestionsController` — filtered + paged | ✅ | `[FromQuery]` params |
 | `UserProgressController` — summary + toggles | ✅ | `[Authorize]` protected |
 | `AdminController` — import questions (legacy) | ✅ | Excel upload endpoint (direct entity insert) |
-| `AdminImportController` — unified import | ✅ | Supports `.xlsx`, `.csv`, `.json` for Questions and Answers. Dry Run. |
-| `AdminImportLogsController` | ✅ | Tracks import job status, errors, and completeness |
+| `AdminImportController` — unified import | ✅ | Supports `.xlsx`, `.csv`, `.json` for Questions and Answers. Includes intelligent UPSERT Engine and Dry Run intercept. |
+| `AdminImportLogsController` | ✅ | Tracks import job status, errors, and granular Updated vs Inserted records. |
 | `AdminQuestionsController` — CRUD | 🔄 | - [x] Fix UTC DateTime DbUpdateException for `InterviewDate` in AdminInterviewsController.<br>- [ ] Fix `00000000-0000-0000-0000-000000000000` (Guid.Empty) leaking into UI state causing 404/500 errors on PUT/POST requests. |
 | `AdminCategoriesController` — tree + CRUD | ✅ | Hierarchical management |
 | `AdminDashboardController` — stats | ✅ | Dashboard analytics |
@@ -113,7 +113,7 @@
 | `QuestionService` | ✅ | Paged/filtered question data |
 | `ProgressService` | ✅ | Summary + toggle progress |
 | `AdminService` | ✅ | Import + category dropdown |
-| `AdminApiService` | ✅ | Admin CRUD operations |
+| `AdminApiService` | ✅ | Admin CRUD operations (includes Dry Run intercept logic) |
 
 ---
 

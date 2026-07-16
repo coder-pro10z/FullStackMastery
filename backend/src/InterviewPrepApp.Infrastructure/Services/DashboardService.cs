@@ -34,4 +34,17 @@ public sealed class DashboardService : IDashboardService
 
         return hexagon?.ToTechStackDto();
     }
+
+    /// <inheritdoc />
+    public async Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken cancellationToken = default)
+    {
+        var completedPairsCount = await _dbContext.Questions
+            .AsNoTracking()
+            .CountAsync(q => q.Answer != null && !q.IsDeleted, cancellationToken);
+
+        return new DashboardStatsDto
+        {
+            QuestionsWithAnswersCount = completedPairsCount
+        };
+    }
 }

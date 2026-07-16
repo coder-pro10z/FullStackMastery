@@ -14,4 +14,9 @@ public interface IDashboardService
     /// <param name="cancellationToken">Cancellation token for async operations.</param>
     /// <returns>The complete tech-stack DTO, or null if no data exists.</returns>
     Task<TechStackDto?> GetTechStackAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves live dashboard metrics from the database (e.g. Q&A pairs count).
+    /// </summary>
+    Task<DashboardStatsDto> GetDashboardStatsAsync(CancellationToken cancellationToken = default);
 }

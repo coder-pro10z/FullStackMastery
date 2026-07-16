@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize, take } from 'rxjs';
-import { ITechStackResponse } from '../models/dashboard.model';
+import { ITechStackResponse, IDashboardStats } from '../models/dashboard.model';
 import { ApiService } from '../services/api.service';
 
 @Injectable({
@@ -20,6 +20,9 @@ export class DashboardStore {
   readonly isLoading = computed(() => this.loadingState());
   readonly errorMsg = computed(() => this.errorState());
 
+  private statsState = signal<IDashboardStats | null>(null);
+  readonly dashboardStats = computed(() => this.statsState());
+
   loadTechStack(): void {
     this.loadingState.set(true);
     this.errorState.set(null);
@@ -35,6 +38,13 @@ export class DashboardStore {
           const message = error instanceof Error ? error.message : 'Failed to load tech stack data';
           this.errorState.set(message);
         }
+      });
+
+    this.apiService.getDashboardStats()
+      .pipe(take(1))
+      .subscribe({
+        next: (stats) => this.statsState.set(stats),
+        error: (error) => console.error('Failed to load dashboard stats', error)
       });
   }
 }

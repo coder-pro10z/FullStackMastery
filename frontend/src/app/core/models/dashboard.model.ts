@@ -16,3 +16,7 @@ export interface ISkillCategory {
   interview_gotcha: string;
   key_topics: string[];
 }
+
+export interface IDashboardStats {
+  questionsWithAnswersCount: number;
+}

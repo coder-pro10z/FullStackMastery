@@ -13,7 +13,7 @@
     <!-- Top Stat Row -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <app-stat-card [data]="questionsStat()"></app-stat-card>
-        <app-streak-counter [currentStreak]="currentStreak()" [bestStreak]="bestStreak()"></app-streak-counter>
+        <app-streak-counter [currentStreak]="heatmapConfig().stats.currentStreak" [bestStreak]="heatmapConfig().stats.bestStreak"></app-streak-counter>
         <app-stat-card [data]="topicsStat()"></app-stat-card>
         <app-stat-card [data]="accuracyStat()"></app-stat-card>
     </section>
@@ -29,6 +29,10 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-semibold text-[#202124]">Activity History</h2>
                     <div class="flex gap-2">
+                        <button (click)="addContribution()" class="btn btn-primary px-3 py-1 rounded-md text-xs font-medium flex items-center gap-1 transition-transform active:scale-95">
+                          <lucide-icon name="plus" [size]="14"></lucide-icon>
+                          Activity
+                        </button>
                         <div class="flex bg-white border border-[#E0E0E0] p-0.5 rounded-lg">
                             <button (click)="changeHeatmapLayout('vertical')" 
                                 [class]="heatmapConfig().layout === 'vertical' ? 'text-[#202124] bg-[#F8F9FA] shadow-sm' : 'text-[#5F6368] hover:text-[#202124]'"

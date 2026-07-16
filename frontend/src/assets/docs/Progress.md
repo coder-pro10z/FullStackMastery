@@ -14,10 +14,13 @@ This document tracks the end-to-end migration of the EduDash platform from its o
 
 ### Things Done:
 - **API Pipeline Creation:** Scaffolded the core API endpoints to serve data tailored for the frontend dashboards.
+- **Admin Subsystem Refactoring:** Created standalone admin pages to handle import logic safely and predictably.
+- **Dry Run & Premium Confirmation:** Added background dry-run intercepts with a `glass-panel-interactive` modal to warn administrators before overwriting live database records.
 - **Data Contracts:** Modeled internal domain entities and created tailored Application Layer DTOs that strictly map to the `tech-stack.json` requirements.
 - **Infrastructure:** Implemented fast data-access repository patterns and EF Core bindings.
 - **MCQ Hardening:** Refactored the core Quiz/MCQ logic for secure, server-side grading and answer validation.
-- **Import Utility Pipeline:** Built and tested a robust Excel import utility (with SHA-256 deduplication and idempotent workers) to rapidly ingest questions for the new interface.
+- **Import Utility Pipeline:** Built and tested a robust Excel/JSON import utility (with SHA-256 deduplication and idempotent workers) to rapidly ingest questions for the new interface.
+- **Intelligent UPSERT Engine:** Upgraded the Bulk Import system to support deep database updates (modifying scalar fields and M:N tags) on duplicates, eliminating collisions and duplicate entities.
 
 ### Directories Touched/Created (Backend):
 - `/Application/DTOs/` - Data Transfer Objects for frontend consumption
@@ -54,6 +57,10 @@ This document tracks the end-to-end migration of the EduDash platform from its o
   - `<app-radar-chart>` (Sub-component)
   - `<app-streak-counter>` (Sub-component)
   - `<app-continue-learning>` (Sub-component)
+- **Features Completed:**
+  - Implemented dynamic LocalStorage-backed Activity Heatmap.
+  - Built real-time Streak Calculation Engine to replace hardcoded heatmap metrics.
+  - Built dynamic Live Dashboard Stats API (`api/dashboard/stats`) to stream real-time Q&A pairing counts directly to the Dashboard UI cards.
 - **Directories Created:**
   - `src/app/features/dashboard/`
   - `src/app/features/dashboard/components/...`

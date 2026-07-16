@@ -133,6 +133,7 @@ We will modify the Node.js transformation script to map and overwrite the legacy
 
 ## Plan 5: Standardize Question Titles and Text
 *Date: 2026-07-16*
+**Status:** ✅ Completed
 
 This plan details how we will clean up the legacy `Q <DOMAIN> <TOPIC>?` format currently polluting the question fields in our `questions.json` seed data, utilizing UI tags and Title Case formatting.
 
@@ -164,6 +165,7 @@ This plan details how we will clean up the legacy `Q <DOMAIN> <TOPIC>?` format c
 
 ## Plan 6: UPSERT Import & Premium Confirmation Modal
 *Date: 2026-07-16*
+**Status:** ✅ Completed
 
 This plan outlines how to modify the bulk import pipeline to support UPSERTs (updating existing questions instead of skipping them) and seamlessly integrating a Premium Confirmation Modal in the Angular Admin UI to warn the user before overwriting existing data.
 

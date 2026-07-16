@@ -1,1 +1,5 @@
 /* Tailwind styles only */
+:host {
+  display: block;
+  height: 100%;
+}

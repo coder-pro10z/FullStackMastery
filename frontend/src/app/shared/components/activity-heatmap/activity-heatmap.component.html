@@ -15,7 +15,7 @@
         <!-- Streak Indicator -->
         <div class="flex items-center gap-2 bg-[#FFFAF0] border border-[#FBBC05]/30 px-3 py-1.5 rounded-full shadow-sm">
             <lucide-icon name="flame" [size]="16" class="text-[#FBBC05] fill-[#FBBC05]/20"></lucide-icon>
-            <span class="text-sm font-bold text-[#b58500]">12 Day Streak</span>
+            <span class="text-sm font-bold text-[#b58500]">{{ config.stats.currentStreak }} Day Streak</span>
         </div>
     </div>
 
@@ -23,21 +23,15 @@
     <div class="grid grid-cols-3 gap-4 mb-8">
         <div class="bg-[#F8F9FA] rounded-xl p-4 border border-[#E0E0E0]/50 hover:bg-white hover:shadow-md transition-all">
             <p class="text-xs text-[#5F6368] font-medium uppercase tracking-wider mb-1">Total Commits</p>
-            <p class="text-2xl font-bold text-[#202124]">842</p>
-            <div class="flex items-center gap-1 mt-1 text-[#34A853]">
-                <lucide-icon name="trending-up" [size]="14"></lucide-icon>
-                <span class="text-xs font-semibold">+14% this month</span>
-            </div>
+            <p class="text-2xl font-bold text-[#202124]">{{ config.stats.totalCommits }}</p>
         </div>
         <div class="bg-[#F8F9FA] rounded-xl p-4 border border-[#E0E0E0]/50 hover:bg-white hover:shadow-md transition-all">
             <p class="text-xs text-[#5F6368] font-medium uppercase tracking-wider mb-1">Best Streak</p>
-            <p class="text-2xl font-bold text-[#202124]">24 <span class="text-sm font-medium text-[#5F6368] normal-case">days</span></p>
-            <p class="text-xs text-[#5F6368] mt-1 font-medium">Oct 12 - Nov 4, 2025</p>
+            <p class="text-2xl font-bold text-[#202124]">{{ config.stats.bestStreak }} <span class="text-sm font-medium text-[#5F6368] normal-case">days</span></p>
         </div>
         <div class="bg-[#F8F9FA] rounded-xl p-4 border border-[#E0E0E0]/50 hover:bg-white hover:shadow-md transition-all">
             <p class="text-xs text-[#5F6368] font-medium uppercase tracking-wider mb-1">Active Days</p>
-            <p class="text-2xl font-bold text-[#202124]">142 <span class="text-sm font-medium text-[#5F6368] normal-case">/ 365</span></p>
-            <p class="text-xs text-[#5F6368] mt-1 font-medium">Top 5% of users</p>
+            <p class="text-2xl font-bold text-[#202124]">{{ config.stats.activeDays }} <span class="text-sm font-medium text-[#5F6368] normal-case">/ 365</span></p>
         </div>
     </div>
 

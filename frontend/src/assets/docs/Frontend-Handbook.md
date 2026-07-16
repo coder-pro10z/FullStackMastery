@@ -370,6 +370,18 @@ readonly count = input<number>(0);
 <button class="btn btn-ghost">Learn More</button>
 ```
 
+### Grid Alignment & Component Stretching
+When custom angular components (like `<app-stat-card>`) are placed inside a CSS Grid, they must automatically stretch to fill the grid cell to maintain a premium, uniform layout.
+
+**Rule:** Always add the following to the SCSS of custom wrapper components:
+```scss
+:host {
+  display: block;
+  height: 100%;
+}
+```
+And add `h-full` to their primary internal DOM wrapper (e.g. `<div class="edudash-card h-full ...">`) so that the visual card accurately matches the stretched height of the host container.
+
 ### Card Pattern
 ```html
 <div class="edudash-card">
