@@ -33,6 +33,7 @@ Software engineers preparing for Full Stack .NET and Angular interviews face a f
 **FullStack Mastery** solves this with a centralized, distraction-free web platform providing:
 
 - A curated, hierarchically organized question bank for `.NET` and `Angular` roles
+- A Curated 30-Day Challenge (The Permanent Competency Index mapping 75 core skills)
 - Per-user progress tracking (solved / revision) with optimistic UI updates
 - A Quiz & Assessment engine with Practice and Assessment modes
 - An admin-grade bulk import pipeline supporting `.xlsx`, `.csv`, and `.json`
@@ -67,6 +68,7 @@ This repository serves a dual purpose: a functional study tool **and** a showcas
 | CheatSheet backend (API + DB) | `GET /api/resources`, `POST/DELETE /api/admin/resources` — fully wired |
 | Quiz backend (domain + API) | Entities, scoring, attempt lifecycle — fully wired |
 | Quiz frontend (all 3 screens) | Setup → Player → Review flow live at `/quiz/*` |
+| 30-Day Challenge (Competency Index) | Full 75-competency tracker, streak calculation, SVG progress ring, routing |
 
 ### 🔄 Implemented — Hardening In Progress
 
@@ -214,6 +216,10 @@ Interview_PrepApp/
 | `QuizAttempt` | ✅ | `UserId`, `Mode (Practice\|Assessment)`, `StartedAt`, `CompletedAt`, `Score`, `ExpiresAtUtc` |
 | `QuizQuestion` | ✅ | Bridge entity: `QuizAttemptId` → `OriginalQuestionId` (read-only reference) |
 | `QuizUserAnswer` | ✅ | Per-question attempt response |
+| `Competency` | ✅ | Permanent index (75 rows). `CompetencyId` (e.g. C07) |
+| `ChallengeDay` | ✅ | Structured 30-day curriculum |
+| `ChallengeDayCompetency` | ✅ | Bridge entity: `ChallengeDayId` ↔ `CompetencyId` |
+| `UserChallengeProgress` | ✅ | Composite PK `(UserId, ChallengeDayId)` |
 
 ### EF Core Rules
 

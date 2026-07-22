@@ -169,6 +169,7 @@ namespace InterviewPrepApp.Api
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IAdminCategoryService, InterviewPrepApp.Infrastructure.Services.AdminCategoryService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IQuizService, InterviewPrepApp.Infrastructure.Services.QuizService>();
             builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.ICheatSheetService, InterviewPrepApp.Infrastructure.Services.CheatSheetService>();
+            builder.Services.AddScoped<InterviewPrepApp.Application.Interfaces.IChallengeService, InterviewPrepApp.Infrastructure.Services.ChallengeService>();
 
             // Enterprise Import system — async job pipeline
             var importChannel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions { SingleReader = true });

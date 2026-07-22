@@ -36,6 +36,12 @@ export const routes: Routes = [
         data: { title: 'Dashboard' }
       },
       {
+        path: 'challenge',
+        loadComponent: () =>
+          import('./features/thirty-day-challenge/thirty-day-challenge.component').then(m => m.ThirtyDayChallengeComponent),
+        data: { title: '30-Day Challenge' }
+      },
+      {
         path: 'learning-lab',
         loadComponent: () =>
           import('./features/learning-lab/learning-lab.component').then(m => m.LearningLabComponent),

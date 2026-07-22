@@ -47,6 +47,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<PrimaryMetric> PrimaryMetrics => Set<PrimaryMetric>();
 
+    // ── 30-DAY CHALLENGE MODULE ───────────────────────────────────────────
+    public DbSet<Competency> Competencies => Set<Competency>();
+    public DbSet<ChallengeDay> ChallengeDays => Set<ChallengeDay>();
+    public DbSet<ChallengeDayCompetency> ChallengeDayCompetencies => Set<ChallengeDayCompetency>();
+    public DbSet<UserChallengeProgress> UserChallengeProgresses => Set<UserChallengeProgress>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -334,6 +340,62 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         });
 
         SeedData(builder);
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  30-DAY CHALLENGE MODULE — Entity Configurations & Seed Data
+        // ─────────────────────────────────────────────────────────────────────
+
+        // Competency — unique index on CompetencyId string
+        builder.Entity<Competency>(entity =>
+        {
+            entity.HasIndex(c => c.CompetencyId).IsUnique();
+            entity.Property(c => c.CompetencyId).HasMaxLength(10);
+            entity.Property(c => c.Title).HasMaxLength(300);
+            entity.HasData(ChallengeSeeder.GetSeedCompetencies());
+        });
+
+        // ChallengeDay
+        builder.Entity<ChallengeDay>(entity =>
+        {
+            entity.HasIndex(d => d.DayNumber).IsUnique();
+            entity.Property(d => d.Title).HasMaxLength(200);
+            entity.Property(d => d.MainFocus).HasMaxLength(500);
+            entity.HasData(ChallengeSeeder.GetSeedChallengeDays());
+        });
+
+        // ChallengeDayCompetency — bridge table
+        builder.Entity<ChallengeDayCompetency>(entity =>
+        {
+            entity.HasOne(dc => dc.ChallengeDay)
+                  .WithMany(d => d.ChallengeDayCompetencies)
+                  .HasForeignKey(dc => dc.ChallengeDayId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(dc => dc.Competency)
+                  .WithMany(c => c.ChallengeDayCompetencies)
+                  .HasForeignKey(dc => dc.CompetencyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasData(ChallengeSeeder.GetSeedChallengeDayCompetencies());
+        });
+
+        // UserChallengeProgress — composite PK (UserId, ChallengeDayId)
+        builder.Entity<UserChallengeProgress>(entity =>
+        {
+            entity.HasKey(p => new { p.UserId, p.ChallengeDayId });
+
+            entity.HasOne(p => p.User)
+                  .WithMany()
+                  .HasForeignKey(p => p.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(p => p.ChallengeDay)
+                  .WithMany(d => d.UserProgresses)
+                  .HasForeignKey(p => p.ChallengeDayId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(p => p.Notes).HasMaxLength(2000);
+        });
     }
 
 

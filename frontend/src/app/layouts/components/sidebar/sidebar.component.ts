@@ -213,12 +213,13 @@ export class SidebarComponent {
 
   // ── Student nav items ─────────────────────────────────────────────────
   readonly prepItems: NavItem[] = [
-    { path: '/dashboard',        label: 'Dashboard',        icon: 'layout-dashboard' },
-    { path: '/learning-lab',     label: 'Learning Lab',     icon: 'book-open' },
-    { path: '/question-bank',    label: 'Question Bank',    icon: 'database' },
-    { path: '/skill-tree',       label: 'Skill Tree',       icon: 'git-branch' },
-    { path: '/interview-canvas', label: 'Interview Canvas', icon: 'monitor' },
-    { path: '/quiz',             label: 'Assessment Quiz',  icon: 'list-checks', badge: 'New' },
+    { path: '/dashboard',        label: 'Dashboard',          icon: 'layout-dashboard' },
+    { path: '/challenge',        label: '30-Day Challenge',   icon: 'flame',            badge: 'Streak' },
+    { path: '/learning-lab',     label: 'Learning Lab',       icon: 'book-open' },
+    { path: '/question-bank',    label: 'Question Bank',      icon: 'database' },
+    { path: '/skill-tree',       label: 'Skill Tree',         icon: 'git-branch' },
+    { path: '/interview-canvas', label: 'Interview Canvas',   icon: 'monitor' },
+    { path: '/quiz',             label: 'Assessment Quiz',    icon: 'list-checks', badge: 'New' },
   ];
 
   readonly toolItems: NavItem[] = [
