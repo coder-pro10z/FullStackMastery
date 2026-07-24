@@ -17,6 +17,7 @@ import { AsyncTimelineComponent } from '../../sub-components/concept-visualizers
 import { GcVisualizerComponent } from '../../sub-components/concept-visualizers/gc-visualizer/gc-visualizer.component';
 import { JwtVisualizerComponent } from '../../sub-components/concept-visualizers/jwt-visualizer/jwt-visualizer.component';
 import { VennDiagramComponent } from '../../../../../features/interactive-lessons/components/venn-diagram/venn-diagram.component';
+import { MermaidViewerComponent } from '../../../mermaid-viewer/mermaid-viewer.component';
 
 @Component({
   selector: 'app-theory-answer-sheet',
@@ -37,7 +38,8 @@ import { VennDiagramComponent } from '../../../../../features/interactive-lesson
     AsyncTimelineComponent,
     GcVisualizerComponent,
     JwtVisualizerComponent,
-    VennDiagramComponent
+    VennDiagramComponent,
+    MermaidViewerComponent
   ],
   template: `
     @if (sheet) {

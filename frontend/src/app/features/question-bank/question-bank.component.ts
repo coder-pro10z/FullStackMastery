@@ -2,12 +2,13 @@ import { AsyncPipe, NgClass, NgIf, SlicePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, HostListener, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, map, switchMap, tap } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { UserProgressStateDto } from '../../core/models/progress.models';
 import { PagedResponse, QuestionDto, QuestionQueryParams, Difficulty } from '../../core/models/question.models';
+import { IndexNodeSelectedEvent } from '../../core/models/knowledge-index.models';
 import { ProgressService } from '../../core/services/progress.service';
 import { QuestionService } from '../../core/services/question.service';
 
@@ -16,13 +17,16 @@ import { FilterBarComponent } from '../../shared/components/filter-bar/filter-ba
 import { QuestionBadgeComponent } from '../../shared/components/question-badge/question-badge.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
+import { KnowledgeIndexOverlayComponent } from '../../shared/components/knowledge-index/knowledge-index-overlay/knowledge-index-overlay.component';
+import { MermaidViewerComponent } from '../../shared/components/mermaid-viewer/mermaid-viewer.component';
 
 @Component({
   selector: 'app-question-bank',
   standalone: true,
   imports: [
     AsyncPipe, NgClass, NgIf, SlicePipe, LucideAngularModule,
-    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent, MarkdownPipe
+    ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent, MarkdownPipe,
+    KnowledgeIndexOverlayComponent, MermaidViewerComponent
   ],
   animations: [
     trigger('expandCollapse', [
@@ -48,11 +52,13 @@ export class QuestionBankComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly questionService = inject(QuestionService);
   private readonly progressService = inject(ProgressService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   activeFilters: QuestionQueryParams = {};
+  readonly showKnowledgeIndex = signal(false);
   readonly loading = signal(true);
 
   private readonly filters$ = new BehaviorSubject<QuestionQueryParams>({});
@@ -241,6 +247,21 @@ export class QuestionBankComponent {
   onEscape() {
     if (this.expandedQuestion()) {
       this.closeSolution();
+    }
+  }
+
+  openKnowledgeIndex(): void {
+    this.showKnowledgeIndex.set(true);
+  }
+
+  onIndexNodeSelected(event: IndexNodeSelectedEvent): void {
+    this.showKnowledgeIndex.set(false);
+    // Apply categoryId filter from selected node
+    if (event.filterParams.categoryId != null) {
+      this.router.navigate([], {
+        queryParams: { categoryId: event.filterParams.categoryId },
+        queryParamsHandling: 'merge'
+      });
     }
   }
 

@@ -1,6 +1,5 @@
 <main class="mx-auto block max-w-7xl space-y-10 p-6 md:p-10" *ngIf="vm$ | async as vm">
     
-    <!-- HEADER: Google Sans Style -->
     <header class="flex flex-col gap-6 pb-8 border-b border-slate-100 lg:flex-row lg:items-end lg:justify-between">
         <div class="space-y-2">
             <nav class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#1A73E8]">
@@ -11,6 +10,10 @@
             <p class="text-lg text-[#5F6368] font-light">Refined high-probability questions curated for your growth.</p>
         </div>
         <div class="flex gap-3">
+            <button id="ki-trigger-btn" class="btn-apple-secondary" (click)="openKnowledgeIndex()">
+                <lucide-icon name="layout-grid" [size]="18"></lucide-icon>
+                Browse Index
+            </button>
             <button class="btn-apple-secondary"><lucide-icon name="upload" [size]="18"></lucide-icon> Import</button>
             <button class="btn-apple-primary"><lucide-icon name="plus" [size]="18"></lucide-icon> Add Question</button>
         </div>
@@ -211,13 +214,21 @@
                                 </div>
                             }
 
-                            @if (q.structuredContent?.architectureNote?.description) {
+                            @if (q.structuredContent?.architectureNote?.description || q.structuredContent?.architectureNote?.mermaidGraph) {
                                 <div>
                                     <div class="flex items-center gap-2 mb-3">
                                         <lucide-icon name="layout-template" [size]="16" class="text-cyan-500"></lucide-icon>
                                         <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-600">Architecture & Design</h3>
                                     </div>
-                                    <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.architectureNote?.description }}</p>
+                                    @if (q.structuredContent?.architectureNote?.description) {
+                                        <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.architectureNote?.description }}</p>
+                                    }
+                                    @if (q.structuredContent?.architectureNote?.mermaidGraph) {
+                                        <app-mermaid-viewer
+                                            [graph]="q.structuredContent!.architectureNote!.mermaidGraph!"
+                                            title="System Architecture Diagram"
+                                        />
+                                    }
                                 </div>
                             }
 
@@ -249,8 +260,8 @@
                                     </div>
                                     <p class="text-[15px] sm:text-base text-[#3C4043] leading-[1.75] whitespace-pre-line mb-3">{{ q.structuredContent?.troubleshooting?.description }}</p>
                                     @if (q.structuredContent?.troubleshooting?.table) {
-                                        <div class="overflow-x-auto rounded-lg border border-slate-200">
-                                            <div class="p-4 bg-white text-sm whitespace-pre-line" [innerHTML]="q.structuredContent?.troubleshooting?.table"></div>
+                                        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm my-3">
+                                            <div class="prose-table p-4 text-sm" [innerHTML]="q.structuredContent?.troubleshooting?.table | markdown"></div>
                                         </div>
                                     }
                                 </div>
@@ -286,3 +297,10 @@
         </div>
     }
 </main>
+
+<!-- Knowledge Index Overlay (outside main, fixed positioning) -->
+<app-knowledge-index-overlay
+    [isOpen]="showKnowledgeIndex()"
+    (nodeSelected)="onIndexNodeSelected($event)"
+    (closed)="showKnowledgeIndex.set(false)"
+/>

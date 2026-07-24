@@ -94,7 +94,7 @@ public class AdminAnswerImportService : IAdminAnswerImportService
 
             // Track completeness
             if (row.CodeSnippets?.Any() == true) hasCodeSnippets++;
-            if (row.ArchitectureNote?.MermaidGraph != null) hasMermaid++;
+            if (!string.IsNullOrWhiteSpace(row.ArchitectureNote?.MermaidGraph)) hasMermaid++;
             if (row.Differentiator?.ComparisonTable != null) hasComparisonTable++;
             if (row.Troubleshooting?.Table != null) hasTroubleshooting++;
             if (row.FollowUpQuestions?.Any() == true) hasFollowUpQuestions++;
