@@ -11,13 +11,16 @@ import { map } from 'rxjs';
 
 import { CategoryService } from '../../core/services/category.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AnswerSheetService } from '../../core/services/answer-sheet.service';
 import { SidebarComponent } from '../components/sidebar/sidebar.component';
 import { TopNavComponent } from '../components/top-nav/top-nav.component';
+import { AnswerSheetDrawerComponent } from '../../shared/components/answer-sheet/answer-sheet-drawer.component';
+import { effect } from '@angular/core';
 
 @Component({
   selector: 'app-app-layout',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, SidebarComponent, TopNavComponent],
+  imports: [RouterLink, RouterOutlet, SidebarComponent, TopNavComponent, AnswerSheetDrawerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Mobile drawer backdrop -->
@@ -86,6 +89,9 @@ import { TopNavComponent } from '../components/top-nav/top-nav.component';
         </main>
       </div>
     </div>
+
+    <!-- ====== GLOBAL ANSWER SHEET DRAWER (ROOT STACKING CONTEXT) ====== -->
+    <app-answer-sheet-drawer></app-answer-sheet-drawer>
   `,
   styles: [`
     :host { display: block; height: 100vh; }
@@ -100,7 +106,17 @@ import { TopNavComponent } from '../components/top-nav/top-nav.component';
 export class AppLayoutComponent {
   private readonly categoryService = inject(CategoryService);
   private readonly authService = inject(AuthService);
+  private readonly sheetService = inject(AnswerSheetService);
   private readonly route = inject(ActivatedRoute);
+
+  constructor() {
+    // Auto-collapse sidebar when Answer Sheet opens to maximize screen reading space
+    effect(() => {
+      if (this.sheetService.isOpen()) {
+        this.sidebarCollapsed.set(true);
+      }
+    }, { allowSignalWrites: true });
+  }
 
   readonly categories$ = this.categoryService.getTree().pipe(
     map((categories) => categories ?? [])

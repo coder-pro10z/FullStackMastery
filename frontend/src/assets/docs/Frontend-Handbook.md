@@ -21,6 +21,7 @@
 14. [Responsive Breakpoints](#14-responsive-breakpoints)
 15. [Accessibility](#15-accessibility)
 16. [Screen Inventory](#16-screen-inventory)
+17. [Interactive Visual Learning & Flow Diagram System Architecture](#17-interactive-visual-learning--flow-diagram-system-architecture)
 
 ---
 
@@ -618,5 +619,74 @@ class="focus-ring"
 
 ---
 
-> **Last Updated:** 2026-05-26
+---
+
+## 17. Interactive Visual Learning & Flow Diagram System Architecture
+
+### 17.1 SVG Bezier Curve Flow Engine (`app-flow-diagram`)
+
+Derived from the `SkillTreeComponent` connector pattern, the `app-flow-diagram` component provides a globally reusable flow chart renderer supporting both **Horizontal** (sequence/lifecycle) and **Vertical** (middleware stack/execution pipeline) node orientation.
+
+#### SVG Path Construction Engine
+Connectors are drawn dynamically using SVG Cubic Bezier curves (`path.setAttribute("d", ...)`):
+- **Horizontal Flow Engine**:
+  ```ts
+  const midX = x1 + (x2 - x1) / 2;
+  const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+  ```
+- **Vertical Flow Engine**:
+  ```ts
+  const midY = y1 + (y2 - y1) / 2;
+  const d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+  ```
+
+#### Component Inputs & Protocol
+```ts
+@Input() nodes: FlowNode[] = [];
+@Input() direction: 'horizontal' | 'vertical' = 'horizontal';
+@Input() theme: 'blue' | 'emerald' | 'amber' | 'violet' = 'blue';
+
+export interface FlowNode {
+  id: string;
+  label: string;
+  sublabel?: string;
+  icon?: string;
+  parents?: string[];
+  status?: 'completed' | 'active' | 'pending';
+}
+```
+
+---
+
+### 17.2 Learning Lab Interactive Registry
+
+All interactive components live under `features/interactive-lessons/components/` and are embeddable across both the Learning Lab and Answer Sheets:
+
+| Component | Selector | Core Capability |
+|-----------|----------|-----------------|
+| SQL Join Venn Diagram | `app-venn-diagram` | Real-time row highlight matching across Inner, Left, Right, Full, Cross, and Self JOINs. |
+| D3 Force Node Graph | `app-interactive-graph` | Force-directed graph with interactive knowledge inspection nodes & mini-quizzes. |
+| SQL Engine Simulator | `app-sql-table` | Department-Employee relationship hover tracking & simulated query runner. |
+| Concept Quiz Module | `app-forum-quiz` | Interactive question runner with progress tracking and instant feedback explanations. |
+
+---
+
+### 17.3 Answer Sheet Interactive Sub-Component Ecosystem
+
+Answer Sheets (`shared/components/answer-sheet/`) incorporate visual concept components driven by topic category:
+
+1. **`app-interview-flow`**: Step-by-step interview speech teleprompter script with copy-to-clipboard buttons and verbal coaching tips.
+2. **`app-flow-diagram`**: Reusable SVG Bezier curve flow diagram renderer based on the `SkillTreeComponent` engine (`M x1 y1 C midX y1, midX y2, x2 y2`).
+3. **`app-related-questions-card`**: Linked Question Bank reference cards with difficulty badges (`Easy`/`Medium`/`Hard`), category pills, and deep-link navigation buttons to `/question-bank`.
+4. **`app-concept-card`**: Side-by-side comparison card renderer with color-themed indicators (`emerald`, `blue`, `purple`, `amber`, `rose`).
+5. **`app-memory-model-visualizer`** (`C02`): Interactive Stack (Value types/LIFO) vs Heap (Reference types/GC) model with live **Box** and **Unbox** simulations.
+6. **`app-collection-visualizer`** (`C06`): Structural architecture tabs for `List<T>`, `Dictionary<TKey, TValue>`, `HashSet<T>`, `Queue<T>`, and `Stack<T>` with Big-O complexity indicators.
+7. **`app-async-timeline`** (`C05`): Interactive thread execution timeline comparing non-blocking `async/await` I/O yielding vs thread starvation.
+8. **`app-gc-visualizer`** (`C03`): 4-column .NET Garbage Collection generations simulator (Gen 0, Gen 1, Gen 2, LOH) with live **Run GC Collect()** promotion.
+9. **`app-jwt-visualizer`** (`A11` / `NG08`): Color-coded raw JWT token parser (Header, Payload, Signature) with interactive claim inspection.
+
+---
+
+> **Last Updated:** 2026-07-23
 > **Maintained by:** Praveen Kashyap
+

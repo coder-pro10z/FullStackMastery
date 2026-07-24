@@ -4,11 +4,14 @@ import {
   EventEmitter,
   Input,
   Output,
+  inject,
   signal,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { CATEGORY_COLORS, CATEGORY_LABELS, ChallengeDayModel, CompetencyModel } from '../../../../core/models/challenge.models';
 import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.component';
+import { AnswerSheetService } from '../../../../core/services/answer-sheet.service';
+import { CompetencyProgressService } from '../../../../core/services/competency-progress.service';
 
 @Component({
   selector: 'app-challenge-day-card',
@@ -98,15 +101,14 @@ import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.c
           [class.bg-emerald-50]="day.isCompleted"
           [class.text-emerald-600]="day.isCompleted"
           [class.hover:bg-emerald-100]="day.isCompleted"
-          [class.bg-slate-50]="!day.isCompleted"
+          [class.bg-slate-100]="!day.isCompleted"
           [class.text-slate-400]="!day.isCompleted"
-          [class.hover:bg-blue-50]="!day.isCompleted"
-          [class.hover:text-blue-600]="!day.isCompleted"
+          [class.hover:bg-emerald-50]="!day.isCompleted"
+          [class.hover:text-emerald-600]="!day.isCompleted"
           (click)="onToggleComplete($event)"
           [title]="day.isCompleted ? 'Mark incomplete' : 'Mark complete'"
-          [id]="'toggle-day-' + day.dayNumber"
         >
-          <lucide-icon [name]="day.isCompleted ? 'check-circle-2' : 'circle'" [size]="20" />
+          <lucide-icon name="check-circle" [size]="20" />
         </button>
 
         <!-- Chevron -->
@@ -124,13 +126,43 @@ import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.c
           [id]="'day-body-' + day.dayNumber"
           class="px-5 pb-5 pl-6 border-t border-slate-100 animate-fade-in space-y-4"
         >
-          <!-- Main Focus -->
-          <div class="pt-4">
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Main Focus
-            </p>
-            <p class="text-sm text-slate-600 leading-relaxed">{{ day.mainFocus }}</p>
+          <!-- Main Focus & View Sheet CTA -->
+          <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                Main Focus
+              </p>
+              <p class="text-sm text-slate-600 leading-relaxed">{{ day.mainFocus }}</p>
+            </div>
+
+            @if (day.primaryCompetencies.length > 0) {
+              <button
+                type="button"
+                (click)="openSheetForDay(day.primaryCompetencies[0].competencyId)"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500
+                       hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20
+                       transition-all active:scale-95 flex-shrink-0"
+              >
+                <lucide-icon name="file-text" [size]="15" />
+                <span>View Answer Sheet</span>
+              </button>
+            }
           </div>
+
+          <!-- Topic Mastery Counter -->
+          @if (topicMastery.total > 0) {
+            <div class="flex items-center justify-between px-3.5 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
+              <div class="flex items-center gap-2">
+                <lucide-icon name="check-square" [size]="14" class="text-emerald-600" />
+                <span class="font-bold text-slate-700">Topic Mastery Progress</span>
+                <span class="text-slate-300">•</span>
+                <span class="text-slate-600 font-medium">{{ topicMastery.completed }} of {{ topicMastery.total }} Topics Checkboxed</span>
+              </div>
+              <span class="font-mono font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded text-[11px] border border-emerald-200">
+                {{ topicMastery.percentage }}%
+              </span>
+            </div>
+          }
 
           <!-- Primary Competencies -->
           @if (day.primaryCompetencies.length > 0) {
@@ -138,9 +170,9 @@ import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.c
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                 Primary Competencies
               </p>
-              <div class="flex flex-wrap gap-1.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch my-0.5">
                 @for (comp of day.primaryCompetencies; track comp.id) {
-                  <app-competency-badge [competency]="comp" />
+                  <app-competency-badge [competency]="comp" [showTitle]="true" />
                 }
               </div>
             </div>
@@ -152,22 +184,33 @@ import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.c
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                 SQL Practice
               </p>
-              <div class="flex flex-wrap gap-1.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch my-0.5">
                 @for (comp of day.secondaryCompetencies; track comp.id) {
-                  <app-competency-badge [competency]="comp" />
+                  <app-competency-badge [competency]="comp" [showTitle]="true" />
                 }
               </div>
             </div>
           }
 
-          <!-- SQL Coding Note -->
+          <!-- SQL Coding Note with Solution & Sheet CTA -->
           @if (day.sqlCodingNote) {
-            <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
-              <lucide-icon name="code-2" [size]="15" class="text-amber-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-0.5">SQL Challenge</p>
-                <p class="text-sm text-amber-800 font-medium">{{ day.sqlCodingNote }}</p>
+            <div class="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+              <div class="flex items-start gap-2">
+                <lucide-icon name="code-2" [size]="16" class="text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-0.5">SQL Challenge</p>
+                  <p class="text-sm text-amber-800 font-medium">{{ day.sqlCodingNote }}</p>
+                </div>
               </div>
+
+              <button
+                type="button"
+                (click)="openSheetForDay('SC06')"
+                class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all active:scale-95 flex-shrink-0"
+              >
+                <lucide-icon name="zap" [size]="13" />
+                <span>Solution & Sheet</span>
+              </button>
             </div>
           }
 
@@ -193,20 +236,40 @@ import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.c
       }
     </div>
   `,
+  styles: [`
+    :host { display: block; }
+  `]
 })
 export class ChallengeDayCardComponent {
   @Input({ required: true }) day!: ChallengeDayModel;
   @Output() toggleComplete = new EventEmitter<{ dayNumber: number; newState: boolean }>();
 
   readonly expanded = signal(false);
+  sheetService = inject(AnswerSheetService);
+  progressService = inject(CompetencyProgressService);
+
+  get topicMastery(): { completed: number; total: number; percentage: number } {
+    const all = [...this.day.primaryCompetencies, ...this.day.secondaryCompetencies];
+    if (all.length === 0) return { completed: 0, total: 0, percentage: 0 };
+    const completed = all.filter(c => this.progressService.isCompleted(c.competencyId)).length;
+    return {
+      completed,
+      total: all.length,
+      percentage: Math.round((completed / all.length) * 100)
+    };
+  }
 
   toggleExpanded(): void {
     this.expanded.update(v => !v);
   }
 
-  onToggleComplete(event: Event): void {
+  onToggleComplete(event: MouseEvent): void {
     event.stopPropagation();
     this.toggleComplete.emit({ dayNumber: this.day.dayNumber, newState: !this.day.isCompleted });
+  }
+
+  openSheetForDay(id: string): void {
+    this.sheetService.openSheet(id);
   }
 
   formatDate(iso: string | null): string {

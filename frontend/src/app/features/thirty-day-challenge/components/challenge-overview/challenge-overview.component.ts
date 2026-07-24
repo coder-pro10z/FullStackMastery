@@ -50,30 +50,30 @@ import { ChallengeSummaryModel } from '../../../../core/models/challenge.models'
           </div>
         </div>
 
-        <!-- Current Streak -->
+        <!-- Current Progress Card -->
         <div class="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-5 shadow-sm
                     hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wider text-orange-600">Current Streak</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-orange-600">Current Progress</span>
             <div class="w-8 h-8 bg-orange-500 rounded-xl flex items-center justify-center shadow-sm">
               <lucide-icon name="flame" [size]="16" class="text-white" />
             </div>
           </div>
-          <p class="text-3xl font-bold text-slate-900">{{ summary.currentStreak }}</p>
-          <p class="text-xs text-slate-500 mt-1">consecutive days</p>
+          <p class="text-2xl font-bold text-slate-900">Day {{ summary.currentStreak > 0 ? summary.currentStreak : 1 }}</p>
+          <p class="text-xs text-slate-500 mt-1">active learning focus</p>
         </div>
 
-        <!-- Longest Streak -->
+        <!-- Longest Progress Card -->
         <div class="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100 rounded-2xl p-5 shadow-sm
                     hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-semibold uppercase tracking-wider text-violet-600">Best Streak</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-violet-600">Personal Best</span>
             <div class="w-8 h-8 bg-violet-500 rounded-xl flex items-center justify-center shadow-sm">
               <lucide-icon name="trophy" [size]="16" class="text-white" />
             </div>
           </div>
-          <p class="text-3xl font-bold text-slate-900">{{ summary.longestStreak }}</p>
-          <p class="text-xs text-slate-500 mt-1">days — personal best</p>
+          <p class="text-2xl font-bold text-slate-900">Day {{ summary.longestStreak > 0 ? summary.longestStreak : 1 }}</p>
+          <p class="text-xs text-slate-500 mt-1">highest day reached</p>
         </div>
 
         <!-- Total Competencies -->

@@ -214,7 +214,7 @@ export class SidebarComponent {
   // ── Student nav items ─────────────────────────────────────────────────
   readonly prepItems: NavItem[] = [
     { path: '/dashboard',        label: 'Dashboard',          icon: 'layout-dashboard' },
-    { path: '/challenge',        label: '30-Day Challenge',   icon: 'flame',            badge: 'Streak' },
+    { path: '/challenge',        label: '30-Day Challenge',   icon: 'flame',            badge: '30 Days' },
     { path: '/learning-lab',     label: 'Learning Lab',       icon: 'book-open' },
     { path: '/question-bank',    label: 'Question Bank',      icon: 'database' },
     { path: '/skill-tree',       label: 'Skill Tree',         icon: 'git-branch' },

@@ -72,15 +72,20 @@ Architecture: Google-Grade (90% Neutral / 10% Color)
 
     /* --- TECHNICAL TYPOGRAPHY --- */
     code {
-        @apply font-mono bg-[#F8F9FA] text-[#EA4335] border border-[#E0E0E0] px-1.5 py-0.5 rounded text-[0.85em];
+        @apply font-mono bg-slate-100 text-rose-600 border border-slate-200 px-1.5 py-0.5 rounded text-[0.85em];
     }
 
-    pre {
-        @apply font-mono bg-[#F8F9FA] text-[#202124] border border-[#E0E0E0] p-4 rounded-xl overflow-x-auto text-sm;
+    pre, .code-block-content {
+        @apply font-mono bg-slate-950 text-slate-100 border border-slate-800 p-4 rounded-xl overflow-x-auto text-sm;
     }
 
-    pre code {
-        @apply bg-transparent text-inherit border-none p-0;
+    pre code, code.code-text, [class*="bg-slate-950"] code, [class*="bg-[#0F172A]"] code {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        color: inherit;
     }
 
     /* Universal Link Style */

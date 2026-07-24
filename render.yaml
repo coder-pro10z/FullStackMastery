@@ -1,0 +1,51 @@
+services:
+  # 1. Backend API Web Service
+  - type: web
+    name: fullstackmastery-api
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DatabaseProvider
+        value: Postgres
+      # Render will automatically map the connection string of the database below into DATABASE_URL env var.
+      # We also map the exact ConnectionStrings configuration name expected by EF Core.
+      - key: ConnectionStrings__PostgresConnection
+        fromDatabase:
+          name: fullstackmastery-db
+          property: connectionString
+      - key: Jwt__Key
+        generateValue: true # Generates a secure random string for JWT key
+      - key: Jwt__Issuer
+        value: InterviewPrepApp
+      - key: Jwt__Audience
+        value: InterviewPrepApp.Client
+      # Dynamic CORS Origin configuration
+      - key: Cors__AllowedOrigins
+        value: "https://fullstackmastery-frontend.onrender.com,http://localhost:4200"
+
+  # 2. Frontend Angular Static Site
+  - type: web
+    name: fullstackmastery-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/dist/edudash-frontend/browser
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+    routes:
+      # Redirect/Rewrite rule for Angular client-side router (prevents 404 on page refresh)
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  # 3. PostgreSQL Database Instance
+  - name: fullstackmastery-db
+    databaseName: InterviewPrepDb
+    user: postgres
+    plan: free

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { CATEGORY_COLORS, CATEGORY_LABELS, CompetencyCategory, CompetencyModel } from '../../../../core/models/challenge.models';
 import { CompetencyBadgeComponent } from '../competency-badge/competency-badge.component';
+import { LucideAngularModule } from 'lucide-angular';
+import { AnswerSheetService } from '../../../../core/services/answer-sheet.service';
 
 interface GroupedCategory {
   key: CompetencyCategory;
@@ -12,7 +14,7 @@ interface GroupedCategory {
   selector: 'app-competency-index',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CompetencyBadgeComponent],
+  imports: [CompetencyBadgeComponent, LucideAngularModule],
   template: `
     <div class="space-y-8">
 
@@ -43,7 +45,7 @@ interface GroupedCategory {
             <div class="ml-auto">
               <span class="text-xs font-semibold px-2.5 py-1 rounded-full border"
                     [class]="getCategoryColors(group.key).bg + ' ' + getCategoryColors(group.key).text + ' ' + getCategoryColors(group.key).border">
-                {{ group.key === 'SqlCoding' ? 'SC' : group.key.substring(0,2).toUpperCase() }}01–{{ group.key === 'SqlCoding' ? 'SC' : group.key.substring(0,2).toUpperCase() }}15
+                {{ group.key === 'SqlCoding' ? 'SC' : group.key.substring(0,2).toUpperCase() }}01-{{ group.key === 'SqlCoding' ? 'SC' : group.key.substring(0,2).toUpperCase() }}15
               </span>
             </div>
           </div>
@@ -56,6 +58,15 @@ interface GroupedCategory {
                 <p class="text-sm text-slate-700 group-hover:text-slate-900 transition-colors flex-1">
                   {{ comp.title }}
                 </p>
+                <button
+                  type="button"
+                  (click)="sheetService.openSheet(comp.competencyId)"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 text-xs font-medium flex items-center gap-1"
+                  [title]="'View Answer Sheet for ' + comp.title"
+                >
+                  <lucide-icon name="file-text" [size]="13" />
+                  <span>Sheet</span>
+                </button>
                 <span class="text-xs text-slate-300 font-mono flex-shrink-0">#{{ comp.sortOrder }}</span>
               </div>
             }
@@ -76,6 +87,7 @@ interface GroupedCategory {
 })
 export class CompetencyIndexComponent {
   @Input({ required: true }) competencies: CompetencyModel[] = [];
+  sheetService = inject(AnswerSheetService);
 
   readonly CATEGORY_LABELS = CATEGORY_LABELS;
   readonly categoryOrder: CompetencyCategory[] = ['CSharpCore', 'AspNetCore', 'SqlTheory', 'SqlCoding', 'Angular'];

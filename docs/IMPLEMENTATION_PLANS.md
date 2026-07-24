@@ -190,3 +190,31 @@ This plan outlines how to modify the bulk import pipeline to support UPSERTs (up
 4. Accept the modal and verify the database syncs without duplicate collisions.
 
 ---
+
+## Plan 7: Auto-Deploy to Render Setup
+*Date: 2026-07-22*
+
+This plan outlines the steps and configuration required to set up auto-deployment of the Full Stack Interview Prep application on Render (Render.com) triggered by Git pushes to the main branch.
+
+### Proposed Changes
+
+#### 1. Root Workspace Configuration
+- **File**: [NEW] `render.yaml`
+- **Action**: Define Blueprint specification containing:
+  - Postgres database instance.
+  - Docker web service for the .NET API (mapping environment variables, database strings, dynamic CORS, and JWT secret generator).
+  - Static site for the Angular frontend (including node build commands, target folder paths, and client-side SPA routing redirect rules).
+
+#### 2. Backend Configuration
+- **File**: [NEW] `backend/Dockerfile`
+- **Action**: Build multi-stage Docker configuration using .NET 8 SDK and ASP.NET runtime. Copy dependency manifests, restore solution packages, publish the `InterviewPrepApp.Api` project, and expose port 8080.
+- **File**: [MODIFY] `backend/src/InterviewPrepApp.Api/Program.cs`
+  - **PostgreSQL URI Parser**: Map a helper method `ConvertPostgresUriToConnectionString` to parse Render's standard `postgres://` connection URL format into standard Npgsql connection parameters.
+  - **Dynamic CORS**: Read allowed origins from `Cors:AllowedOrigins` configuration section (supporting csv values) so the hosted API supports requests from the Render Static Site domain.
+
+### Verification Plan
+1. Compile backend locally: `dotnet build backend/InterviewPrepApp.sln`.
+2. Perform a test docker build: `docker build -f backend/Dockerfile -t api:test .`.
+3. Push changes to GitHub/GitLab, link repository to Render Blueprints, and execute deployment.
+4. Verify database automigrates, API resolves `/health`, and frontend handles SPA routing correctly.
+

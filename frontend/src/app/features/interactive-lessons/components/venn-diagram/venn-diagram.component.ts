@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 interface Employee {
@@ -37,6 +37,16 @@ export class VennDiagramComponent implements OnInit {
   hoveredSrcA: number | null = null;
   hoveredSrcB: number | null = null;
   hoveredSrcASecondary: number | null = null;
+  readonly copied = signal(false);
+
+  copyCode(): void {
+    const rawSql = this.sqlQueries[this.currentJoinType]?.replace(/<[^>]*>/g, '') || '';
+    if (rawSql) {
+      navigator.clipboard.writeText(rawSql);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    }
+  }
 
   tableA: Employee[] = [
     { emp_id: 1, name: 'Alice', dept_id: 10, manager_id: 2 },
@@ -51,12 +61,12 @@ export class VennDiagramComponent implements OnInit {
   ];
 
   sqlQueries: Record<string, string> = {
-    inner: `<span class="text-[#7C3AED] font-bold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> A\n<span class="text-[#7C3AED] font-bold">INNER JOIN</span> <span class="text-[#1A73E8]">Departments</span> B\n<span class="text-[#7C3AED] font-bold">ON</span> A.Dept_ID = B.Dept_ID;`,
-    left: `<span class="text-[#7C3AED] font-bold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> A\n<span class="text-[#7C3AED] font-bold">LEFT OUTER JOIN</span> <span class="text-[#1A73E8]">Departments</span> B\n<span class="text-[#7C3AED] font-bold">ON</span> A.Dept_ID = B.Dept_ID;`,
-    right: `<span class="text-[#7C3AED] font-bold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> A\n<span class="text-[#7C3AED] font-bold">RIGHT OUTER JOIN</span> <span class="text-[#1A73E8]">Departments</span> B\n<span class="text-[#7C3AED] font-bold">ON</span> A.Dept_ID = B.Dept_ID;`,
-    full: `<span class="text-[#7C3AED] font-bold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> A\n<span class="text-[#7C3AED] font-bold">FULL OUTER JOIN</span> <span class="text-[#1A73E8]">Departments</span> B\n<span class="text-[#7C3AED] font-bold">ON</span> A.Dept_ID = B.Dept_ID;`,
-    cross: `<span class="text-[#7C3AED] font-bold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> A\n<span class="text-[#7C3AED] font-bold">CROSS JOIN</span> <span class="text-[#1A73E8]">Departments</span> B;`,
-    self: `<span class="text-[#7C3AED] font-bold">SELECT</span> E.Name <span class="text-[#7C3AED] font-bold">AS</span> Employee, M.Name <span class="text-[#7C3AED] font-bold">AS</span> Manager\n<span class="text-[#7C3AED] font-bold">FROM</span> <span class="text-[#1A73E8]">Employees</span> E\n<span class="text-[#7C3AED] font-bold">LEFT JOIN</span> <span class="text-[#1A73E8]">Employees</span> M\n<span class="text-[#7C3AED] font-bold">ON</span> E.Manager_ID = M.Emp_ID;`
+    inner: `<span class="text-purple-400 font-extrabold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> A\n<span class="text-purple-400 font-extrabold">INNER JOIN</span> <span class="text-cyan-400 font-bold">Departments</span> B\n<span class="text-purple-400 font-extrabold">ON</span> A.Dept_ID = B.Dept_ID;`,
+    left: `<span class="text-purple-400 font-extrabold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> A\n<span class="text-purple-400 font-extrabold">LEFT OUTER JOIN</span> <span class="text-cyan-400 font-bold">Departments</span> B\n<span class="text-purple-400 font-extrabold">ON</span> A.Dept_ID = B.Dept_ID;`,
+    right: `<span class="text-purple-400 font-extrabold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> A\n<span class="text-purple-400 font-extrabold">RIGHT OUTER JOIN</span> <span class="text-cyan-400 font-bold">Departments</span> B\n<span class="text-purple-400 font-extrabold">ON</span> A.Dept_ID = B.Dept_ID;`,
+    full: `<span class="text-purple-400 font-extrabold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> A\n<span class="text-purple-400 font-extrabold">FULL OUTER JOIN</span> <span class="text-cyan-400 font-bold">Departments</span> B\n<span class="text-purple-400 font-extrabold">ON</span> A.Dept_ID = B.Dept_ID;`,
+    cross: `<span class="text-purple-400 font-extrabold">SELECT</span> A.Name, B.Dept_Name\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> A\n<span class="text-purple-400 font-extrabold">CROSS JOIN</span> <span class="text-cyan-400 font-bold">Departments</span> B;`,
+    self: `<span class="text-purple-400 font-extrabold">SELECT</span> E.Name <span class="text-purple-400 font-extrabold">AS</span> Employee, M.Name <span class="text-purple-400 font-extrabold">AS</span> Manager\n<span class="text-purple-400 font-extrabold">FROM</span> <span class="text-cyan-400 font-bold">Employees</span> E\n<span class="text-purple-400 font-extrabold">LEFT JOIN</span> <span class="text-cyan-400 font-bold">Employees</span> M\n<span class="text-purple-400 font-extrabold">ON</span> E.Manager_ID = M.Emp_ID;`
   };
 
   outputData: OutputRow[] = [];

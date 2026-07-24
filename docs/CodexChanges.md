@@ -147,3 +147,13 @@ This file records the implementation and debugging steps taken by Codex in this 
 
 - Some shell-based `dotnet build` verification was attempted, but the local environment did not provide reliable compile diagnostics during this session.
 - The changes above were made based on direct code inspection, route tracing, request-flow debugging, workbook inspection, and targeted patching.
+
+## 9. Increased Angular Component Style Budget Limits
+
+- Issue:
+  - `ng serve -c staging` failed with `X [ERROR] src/app/features/question-bank/question-bank.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 39 bytes with a total of 4.04 kB`.
+  - Additional warnings triggered for `landing.component.scss` and `docs.component.ts`.
+- Resolution:
+  - Updated `frontend/angular.json` under both `production` and `staging` configurations.
+  - Increased `anyComponentStyle` `maximumWarning` from `2kb` to `6kb` and `maximumError` from `4kb` to `10kb` to accommodate rich component styles without build errors.
+

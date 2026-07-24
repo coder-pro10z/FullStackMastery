@@ -1,5 +1,5 @@
-<div class="flex flex-col gap-6 w-full max-w-[1000px] mx-auto min-h-screen">
-    
+<div class="flex flex-col gap-6 w-full max-w-[1000px] mx-auto">
+
     <!-- 1. Interactive Tab Navigation -->
     <div class="flex flex-col items-center gap-2">
       <div class="flex flex-wrap gap-2 justify-center bg-white py-3 px-4 rounded-full shadow-sm">
@@ -64,17 +64,30 @@
         </svg>
       </div>
   
-      <!-- Live Code Block -->
-      <div class="bg-white rounded-2xl overflow-hidden shadow-md flex flex-col border border-[#E2E8F0]">
-        <div class="bg-[#F8F9FA] py-3 px-4 flex justify-between items-center border-b border-[#E2E8F0]">
-          <div class="flex gap-1.5">
-            <div class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></div>
-            <div class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></div>
-            <div class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>
+      <!-- Live Code Block (Pitch Black Background) -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-md font-mono text-xs flex flex-col min-w-0 h-full">
+        <div class="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-800 text-slate-400">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+            <span class="ml-2 uppercase tracking-wider text-[10px] font-semibold text-slate-300">SQL Query</span>
           </div>
-          <span class="text-xs font-bold text-[#5F6368] uppercase tracking-[1px]">SQL</span>
+          <button
+            type="button"
+            (click)="copyCode()"
+            class="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-sans font-medium transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 active:scale-95 cursor-pointer"
+          >
+            @if (copied()) {
+              <span class="text-emerald-400 font-bold">Copied!</span>
+            } @else {
+              <span>Copy</span>
+            }
+          </button>
         </div>
-        <pre class="p-6 m-0 font-mono text-[0.95rem] text-[#202124] bg-white leading-relaxed overflow-x-auto flex-grow rounded-none border-0"><code [innerHTML]="sqlQueries[currentJoinType]"></code></pre>
+        <div class="p-3.5 overflow-x-auto text-slate-100 leading-relaxed font-mono whitespace-pre select-text bg-slate-950 flex-grow">
+          <code class="!bg-transparent !border-0 !p-0 text-slate-100 font-mono block code-text" [innerHTML]="sqlQueries[currentJoinType]"></code>
+        </div>
       </div>
     </div>
   

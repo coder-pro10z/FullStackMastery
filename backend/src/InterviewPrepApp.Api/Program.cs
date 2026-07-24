@@ -66,9 +66,11 @@ namespace InterviewPrepApp.Api
             var providerRaw = builder.Configuration["DatabaseProvider"];
             var provider = string.IsNullOrWhiteSpace(providerRaw) ? "SqlServer" : providerRaw.Trim();
 
-            var connectionString = provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
-                ? builder.Configuration.GetConnectionString("PostgresConnection")
+            var rawConnectionString = provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)
+                ? (builder.Configuration.GetConnectionString("PostgresConnection") ?? Environment.GetEnvironmentVariable("DATABASE_URL"))
                 : builder.Configuration.GetConnectionString("SqlServerDocker");
+
+            var connectionString = ConvertPostgresUriToConnectionString(rawConnectionString);
 
             Console.WriteLine($"Database Provider: {provider}");
 
@@ -139,10 +141,12 @@ namespace InterviewPrepApp.Api
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200",
-                    "https://fullstackmastery-frontend.vercel.app"
-                    
-                )
+                    var allowedOriginsSection = builder.Configuration["Cors:AllowedOrigins"];
+                    var origins = !string.IsNullOrWhiteSpace(allowedOriginsSection)
+                        ? allowedOriginsSection.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        : new[] { "http://localhost:4200", "https://fullstackmastery-frontend.vercel.app" };
+
+                    policy.WithOrigins(origins)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -260,6 +264,24 @@ namespace InterviewPrepApp.Api
             }
 
             await app.RunAsync();
+        }
+
+        private static string? ConvertPostgresUriToConnectionString(string? connectionUri)
+        {
+            if (string.IsNullOrWhiteSpace(connectionUri) || !connectionUri.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+            {
+                return connectionUri;
+            }
+
+            var uri = new Uri(connectionUri);
+            var userInfo = uri.UserInfo.Split(':');
+            var username = userInfo[0];
+            var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+            var host = uri.Host;
+            var port = uri.Port;
+            var database = uri.AbsolutePath.TrimStart('/');
+
+            return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
         }
     }
 }
