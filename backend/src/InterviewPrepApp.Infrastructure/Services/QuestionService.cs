@@ -21,7 +21,7 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber < 1 ? 1 : pageNumber;
-        pageSize = pageSize < 1 ? 20 : Math.Min(pageSize, 100);
+        pageSize = pageSize < 1 ? 20 : Math.Min(pageSize, 1000);
 
         var query = _context.Questions
             .AsNoTracking()

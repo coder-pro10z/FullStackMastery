@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FullStackMastery Architecture Knowledge Graph</title>
+    
+    <!-- Tailwind CSS for UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Vis.js Network -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow: hidden;
+        }
+        h1, h2, h3, .title-font {
+            font-family: 'Outfit', sans-serif;
+        }
+        #network-canvas {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="relative w-screen h-screen">
+
+    <!-- Network Canvas -->
+    <div id="network-canvas"></div>
+
+    <!-- UI Overlay -->
+    <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-start pointer-events-auto">
+            <div class="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="network" class="text-white h-6 w-6 animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">FullStackMastery</h1>
+                    <p class="text-xs text-indigo-400 font-medium">Architecture Knowledge Graph v2.0</p>
+                </div>
+            </div>
+
+            <!-- Global Search & Controls -->
+            <div class="flex gap-3">
+                <div class="glass-panel rounded-xl flex items-center px-3 gap-2">
+                    <i data-lucide="search" class="text-gray-400 h-4 w-4"></i>
+                    <input type="text" id="search-input" placeholder="Search architecture node..." class="bg-transparent border-none text-sm text-white placeholder-gray-500 focus:outline-none w-56 pointer-events-auto py-2">
+                    <div id="search-results" class="hidden absolute top-16 left-0 right-0 glass-panel rounded-xl mt-1 p-2 max-h-60 overflow-y-auto pointer-events-auto z-20"></div>
+                </div>
+                
+                <button onclick="resetCamera()" class="glass-panel hover:bg-white/5 active:scale-95 transition rounded-xl p-3 flex items-center justify-center pointer-events-auto" title="Reset View">
+                    <i data-lucide="maximize-2" class="text-gray-300 h-4 w-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body: Bottom HUD + Left Control Panel + Right Detail Panel -->
+        <div class="flex justify-between items-end w-full h-[calc(100vh-140px)] gap-6">
+            
+            <!-- Left Panel: Layers / Toggles -->
+            <div class="w-64 glass-panel rounded-2xl p-5 flex flex-col gap-4 pointer-events-auto max-h-[85%] overflow-y-auto custom-scrollbar">
+                <h2 class="text-xs font-semibold text-gray-400 tracking-wider uppercase">Filter Layers</h2>
+                
+                <div class="flex flex-col gap-3">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" checked onchange="toggleLayer('Features', this.checked)" class="rounded border-gray-700 bg-gray-900/50 text-purple-600 focus:ring-purple-500 focus:ring-offset-gray-900 h-4 w-4">
+                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">Features Hubs</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" checked onchange="toggleLayer('Frontend', this.checked)" class="rounded border-gray-700 bg-gray-900/50 text-pink-600 focus:ring-pink-500 focus:ring-offset-gray-900 h-4 w-4">
+                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">Frontend Layer</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" checked onchange="toggleLayer('Backend', this.checked)" class="rounded border-gray-700 bg-gray-900/50 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-gray-900 h-4 w-4">
+                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">Backend Layer</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" checked onchange="toggleLayer('Database', this.checked)" class="rounded border-gray-700 bg-gray-900/50 text-amber-600 focus:ring-amber-500 focus:ring-offset-gray-900 h-4 w-4">
+                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">Database Layer</span>
+                    </label>
+                </div>
+
+                <div class="border-t border-white/5 my-2"></div>
+
+                <h2 class="text-xs font-semibold text-gray-400 tracking-wider uppercase">Legend</h2>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-purple-500 ring-4 ring-purple-500/20"></span>
+                        <span class="text-gray-300 font-medium">Feature Hub</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-pink-500 ring-4 ring-pink-500/20"></span>
+                        <span class="text-gray-300 font-medium">Angular UI Component</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></span>
+                        <span class="text-gray-300 font-medium">Angular Service</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-red-500 ring-4 ring-red-500/20"></span>
+                        <span class="text-gray-300 font-medium">API Controller</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-blue-500 ring-4 ring-blue-500/20"></span>
+                        <span class="text-gray-300 font-medium">App Service Interface</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-cyan-500 ring-4 ring-cyan-500/20"></span>
+                        <span class="text-gray-300 font-medium">Infra Implementation</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-yellow-500 ring-4 ring-yellow-500/20"></span>
+                        <span class="text-gray-300 font-medium">Domain Entity</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="h-3.5 w-3.5 rounded-full bg-orange-500 ring-4 ring-orange-500/20"></span>
+                        <span class="text-gray-300 font-medium">Database Table</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Node Details -->
+            <div id="detail-panel" class="w-96 glass-panel rounded-3xl p-6 pointer-events-auto h-full flex flex-col transition-all duration-300 opacity-0 translate-x-10">
+                <!-- Fallback Info -->
+                <div id="fallback-info" class="flex flex-col items-center justify-center h-full text-center p-6">
+                    <div class="h-16 w-16 rounded-2xl bg-gray-800/40 flex items-center justify-center mb-4">
+                        <i data-lucide="info" class="text-gray-500 h-8 w-8"></i>
+                    </div>
+                    <h3 class="text-md font-semibold text-gray-300 mb-1">No Node Selected</h3>
+                    <p class="text-xs text-gray-500">Click any architectural node or edge in the graph canvas to inspect metadata, relationships, and code references.</p>
+                </div>
+
+                <!-- Active Node Details -->
+                <div id="active-info" class="hidden flex-col h-full overflow-hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <span id="node-tag" class="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"></span>
+                        <button onclick="closeDetails()" class="text-gray-400 hover:text-white hover:bg-white/5 rounded-lg p-1.5 transition">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+
+                    <h2 id="node-title" class="text-xl font-bold text-white mb-1"></h2>
+                    <p id="node-path" class="text-xs text-gray-400 mb-4 font-mono select-all overflow-x-auto whitespace-nowrap bg-black/20 p-2 rounded-lg"></p>
+
+                    <!-- Scrollable details area -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-4 text-sm">
+                        <!-- Description -->
+                        <div>
+                            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Description</h3>
+                            <p id="node-desc" class="text-gray-300 leading-relaxed"></p>
+                        </div>
+
+                        <!-- Technical Specs -->
+                        <div id="node-specs" class="grid grid-cols-2 gap-3 bg-white/2.5 p-3.5 rounded-xl border border-white/5">
+                            <div>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Technology</span>
+                                <p id="spec-tech" class="text-gray-300 font-medium text-xs"></p>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Framework</span>
+                                <p id="spec-framework" class="text-gray-300 font-medium text-xs"></p>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Layer</span>
+                                <p id="spec-layer" class="text-gray-300 font-medium text-xs"></p>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Module</span>
+                                <p id="spec-module" class="text-gray-300 font-medium text-xs"></p>
+                            </div>
+                        </div>
+
+                        <!-- Relations lists -->
+                        <div class="flex flex-col gap-3">
+                            <div id="rel-depends">
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Depends On</h3>
+                                <div id="list-depends" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div id="rel-usedby">
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Used By / Called By</h3>
+                                <div id="list-usedby" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div id="rel-implements">
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Implements</h3>
+                                <div id="list-implements" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Nodes Data List
+        const rawNodes = [
+            // Features
+            { id: "Feature Auth", label: "Feature Auth", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "Identity", path: "vault/Features/Feature Auth.md", desc: "Core user register, JWT session token generation, security settings, and role authorize management." },
+            { id: "Feature Admin", label: "Feature Admin", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Admin.md", desc: "Main administrative interface displaying statistics grid summaries, seeding logs, and question trees." },
+            { id: "Feature Question Bank", label: "Feature Question Bank", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Question Bank.md", desc: "Public page displaying categorized question lists with search bars, filters, and individual task checklists." },
+            { id: "Feature Quiz", label: "Feature Quiz", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Quiz.md", desc: "Allows students to attempt questions in immediate Practice Mode or timed, scored mock Assessment Mode." },
+            { id: "Feature Import Pipeline", label: "Feature Import Pipeline", type: "feature-hub", layer: "Features", technology: ".NET 8 | ClosedXML", framework: "EF Core 8", path: "vault/Features/Feature Import Pipeline.md", desc: "Ingestion pipeline checking Excel files, running 6-stage validation checks, and running intelligent DB upsert routines." },
+            { id: "Feature Thirty-Day Challenge", label: "Feature Thirty-Day Challenge", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Thirty-Day Challenge.md", desc: "Engagement-focused calendar scheduling daily read materials and competencies checkboxes." },
+            { id: "Feature Job Description", label: "Feature Job Description", type: "feature-hub", layer: "Features", technology: "Angular 17", framework: "Standalone Angular", path: "vault/Features/Feature Job Description.md", desc: "Application workspace supporting resume parsed uploads, targeting listings, contact referrals, and notes." },
+            { id: "Feature Interviews", label: "Feature Interviews", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Interviews.md", desc: "Company tracker mapping upcoming interviews, structured rounds, focus topics, and question lists." },
+            { id: "Feature Learning Lab", label: "Feature Learning Lab", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Learning Lab.md", desc: "Skill Tree interactive diagrams and competencies summaries with mermaid visualizations." },
+            { id: "Feature Cheat Sheet", label: "Feature Cheat Sheet", type: "feature-hub", layer: "Features", technology: ".NET 8 | Angular 17", framework: "ASP.NET Core", path: "vault/Features/Feature Cheat Sheet.md", desc: "Downloadable reference cheat summaries mapping core languages and concepts." },
+
+            // Backend API (Controllers)
+            { id: "AuthController", label: "AuthController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/AuthController.cs", desc: "Handles registration and credentials logins to return JWT session signatures." },
+            { id: "QuestionsController", label: "QuestionsController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/QuestionsController.cs", desc: "Exposes GET /api/questions supporting paginated parameters, text matches, and categories filters." },
+            { id: "CategoriesController", label: "CategoriesController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/CategoriesController.cs", desc: "Serves category nodes mapped as flat lists or hierarchical trees." },
+            { id: "AdminDashboardController", label: "AdminDashboardController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/Admin/AdminDashboardController.cs", desc: "Exposes system counts and dashboard metadata details." },
+            { id: "AdminImportController", label: "AdminImportController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/Admin/AdminImportController.cs", desc: "Receives raw Excel file streams and runs validation checks." },
+            { id: "QuizzesController", label: "QuizzesController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/QuizzesController.cs", desc: "Orchestrates attempts mapping and grading checks for quizzes." },
+            { id: "ChallengeController", label: "ChallengeController", type: "controller", layer: "Backend", technology: ".NET 8", framework: "ASP.NET Core Api", path: "backend/src/InterviewPrepApp.Api/Controllers/ChallengeController.cs", desc: "Manages day-by-day challenge states and milestones." },
+
+            // Application Layer (Interfaces)
+            { id: "IQuestionService", label: "IQuestionService", type: "service-interface", layer: "Backend", technology: ".NET 8", framework: "Application Contract", path: "backend/src/InterviewPrepApp.Application/Interfaces/IQuestionService.cs", desc: "Service interface defining the contract for question list retrieval." },
+            { id: "ICategoryService", label: "ICategoryService", type: "service-interface", layer: "Backend", technology: ".NET 8", framework: "Application Contract", path: "backend/src/InterviewPrepApp.Application/Interfaces/ICategoryService.cs", desc: "Defines recursive category parsing and flat mapping lists." },
+            { id: "IAdminDashboardService", label: "IAdminDashboardService", type: "service-interface", layer: "Backend", technology: ".NET 8", framework: "Application Contract", path: "backend/src/InterviewPrepApp.Application/Interfaces/IAdminDashboardService.cs", desc: "Aggregate counts provider interface." },
+            { id: "IQuestionImportService", label: "IQuestionImportService", type: "service-interface", layer: "Backend", technology: ".NET 8", framework: "Application Contract", path: "backend/src/InterviewPrepApp.Application/Interfaces/IQuestionImportService.cs", desc: "ETL processing engine definition interface." },
+
+            // Infrastructure Layer (Implementations)
+            { id: "QuestionService", label: "QuestionService", type: "service-impl", layer: "Backend", technology: ".NET 8", framework: "EF Core 8", path: "backend/src/InterviewPrepApp.Infrastructure/Services/QuestionService.cs", desc: "Implements IQuestionService, queries database tables, maps tags, and sets solved checkboxes." },
+            { id: "CategoryService", label: "CategoryService", type: "service-impl", layer: "Backend", technology: ".NET 8", framework: "EF Core 8", path: "backend/src/InterviewPrepApp.Infrastructure/Services/CategoryService.cs", desc: "Implements ICategoryService to build tree indices recursively." },
+            { id: "AdminDashboardService", label: "AdminDashboardService", type: "service-impl", layer: "Backend", technology: ".NET 8", framework: "EF Core 8", path: "backend/src/InterviewPrepApp.Infrastructure/Services/AdminDashboardService.cs", desc: "Runs count queries across core tables in EF Core." },
+            { id: "ExcelExtractionService", label: "ExcelExtractionService", type: "service-impl", layer: "Backend", technology: ".NET 8", framework: "ClosedXML", path: "backend/src/InterviewPrepApp.Infrastructure/Services/ExcelExtractionService.cs", desc: "Handles spreadsheet columns mapping, merges, and diagnostic rows validation." },
+
+            // Domain Entities
+            { id: "Question", label: "Question (Entity)", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/Question.cs", desc: "Core entity mapping question titles, texts, soft-delete logs, and relations." },
+            { id: "Answer", label: "Answer (Entity)", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/Answer.cs", desc: "Structured Markdown answers detail 1:1 mapped to questions." },
+            { id: "Category", label: "Category (Entity)", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/Category.cs", desc: "Self-referencing tree taxonomy maps (CategoryId, ParentId)." },
+            { id: "ApplicationUser", label: "ApplicationUser", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/ApplicationUser.cs", desc: "Identity custom model representing registered student details." },
+            { id: "ImportJob", label: "ImportJob", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/ImportJob.cs", desc: "Ingestion logs mapping status states and row counters." },
+            { id: "QuizAttempt", label: "QuizAttempt", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/QuizAttempt.cs", desc: "Single attempt log records containing user grades and timers." },
+            { id: "ChallengeDay", label: "ChallengeDay", type: "domain-entity", layer: "Backend", technology: ".NET 8", framework: "Domain Model", path: "backend/src/InterviewPrepApp.Domain/Entities/ChallengeDay.cs", desc: "Focal topic details corresponding to specific challenge index calendar cells." },
+
+            // Database Tables
+            { id: "QuestionsTable", label: "Questions (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/Questions", desc: "Primary table storing question details and CategoryId foreign key constraint." },
+            { id: "AnswersTable", label: "Answers (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/Answers", desc: "Stores detailed solutions matching questions." },
+            { id: "CategoriesTable", label: "Categories (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/Categories", desc: "Taxonomy table with RESTRICT delete behavior on self-referencing links." },
+            { id: "AspNetUsers", label: "AspNetUsers (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/AspNetUsers", desc: "Credentials and login hashes table managed by ASP.NET Identity." },
+            { id: "ImportJobsTable", label: "ImportJobs (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/ImportJobs", desc: "Saves ETL job identifiers and run parameters." },
+            { id: "QuizAttemptsTable", label: "QuizAttempts (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/QuizAttempts", desc: "Saves final grades and durations metrics." },
+            { id: "ChallengeDaysTable", label: "ChallengeDays (Table)", type: "db-table", layer: "Database", technology: "PostgreSQL | SQL Server", framework: "Database", path: "Database/ChallengeDays", desc: "Calendar indices registry containing seeder items." },
+
+            // Frontend Components
+            { id: "login.component", label: "login.component", type: "angular-component", layer: "Frontend", technology: "Angular 17", framework: "Standalone UI", path: "frontend/src/app/features/auth/login/login.component.ts", desc: "Interactive credentials input panel invoking login auth endpoints." },
+            { id: "question-bank.component", label: "question-bank.component", type: "angular-component", layer: "Frontend", technology: "Angular 17", framework: "Standalone UI", path: "frontend/src/app/features/question-bank/question-bank.component.ts", desc: "Interactive landing listing page integrating Search filters, custom paginators, and checklists overlay." },
+            { id: "admin-dashboard", label: "admin-dashboard.component", type: "angular-component", layer: "Frontend", technology: "Angular 17", framework: "Standalone UI", path: "frontend/src/app/features/admin/admin-dashboard.component.ts", desc: "Administrative dashboard panel visualizing counters and logs lists." },
+            { id: "import-console", label: "import-console.component", type: "angular-component", layer: "Frontend", technology: "Angular 17", framework: "Standalone UI", path: "frontend/src/app/features/admin/import/import-console.component.ts", desc: "Upload manager panel showing dry-run logs lists." },
+            { id: "thirty-day-challenge.component", label: "thirty-day-challenge.component", type: "angular-component", layer: "Frontend", technology: "Angular 17", framework: "Standalone UI", path: "frontend/src/app/features/thirty-day-challenge/thirty-day-challenge.component.ts", desc: "Dashboard rendering grid blocks representing locked/unlocked days." },
+
+            // Frontend Services
+            { id: "auth.service", label: "auth.service", type: "angular-service", layer: "Frontend", technology: "Angular 17", framework: "Angular Core", path: "frontend/src/app/core/services/auth.service.ts", desc: "Saves active JWT details and decodes user identity claims." },
+            { id: "question.service", label: "question.service", type: "angular-service", layer: "Frontend", technology: "Angular 17", framework: "Angular Core", path: "frontend/src/app/core/services/question.service.ts", desc: "Queries backend server REST paths with parsed query parameters." },
+            { id: "admin-api.service", label: "admin-api.service", type: "angular-service", layer: "Frontend", technology: "Angular 17", framework: "Angular Core", path: "frontend/src/app/core/services/admin-api.service.ts", desc: "Client side manager for administrative configurations operations." }
+        ];
+
+        // Edges List (Dependencies)
+        const rawEdges = [
+            // Features -> Key Entries
+            { from: "Feature Auth", to: "login.component", label: "contains" },
+            { from: "Feature Auth", to: "auth.service", label: "contains" },
+            { from: "Feature Auth", to: "AuthController", label: "contains" },
+            
+            { from: "Feature Admin", to: "admin-dashboard", label: "contains" },
+            { from: "Feature Admin", to: "admin-api.service", label: "contains" },
+            { from: "Feature Admin", to: "AdminDashboardController", label: "contains" },
+
+            { from: "Feature Question Bank", to: "question-bank.component", label: "contains" },
+            { from: "Feature Question Bank", to: "question.service", label: "contains" },
+            { from: "Feature Question Bank", to: "QuestionsController", label: "contains" },
+
+            { from: "Feature Quiz", to: "QuizzesController", label: "contains" },
+            { from: "Feature Import Pipeline", to: "import-console", label: "contains" },
+            { from: "Feature Import Pipeline", to: "AdminImportController", label: "contains" },
+            { from: "Feature Thirty-Day Challenge", to: "thirty-day-challenge.component", label: "contains" },
+            { from: "Feature Thirty-Day Challenge", to: "ChallengeController", label: "contains" },
+
+            // Frontend Components -> Services
+            { from: "login.component", to: "auth.service", label: "calls" },
+            { from: "question-bank.component", to: "question.service", label: "calls" },
+            { from: "admin-dashboard", to: "admin-api.service", label: "calls" },
+            { from: "import-console", to: "admin-api.service", label: "calls" },
+
+            // Frontend Services -> Backend Controllers
+            { from: "auth.service", to: "AuthController", label: "requests" },
+            { from: "question.service", to: "QuestionsController", label: "requests" },
+            { from: "admin-api.service", to: "AdminDashboardController", label: "requests" },
+            { from: "admin-api.service", to: "AdminImportController", label: "requests" },
+
+            // Backend Controllers -> Application Interfaces
+            { from: "QuestionsController", to: "IQuestionService", label: "injects" },
+            { from: "CategoriesController", to: "ICategoryService", label: "injects" },
+            { from: "AdminDashboardController", to: "IAdminDashboardService", label: "injects" },
+            { from: "AdminImportController", to: "IQuestionImportService", label: "injects" },
+
+            // Application Interfaces <- Infrastructure Services
+            { from: "QuestionService", to: "IQuestionService", label: "implements" },
+            { from: "CategoryService", to: "ICategoryService", label: "implements" },
+            { from: "AdminDashboardService", to: "IAdminDashboardService", label: "implements" },
+
+            // Infrastructure Services -> Entities
+            { from: "QuestionService", to: "Question", label: "uses" },
+            { from: "QuestionService", to: "Category", label: "uses" },
+            { from: "CategoryService", to: "Category", label: "uses" },
+            { from: "ExcelExtractionService", to: "ImportJob", label: "creates" },
+
+            // Entities -> Entities
+            { from: "Question", to: "Category", label: "references" },
+            { from: "Question", to: "Answer", label: "references" },
+
+            // Entities -> Database Tables
+            { from: "Question", to: "QuestionsTable", label: "maps to" },
+            { from: "Answer", to: "AnswersTable", label: "maps to" },
+            { from: "Category", to: "CategoriesTable", label: "maps to" },
+            { from: "ApplicationUser", to: "AspNetUsers", label: "maps to" },
+            { from: "ImportJob", to: "ImportJobsTable", label: "maps to" },
+            { from: "QuizAttempt", to: "QuizAttemptsTable", label: "maps to" },
+            { from: "ChallengeDay", to: "ChallengeDaysTable", label: "maps to" }
+        ];
+
+        // Type Colors Configuration
+        const colors = {
+            "feature-hub": { background: "#1e1b4b", border: "#a855f7", highlight: { background: "#2e1065", border: "#c084fc" } },
+            "controller": { background: "#450a0a", border: "#ef4444", highlight: { background: "#7f1d1d", border: "#f87171" } },
+            "service-interface": { background: "#172554", border: "#3b82f6", highlight: { background: "#1e3a8a", border: "#60a5fa" } },
+            "service-impl": { background: "#083344", border: "#06b6d4", highlight: { background: "#164e63", border: "#22d3ee" } },
+            "domain-entity": { background: "#422006", border: "#eab308", highlight: { background: "#713f12", border: "#facc15" } },
+            "db-table": { background: "#431407", border: "#f97316", highlight: { background: "#7c2d12", border: "#fb923c" } },
+            "angular-component": { background: "#500724", border: "#ec4899", highlight: { background: "#831843", border: "#f472b6" } },
+            "angular-service": { background: "#064e3b", border: "#10b981", highlight: { background: "#065f46", border: "#34d399" } }
+        };
+
+        // Format nodes for Vis.js
+        const nodesArray = rawNodes.map(node => ({
+            id: node.id,
+            label: node.label,
+            color: {
+                background: colors[node.type].background,
+                border: colors[node.type].border,
+                highlight: colors[node.type].highlight
+            },
+            font: { color: "#f3f4f6", size: node.type === "feature-hub" ? 14 : 12, face: "Inter" },
+            shape: node.type === "feature-hub" ? "diamond" : "box",
+            size: node.type === "feature-hub" ? 30 : 20,
+            borderWidth: 2,
+            borderWidthSelected: 4,
+            shadow: true,
+            // Custom properties for filtering/info display
+            layer: node.layer,
+            type: node.type,
+            tech: node.technology,
+            framework: node.framework,
+            path: node.path,
+            desc: node.desc
+        }));
+
+        // Format edges for Vis.js
+        const edgesArray = rawEdges.map(edge => ({
+            from: edge.from,
+            to: edge.to,
+            label: edge.label,
+            font: { color: "#9ca3af", size: 9, align: "horizontal", face: "Inter" },
+            arrows: "to",
+            color: { color: "rgba(156, 163, 175, 0.2)", highlight: "#6366f1" },
+            length: 180,
+            smooth: { type: "curvedCW", roundness: 0.1 }
+        }));
+
+        const nodesDataset = new vis.DataSet(nodesArray);
+        const edgesDataset = new vis.DataSet(edgesArray);
+
+        let network = null;
+        let activeLayerFilters = {
+            "Features": true,
+            "Frontend": true,
+            "Backend": true,
+            "Database": true
+        };
+
+        // Initialize Vis.js
+        function drawNetwork() {
+            const container = document.getElementById("network-canvas");
+            const data = {
+                nodes: nodesDataset,
+                edges: edgesDataset
+            };
+
+            const options = {
+                physics: {
+                    barnesHut: {
+                        gravitationalConstant: -3000,
+                        centralGravity: 0.3,
+                        springLength: 150,
+                        springConstant: 0.04,
+                        damping: 0.09,
+                        avoidOverlap: 0.5
+                    },
+                    stabilization: { iterations: 150 }
+                },
+                interaction: {
+                    hover: true,
+                    dragNodes: true,
+                    dragView: true,
+                    zoomView: true
+                }
+            };
+
+            network = new vis.Network(container, data, options);
+
+            // Click listener
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    showNodeDetails(nodeId);
+                } else if (params.edges.length > 0) {
+                    // Clicked edge
+                } else {
+                    closeDetails();
+                }
+            });
+
+            // Double click to zoom-focus
+            network.on("doubleClick", function (params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    focusOnNode(nodeId);
+                }
+            });
+        }
+
+        // Show details in the right sidebar
+        function showNodeDetails(nodeId) {
+            const node = nodesDataset.get(nodeId);
+            if (!node) return;
+
+            document.getElementById("fallback-info").classList.add("hidden");
+            document.getElementById("active-info").classList.remove("hidden");
+            document.getElementById("detail-panel").classList.remove("opacity-0", "translate-x-10");
+            document.getElementById("detail-panel").classList.add("opacity-100", "translate-x-0");
+
+            // Populate fields
+            document.getElementById("node-title").textContent = node.label;
+            document.getElementById("node-path").textContent = node.path || "N/A";
+            document.getElementById("node-desc").textContent = node.desc || "No description provided.";
+            
+            const tag = document.getElementById("node-tag");
+            tag.textContent = node.type.replace("-", " ");
+            
+            // Format colors based on type
+            const typeColorHex = colors[node.type].border;
+            tag.style.color = typeColorHex;
+            tag.style.borderColor = typeColorHex + "33";
+            tag.style.backgroundColor = typeColorHex + "11";
+
+            document.getElementById("spec-tech").textContent = node.tech || "N/A";
+            document.getElementById("spec-framework").textContent = node.framework || "N/A";
+            document.getElementById("spec-layer").textContent = node.layer || "N/A";
+            document.getElementById("spec-module").textContent = node.type || "N/A";
+
+            // Resolve Relationships
+            const dependsList = document.getElementById("list-depends");
+            const usedbyList = document.getElementById("list-usedby");
+            const implementsList = document.getElementById("list-implements");
+
+            dependsList.innerHTML = "";
+            usedbyList.innerHTML = "";
+            implementsList.innerHTML = "";
+
+            // Find edges mapping from/to this node
+            const edges = edgesDataset.get();
+            const dependencies = edges.filter(e => e.from === nodeId);
+            const consumers = edges.filter(e => e.to === nodeId);
+
+            if (dependencies.length > 0) {
+                document.getElementById("rel-depends").classList.remove("hidden");
+                dependencies.forEach(d => {
+                    dependsList.appendChild(createBadge(d.to));
+                });
+            } else {
+                document.getElementById("rel-depends").classList.add("hidden");
+            }
+
+            if (consumers.length > 0) {
+                document.getElementById("rel-usedby").classList.remove("hidden");
+                consumers.forEach(c => {
+                    usedbyList.appendChild(createBadge(c.from));
+                });
+            } else {
+                document.getElementById("rel-usedby").classList.add("hidden");
+            }
+
+            // Interface / Impl connection
+            if (node.type === "service-interface") {
+                document.getElementById("rel-implements").classList.remove("hidden");
+                const impls = rawNodes.filter(n => n.type === "service-impl" && rawEdges.some(e => e.from === n.id && e.to === nodeId));
+                impls.forEach(i => {
+                    implementsList.appendChild(createBadge(i.id));
+                });
+            } else if (node.type === "service-impl") {
+                document.getElementById("rel-implements").classList.remove("hidden");
+                const interfaces = rawEdges.filter(e => e.from === nodeId && e.label === "implements").map(e => e.to);
+                interfaces.forEach(i => {
+                    implementsList.appendChild(createBadge(i));
+                });
+            } else {
+                document.getElementById("rel-implements").classList.add("hidden");
+            }
+        }
+
+        // Create a small hyperlinked badge
+        function createBadge(id) {
+            const btn = document.createElement("button");
+            btn.className = "text-xs px-2.5 py-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 hover:border-indigo-500/30 transition text-gray-300 font-medium";
+            btn.textContent = id;
+            btn.onclick = () => {
+                showNodeDetails(id);
+                focusOnNode(id);
+            };
+            return btn;
+        }
+
+        function closeDetails() {
+            document.getElementById("active-info").classList.add("hidden");
+            document.getElementById("fallback-info").classList.remove("hidden");
+            document.getElementById("detail-panel").classList.remove("opacity-100", "translate-x-0");
+            document.getElementById("detail-panel").classList.add("opacity-0", "translate-x-10");
+            if (network) network.unselectAll();
+        }
+
+        // Camera actions
+        function focusOnNode(nodeId) {
+            if (!network) return;
+            network.selectNodes([nodeId]);
+            network.focus(nodeId, {
+                scale: 1.2,
+                animation: { duration: 1000, easingFunction: "easeInOutQuad" }
+            });
+        }
+
+        function resetCamera() {
+            if (!network) return;
+            network.fit({
+                animation: { duration: 1000, easingFunction: "easeInOutQuad" }
+            });
+        }
+
+        // Filter layers logic
+        function toggleLayer(layerName, isChecked) {
+            activeLayerFilters[layerName] = isChecked;
+            updateFilters();
+        }
+
+        function updateFilters() {
+            const filteredNodes = nodesArray.filter(node => activeLayerFilters[node.layer]);
+            const filteredNodeIds = filteredNodes.map(n => n.id);
+            
+            const filteredEdges = edgesArray.filter(edge => 
+                filteredNodeIds.includes(edge.from) && filteredNodeIds.includes(edge.to)
+            );
+
+            // Re-populate dataset
+            nodesDataset.clear();
+            nodesDataset.add(filteredNodes);
+
+            edgesDataset.clear();
+            edgesDataset.add(filteredEdges);
+            
+            if (network) {
+                network.setData({
+                    nodes: nodesDataset,
+                    edges: edgesDataset
+                });
+            }
+        }
+
+        // Search Bar autocomplete
+        const searchInput = document.getElementById("search-input");
+        const searchResults = document.getElementById("search-results");
+
+        searchInput.addEventListener("input", function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                searchResults.classList.add("hidden");
+                return;
+            }
+
+            const matches = rawNodes.filter(n => n.label.toLowerCase().includes(query) && activeLayerFilters[n.layer]);
+            if (matches.length === 0) {
+                searchResults.innerHTML = `<div class="text-xs text-gray-500 p-2">No matching nodes found.</div>`;
+            } else {
+                searchResults.innerHTML = matches.map(n => `
+                    <div onclick="selectSearchResult('${n.id}')" class="text-xs text-gray-300 hover:text-white hover:bg-white/5 rounded p-2 cursor-pointer transition flex items-center justify-between">
+                        <span>${n.label}</span>
+                        <span class="text-[10px] uppercase opacity-60 tracking-wider">${n.type.replace("-", " ")}</span>
+                    </div>
+                `).join("");
+            }
+            searchResults.classList.remove("hidden");
+        });
+
+        function selectSearchResult(nodeId) {
+            searchResults.classList.add("hidden");
+            searchInput.value = nodeId;
+            showNodeDetails(nodeId);
+            focusOnNode(nodeId);
+        }
+
+        // Close search list on clicking outside
+        document.addEventListener("click", function(e) {
+            if (!e.target.closest("#search-input") && !e.target.closest("#search-results")) {
+                searchResults.classList.add("hidden");
+            }
+        });
+
+        // Start
+        window.onload = () => {
+            drawNetwork();
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>

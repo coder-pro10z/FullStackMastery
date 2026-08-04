@@ -1,115 +1,87 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { IndexCategory, IndexNode, IndexColorTheme } from '../../../../core/models/knowledge-index.models';
-import { ProgressRingComponent } from '../progress-ring/progress-ring.component';
-
-const THEME_STYLES: Record<IndexColorTheme, { gradient: string; ring: string; pill: string; icon: string }> = {
-  blue:    { gradient: 'from-blue-500 to-blue-600',    ring: '#1A73E8', pill: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',    icon: 'bg-blue-100 text-blue-600' },
-  violet:  { gradient: 'from-violet-500 to-purple-600', ring: '#7C3AED', pill: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100', icon: 'bg-violet-100 text-violet-600' },
-  emerald: { gradient: 'from-emerald-500 to-teal-600', ring: '#10B981', pill: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100', icon: 'bg-emerald-100 text-emerald-600' },
-  amber:   { gradient: 'from-amber-500 to-orange-500', ring: '#F59E0B', pill: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100',   icon: 'bg-amber-100 text-amber-600' },
-  rose:    { gradient: 'from-rose-500 to-pink-600',    ring: '#F43F5E', pill: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100',       icon: 'bg-rose-100 text-rose-600' },
-  cyan:    { gradient: 'from-cyan-500 to-blue-500',    ring: '#06B6D4', pill: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100',       icon: 'bg-cyan-100 text-cyan-600' },
-  slate:   { gradient: 'from-slate-500 to-slate-600',  ring: '#64748B', pill: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100',   icon: 'bg-slate-100 text-slate-600' },
-};
+import { IndexCategory, IndexNode } from '../../../../core/models/knowledge-index.models';
 
 @Component({
   selector: 'app-category-card',
   standalone: true,
-  imports: [LucideAngularModule, ProgressRingComponent],
+  imports: [LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`:host { display: block; height: 100%; }`],
+  styles: [`
+    :host { display: block; height: 100%; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(241, 245, 249, 0.8); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(203, 213, 225, 0.9); border-radius: 9999px; }
+  `],
   template: `
     <div
-      class="edudash-card h-full flex flex-col gap-0 overflow-hidden cursor-pointer
-             transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-             hover:-translate-y-1 hover:shadow-md border border-slate-200"
-      [class.ring-2]="isExpanded()"
-      [class.ring-blue-400]="isExpanded()"
+      class="bg-white border rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 flex flex-col justify-between shadow-xs
+             hover:shadow-md hover:border-slate-300"
+      [class.border-[#1A73E8]]="isExpanded()"
+      [class.ring-1]="isExpanded()"
+      [class.ring-[#1A73E8]]="isExpanded()"
+      [class.border-slate-200]="!isExpanded()"
     >
       <!-- Card Header -->
-      <div class="flex items-center gap-3 p-4" (click)="toggleExpand()">
-        <!-- Icon -->
-        <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br"
-          [class]="themeStyles.icon + ' bg-gradient-to-br ' + themeStyles.gradient"
-        >
-          <lucide-icon [name]="category().icon" [size]="18" class="text-white" />
+      <div class="p-4" (click)="toggleExpand()">
+        <!-- Top Row: Title + Index Badge + Done Counter -->
+        <div class="flex items-start justify-between gap-2 mb-2.5">
+          <div class="flex items-center gap-2 min-w-0">
+            <h3 class="text-xs font-bold text-[#202124] truncate tracking-tight font-sans">
+              {{ category().label }}
+            </h3>
+            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-mono font-bold flex-shrink-0 border border-slate-200">
+              #{{ index() + 1 }}
+            </span>
+          </div>
+          <span class="text-[11px] font-mono text-slate-500 font-semibold flex-shrink-0">
+            {{ category().solvedCount }}/{{ category().questionCount }} Done
+          </span>
         </div>
 
-        <!-- Title & Meta -->
-        <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-[#202124] truncate leading-tight">{{ category().label }}</h3>
-          <p class="text-[11px] text-[#5F6368] mt-0.5">
-            @if (category().questionCount > 0) {
-              {{ category().solvedCount }}/{{ category().questionCount }} solved
-            } @else {
-              {{ category().children.length }} {{ category().children.length === 1 ? 'topic' : 'topics' }}
-            }
-          </p>
-        </div>
-
-        <!-- Progress Ring -->
-        <div class="flex-shrink-0 flex items-center gap-2">
-          <app-progress-ring
-            [percentage]="category().masteryPct"
-            [size]="44"
-            [strokeWidth]="4"
-            [showLabel]="true"
-            [progressColor]="themeStyles.ring"
-          />
-          <!-- Chevron -->
-          <lucide-icon
-            [name]="isExpanded() ? 'chevron-up' : 'chevron-down'"
-            [size]="14"
-            class="text-slate-400 transition-transform duration-200"
-            [class.-rotate-180]="isExpanded()"
-          />
+        <!-- Horizontal Progress Bar Line -->
+        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-gradient-to-r from-[#1A73E8] to-blue-500 rounded-full transition-all duration-500"
+            [style.width.%]="category().masteryPct"
+          ></div>
         </div>
       </div>
 
-      <!-- Expanded Sub-categories -->
+      <!-- Expanded State: Internal Scrollable Question List (matching Image 2 in Light Mode) -->
       @if (isExpanded() && category().children.length > 0) {
-        <div class="px-4 pb-4 border-t border-slate-100 pt-3 animate-fade-in">
-          <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Topics</p>
-          <div class="flex flex-wrap gap-2">
-            @for (child of category().children; track child.id) {
-              <button
-                (click)="onNodeSelect(child)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 active:scale-95"
-                [class]="themeStyles.pill"
+        <div class="px-3 pb-3 pt-1 border-t border-slate-100 bg-slate-50/90 animate-fade-in">
+          <div class="max-h-56 overflow-y-auto custom-scrollbar space-y-1 pr-1">
+            @for (child of category().children; track child.id; let i = $index) {
+              <div
+                (click)="onNodeSelect(child, $event)"
+                class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white hover:shadow-2xs transition-colors group cursor-pointer"
               >
-                <lucide-icon name="folder" [size]="11" />
-                {{ child.label }}
-                @if (child.questionCount > 0) {
-                  <span class="opacity-60">({{ child.questionCount }})</span>
-                }
-              </button>
+                <!-- Question Number & Title -->
+                <p class="text-[11px] text-slate-700 group-hover:text-[#202124] font-medium truncate leading-tight">
+                  <span class="text-slate-400 font-mono mr-1.5">{{ i + 1 }}.</span>
+                  {{ child.label }}
+                </p>
+
+                <!-- Status Circle Dot -->
+                <div
+                  class="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-transform group-hover:scale-110"
+                  [class.bg-emerald-500]="child.isSolved"
+                  [class.shadow-2xs]="child.isSolved"
+                  [class.bg-[#1A73E8]]="!child.isSolved"
+                ></div>
+              </div>
             }
           </div>
 
-          <!-- Apply Filter Button -->
+          <!-- Direct Filter Action -->
           <button
-            (click)="onNodeSelect(category())"
-            class="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border border-dashed border-slate-300 text-slate-500
-                   hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150"
+            (click)="onNodeSelect(category(), $event)"
+            class="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white text-slate-700
+                   hover:bg-[#1A73E8] hover:text-white transition-all duration-150 border border-slate-200 shadow-2xs"
           >
-            <lucide-icon name="filter" [size]="12" />
-            Filter by {{ category().label }}
-          </button>
-        </div>
-      }
-
-      @if (isExpanded() && category().children.length === 0) {
-        <div class="px-4 pb-4 pt-3 border-t border-slate-100 text-center">
-          <p class="text-xs text-slate-400 italic">No sub-topics found</p>
-          <button
-            (click)="onNodeSelect(category())"
-            class="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border border-dashed border-slate-300 text-slate-500
-                   hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150"
-          >
-            <lucide-icon name="filter" [size]="12" />
-            View all questions
+            <lucide-icon name="filter" [size]="11" />
+            Filter by {{ displayTitle }}
           </button>
         </div>
       }
@@ -118,20 +90,22 @@ const THEME_STYLES: Record<IndexColorTheme, { gradient: string; ring: string; pi
 })
 export class CategoryCardComponent {
   readonly category = input.required<IndexCategory>();
+  readonly index = input<number>(0);
   readonly isExpanded = input<boolean>(false);
 
   readonly expanded = output<void>();
   readonly nodeSelected = output<IndexNode>();
 
-  get themeStyles() {
-    return THEME_STYLES[this.category().colorTheme] ?? THEME_STYLES['blue'];
+  get displayTitle(): string {
+    return this.category().label.replace(/^\d+\s+/, '');
   }
 
   toggleExpand(): void {
     this.expanded.emit();
   }
 
-  onNodeSelect(node: IndexNode): void {
+  onNodeSelect(node: IndexNode, event: MouseEvent): void {
+    event.stopPropagation();
     this.nodeSelected.emit(node);
   }
 }

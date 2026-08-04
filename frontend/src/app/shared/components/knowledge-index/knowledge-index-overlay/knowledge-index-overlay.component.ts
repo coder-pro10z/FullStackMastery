@@ -8,9 +8,7 @@ import {
   ExplorerView, IndexCategory, IndexNode, IndexNodeSelectedEvent
 } from '../../../../core/models/knowledge-index.models';
 import { ExplorerToolbarComponent } from '../explorer-toolbar/explorer-toolbar.component';
-import { MasteryProgressComponent } from '../mastery-progress/mastery-progress.component';
 import { CategoryCardComponent } from '../category-card/category-card.component';
-import { TreeExplorerComponent } from '../tree-explorer/tree-explorer.component';
 import { QuestionRowComponent } from '../question-row/question-row.component';
 import { ExplorerSkeletonComponent } from '../explorer-skeleton/explorer-skeleton.component';
 
@@ -20,69 +18,99 @@ import { ExplorerSkeletonComponent } from '../explorer-skeleton/explorer-skeleto
   imports: [
     LucideAngularModule,
     ExplorerToolbarComponent,
-    MasteryProgressComponent,
     CategoryCardComponent,
-    TreeExplorerComponent,
     QuestionRowComponent,
     ExplorerSkeletonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`:host { display: block; }`],
+  styles: [`
+    :host {
+      display: block;
+      position: fixed;
+      top: 4rem;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-40;
+      pointer-events: none;
+    }
+    :host > * {
+      pointer-events: auto;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  `],
   template: `
     @if (isOpen()) {
-      <!-- Backdrop -->
+      <!-- Backdrop (Starts at top-16 right below global navbar h-16) -->
       <div
-        class="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm animate-fade-in"
+        class="fixed top-16 bottom-0 inset-x-0 z-40 bg-slate-900/30 backdrop-blur-xs animate-fade-in"
         (click)="close()"
         aria-hidden="true"
       ></div>
 
-      <!-- Overlay Panel -->
+      <!-- Overlay Panel Drawer (Positioned top-16 in visible area below global navbar) -->
       <div
-        class="fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-white shadow-2xl flex flex-col
-               animate-slide-in-right"
+        class="fixed top-16 bottom-0 right-0 z-40 w-full max-w-6xl bg-slate-50 border-l border-slate-200 shadow-2xl flex flex-col h-[calc(100vh-4rem)]
+               animate-slide-in-right text-slate-800"
         role="dialog"
         aria-modal="true"
-        aria-label="Knowledge Index"
+        aria-label="Scenario Index"
       >
-        <!-- Header Section (fixed height) -->
-        <div class="flex-shrink-0 px-5 pt-5 pb-4 border-b border-slate-100 space-y-4">
+        <!-- Sticky Header Toolbar Container -->
+        <div class="flex-shrink-0 sticky top-0 z-20 bg-white shadow-xs">
           <app-explorer-toolbar
             [activeView]="activeView()"
             [searchTerm]="searchQuery()"
+            [stats]="indexService.indexStats()"
             (viewChanged)="activeView.set($event)"
             (searchChanged)="onSearch($event)"
-            (expandAll)="expandAll()"
-            (collapseAll)="collapseAll()"
+            (toggleExpandAll)="toggleExpandAll()"
             (closed)="close()"
           />
 
-          <app-mastery-progress
-            [stats]="indexService.indexStats()"
-            [recentItems]="recentItems()"
-            (recentItemClicked)="onNodeSelected($event)"
-          />
+          <!-- Recently Viewed Chips Bar -->
+          @if (recentItems().length > 0) {
+            <div class="flex items-center gap-2.5 px-6 py-2.5 bg-slate-100/60 border-b border-slate-200/80 overflow-x-auto">
+              <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1 flex-shrink-0">
+                <lucide-icon name="history" [size]="12" class="text-[#1A73E8]" />
+                RECENTLY VIEWED:
+              </span>
+              @for (item of recentItems(); track item.id) {
+                <button
+                  (click)="onNodeSelected(item)"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200/90 rounded-full text-[11px] font-mono text-slate-700
+                         hover:border-[#1A73E8] hover:text-[#1A73E8] shadow-2xs transition-all duration-150 active:scale-95 flex-shrink-0"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#1A73E8]"></span>
+                  <span class="truncate max-w-[200px]">{{ item.label }}</span>
+                </button>
+              }
+            </div>
+          }
         </div>
 
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+        <!-- Scrollable Content Grid (Light Mode) -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
           @if (indexService.isLoading()) {
-            <app-explorer-skeleton [view]="activeView()" [count]="6" />
+            <app-explorer-skeleton [view]="activeView()" [count]="9" />
           } @else {
 
-            <!-- CATEGORY VIEW -->
+            <!-- CATEGORY VIEW (3-Column Card Grid in Light Mode) -->
             @if (activeView() === 'category') {
-              @if (filteredTree().length === 0) {
-                <div class="flex flex-col items-center justify-center py-16 text-center">
-                  <lucide-icon name="search-x" [size]="48" class="text-slate-200 mb-3" />
-                  <p class="text-sm font-medium text-slate-500">No categories found</p>
-                  <p class="text-xs text-slate-400 mt-1">Try a different search term</p>
+              @if (moduleCards().length === 0) {
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                  <lucide-icon name="search-x" [size]="48" class="text-slate-300 mb-3" />
+                  <p class="text-sm font-medium text-slate-600">No matching scenarios found</p>
+                  <p class="text-xs text-slate-400 mt-1">Try a different search keyword</p>
                 </div>
               } @else {
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  @for (cat of filteredTree(); track cat.id) {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  @for (cat of moduleCards(); track cat.id; let i = $index) {
                     <app-category-card
-                      [category]="asCategory(cat)"
+                      [category]="cat"
+                      [index]="i"
                       [isExpanded]="expandedIds().has(cat.id)"
                       (expanded)="toggleExpand(cat.id)"
                       (nodeSelected)="onNodeSelected($event)"
@@ -92,42 +120,31 @@ import { ExplorerSkeletonComponent } from '../explorer-skeleton/explorer-skeleto
               }
             }
 
-            <!-- TREE VIEW -->
-            @if (activeView() === 'tree') {
-              <app-tree-explorer
-                [roots]="filteredTree()"
-                [expandedIds]="expandedIds()"
-                [selectedId]="selectedId()"
-                (nodeSelected)="onNodeSelected($event)"
-                (nodeToggled)="toggleExpand($event)"
-              />
-            }
-
-            <!-- LIST VIEW -->
+            <!-- LIST VIEW (Light Mode) -->
             @if (activeView() === 'list') {
               <!-- Difficulty Filter Chips -->
-              <div class="flex items-center gap-2 flex-wrap pb-2 border-b border-slate-100">
-                <span class="text-xs text-slate-500 font-medium">Filter:</span>
+              <div class="flex items-center gap-2 flex-wrap pb-3 border-b border-slate-200">
+                <span class="text-xs text-slate-500 font-mono">Filter by Difficulty:</span>
                 @for (diff of difficultyFilters; track diff) {
                   <button
                     (click)="toggleDifficultyFilter(diff)"
                     class="px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 active:scale-95"
-                    [class]="activeDifficultyFilters().has(diff) ? activeDiffStyle(diff) : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'"
+                    [class]="activeDifficultyFilters().has(diff) ? activeDiffStyle(diff) : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'"
                   >{{ diff }}</button>
                 }
                 @if (activeDifficultyFilters().size > 0) {
-                  <button (click)="clearDifficultyFilters()" class="text-xs text-blue-600 hover:underline ml-1">Clear</button>
+                  <button (click)="clearDifficultyFilters()" class="text-xs text-[#1A73E8] hover:underline ml-1 font-medium">Clear</button>
                 }
               </div>
 
               <!-- Question Rows -->
               @if (filteredFlatList().length === 0) {
-                <div class="flex flex-col items-center justify-center py-16 text-center">
-                  <lucide-icon name="search-x" [size]="48" class="text-slate-200 mb-3" />
-                  <p class="text-sm font-medium text-slate-500">No questions found</p>
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                  <lucide-icon name="search-x" [size]="48" class="text-slate-300 mb-3" />
+                  <p class="text-sm font-medium text-slate-600">No questions found</p>
                 </div>
               } @else {
-                <div class="space-y-1">
+                <div class="space-y-2">
                   @for (q of filteredFlatList(); track q.id) {
                     <app-question-row
                       [question]="q"
@@ -136,7 +153,7 @@ import { ExplorerSkeletonComponent } from '../explorer-skeleton/explorer-skeleto
                     />
                   }
                 </div>
-                <p class="text-center text-xs text-slate-400 pt-2">{{ filteredFlatList().length }} question{{ filteredFlatList().length !== 1 ? 's' : '' }}</p>
+                <p class="text-center text-xs text-slate-400 font-mono pt-3">{{ filteredFlatList().length }} questions listed</p>
               }
             }
           }
@@ -164,10 +181,17 @@ export class KnowledgeIndexOverlayComponent implements OnChanges {
 
   readonly difficultyFilters = ['Easy', 'Medium', 'Hard'];
 
-  // Derived
-  readonly filteredTree = computed(() =>
-    this.indexService.filterTree(this.indexService.indexTree(), this.searchQuery())
-  );
+  // Flatten tree to module cards for the 3-column grid
+  readonly moduleCards = computed(() => {
+    const tree = this.indexService.filterTree(this.indexService.indexTree(), this.searchQuery());
+    const cards: IndexCategory[] = [];
+    for (const domain of tree) {
+      for (const mod of domain.children) {
+        cards.push(mod as IndexCategory);
+      }
+    }
+    return cards;
+  });
 
   readonly flatList = computed(() =>
     this.indexService.flattenToQuestions(this.indexService.indexTree())
@@ -203,20 +227,15 @@ export class KnowledgeIndexOverlayComponent implements OnChanges {
 
   onSearch(term: string): void {
     this.searchQuery.set(term);
-    // Auto-expand nodes that match when in tree view
-    if (this.activeView() === 'tree' && term) {
+    if (term) {
+      // Expand matching module cards automatically
       const matched = new Set<string>();
-      const walk = (nodes: IndexNode[]) => {
-        for (const n of nodes) {
-          if (n.label.toLowerCase().includes(term.toLowerCase())) {
-            // Expand all ancestors
-            n.parentIds.forEach(pid => matched.add(pid));
-          }
-          walk(n.children);
+      for (const card of this.moduleCards()) {
+        if (card.children.some(ch => ch.label.toLowerCase().includes(term.toLowerCase()))) {
+          matched.add(card.id);
         }
-      };
-      walk(this.indexService.indexTree());
-      this.expandedIds.update(cur => new Set([...cur, ...matched]));
+      }
+      this.expandedIds.set(matched);
     }
   }
 
@@ -228,19 +247,13 @@ export class KnowledgeIndexOverlayComponent implements OnChanges {
     });
   }
 
-  expandAll(): void {
-    const all = new Set<string>();
-    const walk = (nodes: IndexNode[]) => {
-      for (const n of nodes) {
-        if (n.children.length) { all.add(n.id); walk(n.children); }
-      }
-    };
-    walk(this.indexService.indexTree());
-    this.expandedIds.set(all);
-  }
-
-  collapseAll(): void {
-    this.expandedIds.set(new Set());
+  toggleExpandAll(): void {
+    if (this.expandedIds().size > 0) {
+      this.expandedIds.set(new Set());
+    } else {
+      const all = new Set(this.moduleCards().map(c => c.id));
+      this.expandedIds.set(all);
+    }
   }
 
   onNodeSelected(node: IndexNode): void {
@@ -264,13 +277,9 @@ export class KnowledgeIndexOverlayComponent implements OnChanges {
   }
 
   activeDiffStyle(diff: string): string {
-    if (diff === 'Easy') return 'bg-emerald-100 text-emerald-700 border-emerald-300';
-    if (diff === 'Medium') return 'bg-amber-100 text-amber-700 border-amber-300';
-    if (diff === 'Hard') return 'bg-rose-100 text-rose-700 border-rose-300';
+    if (diff === 'Easy') return 'bg-emerald-50 text-emerald-700 border-emerald-300 font-semibold';
+    if (diff === 'Medium') return 'bg-amber-50 text-amber-700 border-amber-300 font-semibold';
+    if (diff === 'Hard') return 'bg-rose-50 text-rose-700 border-rose-300 font-semibold';
     return '';
-  }
-
-  asCategory(node: IndexNode): IndexCategory {
-    return node as IndexCategory;
   }
 }

@@ -23,6 +23,9 @@ import { MermaidViewerComponent } from '../../shared/components/mermaid-viewer/m
 @Component({
   selector: 'app-question-bank',
   standalone: true,
+  styles: [`
+    :host { display: block; }
+  `],
   imports: [
     AsyncPipe, NgClass, NgIf, SlicePipe, LucideAngularModule,
     ActionToggleComponent, FilterBarComponent, QuestionBadgeComponent, PaginationComponent, MarkdownPipe,
